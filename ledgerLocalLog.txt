@@ -1,0 +1,3 @@
+allTransactions [Transaction{id=1, sender='Bilbo Baggins', recipient='Frodo Baggins', amount=1.0}, Transaction{id=2, sender='Frodo Baggins', recipient='Gandalf', amount=1.0}, Transaction{id=3, sender='Sauron', recipient='Gandalf', amount=100000.0}, Transaction{id=4, sender='Gandalf', recipient='Boromir', amount=1.0}, Transaction{id=5, sender='Boromir', recipient='Nazgul', amount=2.0}, Transaction{id=6, sender='Nazgul', recipient='Sauron', amount=1.0}]
+consultBalanceSauron -99999.0
+clientTransactions Sauron [Transaction{id=3, sender='Sauron', recipient='Gandalf', amount=100000.0}, Transaction{id=6, sender='Nazgul', recipient='Sauron', amount=1.0}]

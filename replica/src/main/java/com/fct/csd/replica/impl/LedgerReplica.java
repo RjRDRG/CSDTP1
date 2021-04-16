@@ -40,7 +40,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     @PostConstruct
     private void preLoadDatabase() {
         boolean pld = Optional.ofNullable(
-                environment.getProperty("replica.state.volatile.preload", Boolean.class)
+                environment.getProperty("replica.datasource.preload", Boolean.class)
         ).orElse(false);
 
         if(pld) {
@@ -111,9 +111,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        //TODO: from volatile or from persistent state
-
-        return new byte[0];
+        return serialize(ledgerService.repository.findAll());
     }
 
     @Override
@@ -123,8 +121,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
         ledgerService.repository.deleteAll();
         ledgerService.repository.saveAll(transactions);
-
-
     }
 
 }

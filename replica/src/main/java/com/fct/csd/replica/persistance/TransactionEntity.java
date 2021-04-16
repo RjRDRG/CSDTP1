@@ -5,10 +5,11 @@ import com.csd.api.item.Transaction;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-public class TransactionEntity {
+public class TransactionEntity implements Serializable {
 
     private @Id @GeneratedValue Long id;
     private String sender;
