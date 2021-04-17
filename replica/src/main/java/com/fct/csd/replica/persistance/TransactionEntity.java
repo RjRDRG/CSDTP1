@@ -1,6 +1,6 @@
 package com.fct.csd.replica.persistance;
 
-import com.csd.api.item.Transaction;
+import com.fct.csd.common.item.Transaction;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

@@ -8,7 +8,7 @@ import org.springframework.util.SerializationUtils;
 import java.util.Optional;
 
 @Component
-public class LedgerProxy extends ServiceProxy{
+public class LedgerProxy extends ServiceProxy {
 
     public LedgerProxy(Environment env) {
         super(Optional.ofNullable(env.getProperty("process_id", Integer.class)).orElse(0));

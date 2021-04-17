@@ -1,0 +1,4 @@
+com/fct/csd/proxy/impl/LedgerProxy.class
+com/fct/csd/proxy/impl/LedgerController.class
+com/fct/csd/proxy/ProxyApplication.class
+com/fct/csd/proxy/impl/LedgerLocalLog.class

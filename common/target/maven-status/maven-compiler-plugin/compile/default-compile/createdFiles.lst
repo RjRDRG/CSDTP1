@@ -1,0 +1,7 @@
+com/fct/csd/common/request/LedgerReplicatedRequest$LedgerOperation.class
+com/fct/csd/common/request/LedgerReplicatedRequest.class
+com/fct/csd/common/request/TransferValueTokensRequest.class
+com/fct/csd/common/exception/ClientNotFoundException.class
+com/fct/csd/common/item/Transaction.class
+com/fct/csd/common/exception/TransactionNotFoundException.class
+com/fct/csd/common/request/ObtainValueTokensRequest.class

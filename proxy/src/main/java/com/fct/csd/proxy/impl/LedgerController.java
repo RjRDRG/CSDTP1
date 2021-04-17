@@ -1,9 +1,9 @@
 package com.fct.csd.proxy.impl;
 
-import com.csd.api.item.Transaction;
-import com.csd.api.request.LedgerReplicatedRequest;
-import com.csd.api.request.ObtainValueTokensRequest;
-import com.csd.api.request.TransferValueTokensRequest;
+import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.request.LedgerReplicatedRequest;
+import com.fct.csd.common.request.ObtainValueTokensRequest;
+import com.fct.csd.common.request.TransferValueTokensRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

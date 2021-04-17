@@ -1,10 +1,10 @@
 
 package com.fct.csd.replica.impl;
 
-import com.csd.api.exception.ClientNotFoundException;
-import com.csd.api.item.Transaction;
-import com.csd.api.request.ObtainValueTokensRequest;
-import com.csd.api.request.TransferValueTokensRequest;
+import com.fct.csd.common.exception.ClientNotFoundException;
+import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.request.ObtainValueTokensRequest;
+import com.fct.csd.common.request.TransferValueTokensRequest;
 import com.fct.csd.replica.persistance.TransactionEntity;
 import com.fct.csd.replica.persistance.TransactionRepository;
 import org.springframework.stereotype.Service;

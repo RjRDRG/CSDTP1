@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="replica" />
+        <module name="common" />
         <module name="proxy" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="common" target="11" />
       <module name="proxy" target="11" />
       <module name="replica" target="11" />
     </bytecodeTargetLevel>

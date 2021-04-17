@@ -1,0 +1,6 @@
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/exception/ClientNotFoundException.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/ObtainValueTokensRequest.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/exception/TransactionNotFoundException.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/TransferValueTokensRequest.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/LedgerReplicatedRequest.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/item/Transaction.java
