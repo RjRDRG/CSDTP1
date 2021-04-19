@@ -2,7 +2,7 @@
 
 Step 1: Install docker compose 
 
-Step 2: Deploy with the command:    docker-compose up
+Step 2: Deploy with:    docker-compose up
 
 Step 3: Enjoy
 
