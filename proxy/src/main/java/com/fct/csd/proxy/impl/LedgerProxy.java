@@ -11,8 +11,8 @@ import java.util.Optional;
 @Component
 public class LedgerProxy extends ServiceProxy {
 
-    public LedgerProxy(Environment env) {
-        super(Optional.ofNullable(env.getProperty("process_id", Integer.class)).orElse(0));
+    public LedgerProxy(Environment environment) {
+        super(environment.getProperty("proxy.id", Integer.class));
     }
 
     @SuppressWarnings("unchecked")

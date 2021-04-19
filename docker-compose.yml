@@ -40,6 +40,8 @@ services:
       - "11030:11030"
       - "11031:11031"
   proxy1:
+    environment:
+      - proxy_id=0
     build:
       context: .
       dockerfile: proxy.dockerfile
@@ -51,6 +53,8 @@ services:
       - replica2
       - replica3
   proxy2:
+    environment:
+      - proxy_id=1
     build:
       context: .
       dockerfile: proxy.dockerfile
