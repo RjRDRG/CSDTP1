@@ -9,6 +9,10 @@ import java.security.Security;
 @SpringBootApplication
 public class ReplicaApplication implements CommandLineRunner {
 
+    static {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    }
+
     private final LedgerReplica replica;
 
     public ReplicaApplication(LedgerReplica replica) {
@@ -16,8 +20,6 @@ public class ReplicaApplication implements CommandLineRunner {
     }
 
     public static void main(String[] args) {
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-
         SpringApplication.run(ReplicaApplication.class, args);
     }
 
