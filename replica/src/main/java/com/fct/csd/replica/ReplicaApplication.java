@@ -24,10 +24,7 @@ public class ReplicaApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        int id = 0;
-        if(args.length > 1) id = Integer.parseInt(args[0]);
-
-        replica.start(id);
+    public void run(String... args) {
+        replica.start(args);
     }
 }

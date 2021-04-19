@@ -39,7 +39,9 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         this.environment = environment;
     }
 
-    public void start(int id) {
+    public void start(String[] args) {
+        int id = args.length > 0 ? Integer.parseInt(args[0]) : environment.getProperty("replica.id", int.class);
+        log.info("The id of the replica is: " + id);
         new ServiceReplica(id, this, this);
     }
 
