@@ -12,15 +12,18 @@ public class LedgerReplicatedRequest implements Serializable {
 
     private LedgerOperation operation;
     private byte[] request;
+    private long lastPersistedTransaction;
 
-    public LedgerReplicatedRequest(LedgerOperation operation, byte[] request) {
+    public LedgerReplicatedRequest(LedgerOperation operation, byte[] request, long lastPersistedTransaction) {
         this.operation = operation;
         this.request = request;
+        this.lastPersistedTransaction = lastPersistedTransaction;
     }
 
-    public LedgerReplicatedRequest(LedgerOperation operation) {
+    public LedgerReplicatedRequest(LedgerOperation operation, long lastPersistedTransaction) {
         this.operation = operation;
         this.request = new byte[0];
+        this.lastPersistedTransaction = lastPersistedTransaction;
     }
 
     public LedgerReplicatedRequest() {
@@ -42,17 +45,25 @@ public class LedgerReplicatedRequest implements Serializable {
         this.request = request;
     }
 
+    public long getLastTransactionId() {
+        return lastPersistedTransaction;
+    }
+
+    public void setLastPersistedTransaction(long lastPersistedTransaction) {
+        this.lastPersistedTransaction = lastPersistedTransaction;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LedgerReplicatedRequest that = (LedgerReplicatedRequest) o;
-        return operation == that.operation && Arrays.equals(request, that.request);
+        return lastPersistedTransaction == that.lastPersistedTransaction && operation == that.operation && Arrays.equals(request, that.request);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(operation);
+        int result = Objects.hash(operation, lastPersistedTransaction);
         result = 31 * result + Arrays.hashCode(request);
         return result;
     }
@@ -62,6 +73,7 @@ public class LedgerReplicatedRequest implements Serializable {
         return "LedgerReplicatedRequest{" +
                 "operation=" + operation +
                 ", request=" + Arrays.toString(request) +
+                ", lastPersistedTransaction=" + lastPersistedTransaction +
                 '}';
     }
 }

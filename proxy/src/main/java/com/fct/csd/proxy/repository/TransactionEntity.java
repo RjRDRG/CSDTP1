@@ -1,4 +1,4 @@
-package com.fct.csd.replica.persistance;
+package com.fct.csd.proxy.repository;
 
 import com.fct.csd.common.item.Transaction;
 
@@ -11,17 +11,25 @@ import java.util.Objects;
 @Entity
 public class TransactionEntity implements Serializable {
 
-    private @Id @GeneratedValue Long id;
+    private @Id Long id;
     private String sender;
     private String recipient;
     private double amount;
 
     public TransactionEntity() {}
 
-    public TransactionEntity(String sender, String recipient, double amount) {
+    public TransactionEntity(Long id, String sender, String recipient, double amount) {
+        this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+    }
+
+    public TransactionEntity(Transaction transaction) {
+        this.id = transaction.getId();
+        this.sender = transaction.getSender();
+        this.recipient = transaction.getRecipient();
+        this.amount = transaction.getAmount();
     }
 
     public Long getId() {
@@ -54,10 +62,6 @@ public class TransactionEntity implements Serializable {
 
     public void setAmount(double amount) {
         this.amount = amount;
-    }
-
-    public Transaction toItem() {
-        return new Transaction(id, sender, recipient, amount);
     }
 
     @Override

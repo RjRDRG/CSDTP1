@@ -3,20 +3,26 @@ package com.fct.csd.replica.impl;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import com.fct.csd.common.exception.LedgerException;
+import com.fct.csd.common.exception.LedgerExceptionInfo;
 import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.reply.LedgerReplicatedReply;
 import com.fct.csd.common.request.LedgerReplicatedRequest;
 import com.fct.csd.common.request.ObtainValueTokensRequest;
 import com.fct.csd.common.request.TransferValueTokensRequest;
-import com.fct.csd.replica.persistance.TransactionEntity;
+import com.fct.csd.replica.repository.TransactionEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static com.fct.csd.common.exception.RestExceptions.SERVER_ERROR;
 import static org.springframework.util.SerializationUtils.deserialize;
 import static org.springframework.util.SerializationUtils.serialize;
 
@@ -53,60 +59,84 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         }
     }
 
+    private List<Transaction> getRecentTransactions(long lastTransactionId) {
+        return ledgerService.repository.findByIdGreaterThan(lastTransactionId)
+                .stream().map(TransactionEntity::toItem).collect(Collectors.toList());
+    }
+
     @Override
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
-        byte[] reply = null;
+        byte[] reply = new byte[0];
 
         LedgerReplicatedRequest replicatedRequest = (LedgerReplicatedRequest) deserialize(command);
 
-        switch (replicatedRequest.getOperation()) {
-            case BALANCE: {
-                String clientId = (String) deserialize(replicatedRequest.getRequest());
-                double amount = ledgerService.consultBalance(clientId);
-                reply = serialize(amount);
-                break;
+        try {
+            switch (replicatedRequest.getOperation()) {
+                case BALANCE: {
+                    String clientId = (String) deserialize(replicatedRequest.getRequest());
+                    double amount = ledgerService.consultBalance(clientId);
+                    reply = serialize(amount);
+                    break;
+                }
+                case ALL_TRANSACTIONS: {
+                    List<Transaction> transactions = ledgerService.allTransactions();
+                    reply = serialize(transactions);
+                    break;
+                }
+                case CLIENT_TRANSACTIONS: {
+                    String clientId = (String) deserialize(replicatedRequest.getRequest());
+                    List<Transaction> transactions = ledgerService.clientTransactions(clientId);
+                    reply = serialize(transactions);
+                    break;
+                }
             }
-            case ALL_TRANSACTIONS: {
-                List<Transaction> transactions = ledgerService.allTransactions();
-                reply = serialize(transactions);
-                break;
-            }
-            case CLIENT_TRANSACTIONS: {
-                String clientId = (String) deserialize(replicatedRequest.getRequest());
-                List<Transaction> transactions = ledgerService.clientTransactions(clientId);
-                reply = serialize(transactions);
-                break;
-            }
+        } catch (LedgerException exception) {
+            return serialize(new LedgerReplicatedReply(
+                    getRecentTransactions(replicatedRequest.getLastTransactionId()),
+                    exception.exceptionInfo)
+            );
+        } catch (Exception exception) {
+            return serialize(new LedgerReplicatedReply(
+                    new ArrayList<>(),
+                    new LedgerExceptionInfo(SERVER_ERROR, exception.getMessage()))
+            );
         }
 
-        return Optional.ofNullable(reply).orElse(new byte[0]);
+        return serialize(new LedgerReplicatedReply(getRecentTransactions(replicatedRequest.getLastTransactionId()), reply));
     }
 
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
-        byte[] reply = null;
+        byte[] reply = new byte[0];
 
         LedgerReplicatedRequest replicatedRequest = (LedgerReplicatedRequest) deserialize(command);
 
-        switch (replicatedRequest.getOperation()) {
+        try {
+            switch (replicatedRequest.getOperation()) {
 
-            case OBTAIN: {
-                ObtainValueTokensRequest request =
-                        (ObtainValueTokensRequest) deserialize(replicatedRequest.getRequest());
-                Transaction transaction = ledgerService.obtainValueTokens(request);
-                reply = serialize(transaction);
-                break;
+                case OBTAIN: {
+                    ObtainValueTokensRequest request =
+                            (ObtainValueTokensRequest) deserialize(replicatedRequest.getRequest());
+                    Transaction transaction = ledgerService.obtainValueTokens(request);
+                    reply = serialize(transaction);
+                    break;
+                }
+                case TRANSFER: {
+                    TransferValueTokensRequest request =
+                            (TransferValueTokensRequest) deserialize(replicatedRequest.getRequest());
+                    Transaction transaction = ledgerService.transferValueTokens(request);
+                    reply = serialize(transaction);
+                    break;
+                }
             }
-            case TRANSFER: {
-                TransferValueTokensRequest request =
-                        (TransferValueTokensRequest) deserialize(replicatedRequest.getRequest());
-                Transaction transaction = ledgerService.transferValueTokens(request);
-                reply = serialize(transaction);
-                break;
-            }
+        } catch (Exception exception) {
+            return serialize(new LedgerReplicatedReply(
+                    new ArrayList<>(),
+                    new LedgerExceptionInfo(SERVER_ERROR, exception.getMessage()))
+            );
         }
 
-        return Optional.ofNullable(reply).orElse(new byte[0]);
+        return serialize(new LedgerReplicatedReply(getRecentTransactions(replicatedRequest.getLastTransactionId()), reply));
     }
 
     @Override

@@ -1,0 +1,10 @@
+
+docker network create -o com.docker.network.bridge.enable_icc=true csdnet
+
+docker run -it --network csdnet -p 172.18.0.3:8090:8090 -p 172.18.0.3:11000:11000 -p 172.18.0.3:11001:11001 csdreplica 0
+docker run -it --network csdnet -p 172.18.0.3:8091:8090 -p 172.18.0.3:11010:11010 -p 172.18.0.3:11011:11011 csdreplica 1
+docker run -it --network csdnet -p 172.18.0.3:8092:8090 -p 172.18.0.3:11020:11020 -p 172.18.0.3:11021:11021 csdreplica 2
+docker run -it --network csdnet -p 172.18.0.3:8093:8090 -p 172.18.0.3:11030:11030 -p 172.18.0.3:11031:11031 csdreplica 3
+
+docker run -it --network csdnet -p 172.18.0.3:8080:8080 csdproxy
+docker run -it --network csdnet -p 172.18.0.3:8081:8080 csdproxy

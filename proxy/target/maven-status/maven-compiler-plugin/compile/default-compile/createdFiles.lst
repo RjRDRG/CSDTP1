@@ -1,4 +1,10 @@
 com/fct/csd/proxy/impl/LedgerProxy.class
+com/fct/csd/proxy/exceptions/ExceptionAdvice.class
+com/fct/csd/proxy/repository/TransactionRepository.class
 com/fct/csd/proxy/impl/LedgerController.class
 com/fct/csd/proxy/ProxyApplication.class
-com/fct/csd/proxy/impl/LedgerLocalLog.class
+com/fct/csd/proxy/exceptions/ServerErrorException.class
+com/fct/csd/proxy/exceptions/ExceptionMapper$1.class
+com/fct/csd/proxy/exceptions/ExceptionMapper.class
+com/fct/csd/proxy/exceptions/NotFoundException.class
+com/fct/csd/proxy/repository/TransactionEntity.class
