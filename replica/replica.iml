@@ -10,7 +10,9 @@
       <configuration>
         <setting name="validation-enabled" value="true" />
         <setting name="provider-name" value="Hibernate" />
-        <datasource-mapping />
+        <datasource-mapping>
+          <factory-entry name="entityManagerFactory" />
+        </datasource-mapping>
         <naming-strategy-map />
       </configuration>
     </facet>
@@ -121,5 +123,7 @@
     <orderEntry type="library" name="Maven: com.yahoo.ycsb:core:0.1.4" level="project" />
     <orderEntry type="library" name="Maven: com.fct.csd:bft-smart:1.0.0" level="project" />
     <orderEntry type="module" module-name="common" />
+    <orderEntry type="library" name="Maven: org.ini4j:ini4j:0.5.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.11" level="project" />
   </component>
 </module>

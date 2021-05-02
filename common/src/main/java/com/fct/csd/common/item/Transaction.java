@@ -1,54 +1,67 @@
 package com.fct.csd.common.item;
 
+import com.fct.csd.common.traits.Compactable;
+
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Objects;
 
-public class Transaction implements Serializable {
+public class Transaction implements Compactable {
 
-    private Long id;
-    private String sender;
-    private String recipient;
+    private long id;
+    private byte[] sender;
+    private byte[] recipient;
     private double amount;
+    private byte[] hashPreviousTransaction;
 
-    public Transaction() {}
-
-    public Transaction(Long id, String sender, String recipient, double amount) {
+    public Transaction(long id, byte[] sender, byte[] recipient, double amount, byte[] hashPreviousTransaction) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+        this.hashPreviousTransaction = hashPreviousTransaction;
     }
 
-    public Long getId() {
-        return this.id;
+    Transaction() {}
+
+    public long getId() {
+        return id;
     }
 
-    public String getSender() {
-        return this.sender;
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public String getRecipient() {
-        return this.recipient;
+    public byte[] getSender() {
+        return sender;
+    }
+
+    public void setSender(byte[] sender) {
+        this.sender = sender;
+    }
+
+    public byte[] getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(byte[] recipient) {
+        this.recipient = recipient;
     }
 
     public double getAmount() {
         return amount;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setSender(String name) {
-        this.sender = name;
-    }
-
-    public void setRecipient(String role) {
-        this.recipient = role;
-    }
-
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public byte[] getHashPreviousTransaction() {
+        return hashPreviousTransaction;
+    }
+
+    public void setHashPreviousTransaction(byte[] hashPreviousTransaction) {
+        this.hashPreviousTransaction = hashPreviousTransaction;
     }
 
     @Override
@@ -56,21 +69,26 @@ public class Transaction implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Transaction that = (Transaction) o;
-        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient);
+        return id == that.id && Double.compare(that.amount, amount) == 0 && Arrays.equals(sender, that.sender) && Arrays.equals(recipient, that.recipient) && Arrays.equals(hashPreviousTransaction, that.hashPreviousTransaction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sender, recipient, amount);
+        int result = Objects.hash(id, amount);
+        result = 31 * result + Arrays.hashCode(sender);
+        result = 31 * result + Arrays.hashCode(recipient);
+        result = 31 * result + Arrays.hashCode(hashPreviousTransaction);
+        return result;
     }
 
     @Override
     public String toString() {
         return "Transaction{" +
                 "id=" + id +
-                ", sender='" + sender + '\'' +
-                ", recipient='" + recipient + '\'' +
+                ", sender=" + Arrays.toString(sender) +
+                ", recipient=" + Arrays.toString(recipient) +
                 ", amount=" + amount +
+                ", hashPreviousTransaction=" + Arrays.toString(hashPreviousTransaction) +
                 '}';
     }
 }
