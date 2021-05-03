@@ -23,10 +23,11 @@ public class OrderedRequest<T extends Serializable> implements Serializable {
     }
 
     public boolean verifyClientId(IDigestSuite digestSuite) throws Exception {
-        return digestSuite.verify(clientPublicKey.getEnconded(), clientId);
+        return digestSuite.verify(clientPublicKey.getEncoded(), clientId);
     }
 
     public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {
+        signatureSuite.setPublicKey(clientPublicKey);
         return requestBody.verify(signatureSuite);
     }
 

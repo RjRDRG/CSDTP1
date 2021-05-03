@@ -10,16 +10,16 @@ import java.util.Objects;
 public class EncodedPublicKey implements Serializable {
 	private static final long serialVersionUID = -1440213254532977043L;
 	
-	byte[] enconded;
+	byte[] encoded;
 	String alg;
 
 	public EncodedPublicKey(PublicKey key) {
 		this.alg = key.getAlgorithm();
-		this.enconded = key.getEncoded();
+		this.encoded = key.getEncoded();
 	}
 	
 	public PublicKey toPublicKey() throws Exception {
-		return KeyFactory.getInstance(alg).generatePublic(new X509EncodedKeySpec(enconded));
+		return KeyFactory.getInstance(alg).generatePublic(new X509EncodedKeySpec(encoded));
 	}
 	
 	EncodedPublicKey() {
@@ -33,12 +33,12 @@ public class EncodedPublicKey implements Serializable {
 		this.alg = alg;
 	}
 	
-	public byte[] getEnconded() {
-		return enconded;
+	public byte[] getEncoded() {
+		return encoded;
 	}
 
-	public void setEnconded(byte[] enconded) {
-		this.enconded = enconded;
+	public void setEncoded(byte[] encoded) {
+		this.encoded = encoded;
 	}
 
 	@Override
@@ -46,20 +46,20 @@ public class EncodedPublicKey implements Serializable {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		EncodedPublicKey that = (EncodedPublicKey) o;
-		return Arrays.equals(enconded, that.enconded) && alg.equals(that.alg);
+		return Arrays.equals(encoded, that.encoded) && alg.equals(that.alg);
 	}
 
 	@Override
 	public int hashCode() {
 		int result = Objects.hash(alg);
-		result = 31 * result + Arrays.hashCode(enconded);
+		result = 31 * result + Arrays.hashCode(encoded);
 		return result;
 	}
 
 	@Override
 	public String toString() {
 		return "EncodedPublicKey{" +
-				"enconded=" + Arrays.toString(enconded) +
+				"enconded=" + Arrays.toString(encoded) +
 				", alg='" + alg + '\'' +
 				'}';
 	}

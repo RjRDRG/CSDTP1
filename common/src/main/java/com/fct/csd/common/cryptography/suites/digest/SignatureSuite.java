@@ -103,7 +103,11 @@ public class SignatureSuite implements IDigestSuite {
 		suite.update(data);
 		return suite.verify(signature);
 	}
-	
+
+	public void setPublicKey(EncodedPublicKey key) throws Exception {
+		this.publicKey = key.toPublicKey();
+	}
+
 	public EncodedPublicKey getPublicKey() {
 		return new EncodedPublicKey(publicKey);
 	}

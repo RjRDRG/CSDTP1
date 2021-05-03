@@ -16,14 +16,12 @@ import com.fct.csd.common.request.TransferRequestBody;
 import com.fct.csd.common.traits.Signed;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +67,7 @@ public class LedgerClient {
                     new IniSpecification("client_signature_keygen_suite", CONFIG_PATH)
                 );
             this.clientPublicKey = signatureSuite.getPublicKey();
-            this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEnconded());
+            this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEncoded());
         }
     }
 
