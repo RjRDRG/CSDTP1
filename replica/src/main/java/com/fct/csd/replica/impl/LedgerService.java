@@ -53,7 +53,7 @@ public class LedgerService {
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Verify);
 
-        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), false);
+        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
 
         ISuiteConfiguration transactionChainSuiteConfiguration =
                 new SuiteConfiguration(

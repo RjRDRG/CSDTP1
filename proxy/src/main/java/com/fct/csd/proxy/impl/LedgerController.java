@@ -50,7 +50,7 @@ class LedgerController {
                         new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(suiteConfiguration, SignatureSuite.Mode.Verify);
-        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), false);
+        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
     }
 
     @PostMapping("/obtain")

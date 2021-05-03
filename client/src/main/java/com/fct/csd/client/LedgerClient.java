@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.security.KeyStore;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +42,10 @@ import java.util.Objects;
 
 @ActiveProfiles("ssl")
 public class LedgerClient {
+
+    static {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    }
 
     static final String CONFIG_PATH = "security.conf";
 
@@ -59,7 +64,10 @@ public class LedgerClient {
                             new StoredSecrets(new KeyStoresInfo("stores", CONFIG_PATH))
                     );
             FlexibleDigestSuite clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Digest);
-            this.signatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), true);
+            this.signatureSuite = new SignatureSuite(
+                    new IniSpecification("client_signature_suite", CONFIG_PATH),
+                    new IniSpecification("client_signature_keygen_suite", CONFIG_PATH)
+                );
             this.clientPublicKey = signatureSuite.getPublicKey();
             this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEnconded());
         }
@@ -123,7 +131,7 @@ public class LedgerClient {
                         break;
                 }
             } catch (Exception exception) {
-                System.out.println(exception.getMessage());
+                exception.printStackTrace();
             }
         }
     }
