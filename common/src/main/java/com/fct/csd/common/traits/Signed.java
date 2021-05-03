@@ -3,9 +3,9 @@ package com.fct.csd.common.traits;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
-import static com.fct.csd.common.util.Serialization.bytesToData;
-import static com.fct.csd.common.util.Serialization.dataToBytes;
+import static com.fct.csd.common.util.Serialization.*;
 
 public class Signed<T extends Serializable> implements Serializable {
 
@@ -42,5 +42,13 @@ public class Signed<T extends Serializable> implements Serializable {
 
 	public void setSignature(byte[] signature) {
 		this.signature = signature;
+	}
+
+	@Override
+	public String toString() {
+		return "Signed{" +
+				"data=" + bytesToString(data) +
+				", signature=" + bytesToString(signature) +
+				'}';
 	}
 }
