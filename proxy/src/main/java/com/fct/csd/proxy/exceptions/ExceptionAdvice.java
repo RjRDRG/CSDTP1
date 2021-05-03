@@ -32,6 +32,13 @@ class ExceptionAdvice {
     }
 
     @ResponseBody
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    String badRequestHandler(BadRequestException ex) {
+        return "BAD_REQUEST|"+ex.getMessage();
+    }
+
+    @ResponseBody
     @ExceptionHandler(ServerErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     String internalErrorHandler(ServerErrorException ex) {

@@ -13,6 +13,7 @@ import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
+import com.fct.csd.proxy.exceptions.BadRequestException;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
 import com.fct.csd.proxy.exceptions.NotFoundException;
 import com.fct.csd.proxy.exceptions.ServerErrorException;
@@ -98,6 +99,8 @@ class LedgerController {
         }
 
         if(!valid) throw new ForbiddenException("Invalid Signature");
+
+        if(request.getRequestBody().extractData().getAmount()<0) throw new BadRequestException("Amount must be positive");
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.TRANSFER,
