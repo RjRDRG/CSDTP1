@@ -152,7 +152,7 @@ public class LedgerClient {
     }
 
     static void transferTokens(String client, String recipient, int amount) {
-        String uri = proxyUrl + ":" + proxyPort + "/obtain";
+        String uri = proxyUrl + ":" + proxyPort + "/transfer";
 
         try {
             ClientCredentials clientCredentials = credentialsMap.get(client);
