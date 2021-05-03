@@ -35,6 +35,8 @@ import static org.springframework.util.SerializationUtils.serialize;
 @Component
 public class LedgerReplica extends DefaultSingleRecoverable {
 
+    public static final String CONFIG_PATH = "security.conf";
+
     private static final Logger log = LoggerFactory.getLogger(LedgerReplica.class);
 
     private final Environment environment;
@@ -53,8 +55,8 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
         ISuiteConfiguration suiteConfiguration =
                 new SuiteConfiguration(
-                        new IniSpecification("ReplyDigestSuite", "Path"),
-                        new StoredSecrets(new KeyStoresInfo("ReplyDigestSuite","Path"))
+                        new IniSpecification("reply_digest_suite", CONFIG_PATH),
+                        new StoredSecrets(new KeyStoresInfo("reply_digest_suite",CONFIG_PATH))
                 );
         this.replyDigestSuite = new FlexibleDigestSuite(suiteConfiguration, SignatureSuite.Mode.Digest);
 

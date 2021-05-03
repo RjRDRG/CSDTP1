@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 @Service
 public class LedgerService {
 
+    public static final String CONFIG_PATH = "security.conf";
+
     private static final Logger log = LoggerFactory.getLogger(LedgerService.class);
 
     public final TransactionRepository repository;
@@ -46,17 +48,17 @@ public class LedgerService {
 
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
-                        new IniSpecification("ClientsIdDigestSuite", "Path"),
-                        new StoredSecrets(new KeyStoresInfo("ClientsIdDigestSuite","Path"))
+                        new IniSpecification("client_id_digest_suite", CONFIG_PATH),
+                        new StoredSecrets(new KeyStoresInfo("client_id_digest_suite",CONFIG_PATH))
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Verify);
 
-        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("ClientsSignatureSuite", "Path"), false); //TODO: paths
+        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), false);
 
         ISuiteConfiguration transactionChainSuiteConfiguration =
                 new SuiteConfiguration(
-                        new IniSpecification("TransactionChainDigestSuite", "Path"),
-                        new StoredSecrets(new KeyStoresInfo("TransactionChainDigestSuite","Path"))
+                        new IniSpecification("transaction_chain_digest_suite", CONFIG_PATH),
+                        new StoredSecrets(new KeyStoresInfo("transaction_chain_digest_suite",CONFIG_PATH))
                 );
         this.transactionChainDigestSuite = new FlexibleDigestSuite(transactionChainSuiteConfiguration, SignatureSuite.Mode.Digest);
     }

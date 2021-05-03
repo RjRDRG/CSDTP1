@@ -11,7 +11,6 @@ import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
-import com.fct.csd.common.reply.ReplicatedReply;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
@@ -23,7 +22,6 @@ import com.fct.csd.proxy.repository.TransactionRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.fct.csd.proxy.exceptions.ExceptionMapper.throwPossibleException;
@@ -32,24 +30,26 @@ import static org.springframework.util.SerializationUtils.*;
 @RestController
 class LedgerController {
 
+    public static final String CONFIG_PATH = "security.conf";
+
     private final LedgerProxy ledgerProxy;
     private final TransactionRepository ledger;
-    private final TestimonyRepository testimonys;
+    private final TestimonyRepository testimonies;
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
 
-    LedgerController(LedgerProxy ledgerProxy, TransactionRepository ledger, TestimonyRepository testimonys) throws Exception {
+    LedgerController(LedgerProxy ledgerProxy, TransactionRepository ledger, TestimonyRepository testimonies) throws Exception {
         this.ledgerProxy = ledgerProxy;
-        this.testimonys = testimonys;
+        this.testimonies = testimonies;
         this.ledger = ledger;
         ISuiteConfiguration suiteConfiguration =
                 new SuiteConfiguration(
-                        new IniSpecification("ClientsIdDigestSuite", "Path"),
-                        new StoredSecrets(new KeyStoresInfo("ClientsIdDigestSuite","Path"))
+                        new IniSpecification("client_id_digest_suite", CONFIG_PATH),
+                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(suiteConfiguration, SignatureSuite.Mode.Verify);
-        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("ClientsSignatureSuite", "Path"), false); //TODO: paths
+        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), false);
     }
 
     @PostMapping("/obtain")
@@ -197,7 +197,7 @@ class LedgerController {
     @GetMapping("/testimonies/{requestId}")
     public List<Testimony> consultTestimonies(@PathVariable long requestId) {
         try {
-            return testimonys.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).collect(Collectors.toList());
+            return testimonies.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).collect(Collectors.toList());
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
