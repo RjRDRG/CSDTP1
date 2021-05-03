@@ -7,38 +7,40 @@ import com.fct.csd.common.traits.Signed;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class ReplicatedReply implements Compactable {
 
-    private Signed<ReplicaReplyBody>[] replies;
-    private Transaction[] missingEntries;
+    private List<Signed<ReplicaReplyBody>> replies;
+    private List<Transaction> missingEntries;
 
-    public ReplicatedReply(Signed<ReplicaReplyBody>[] replies, Transaction[] missingEntries) {
+    public ReplicatedReply(List<Signed<ReplicaReplyBody>> replies, List<Transaction> missingEntries) {
         this.replies = replies;
         this.missingEntries = missingEntries;
     }
 
-    public <T extends Serializable> Result<T> extractReply() {
-        Result<byte[]> result = replies[0].getData().getReply();
+    public <T> Result<T> extractReply() {
+        Result<byte[]> result = replies.get(0).getData().getReply();
         if(result.isOK())
             return Result.ok(Compactable.decompact(result.value()));
         else
             return Result.error(result.error());
     }
 
-    public Signed<ReplicaReplyBody>[] getReplies() {
+    public List<Signed<ReplicaReplyBody>> getReplies() {
         return replies;
     }
 
-    private void setReplies(Signed<ReplicaReplyBody>[] replies) {
+    private void setReplies(List<Signed<ReplicaReplyBody>> replies) {
         this.replies = replies;
     }
 
-    public Transaction[] getMissingEntries() {
+    public List<Transaction> getMissingEntries() {
         return missingEntries;
     }
 
-    private void setMissingEntries(Transaction[] missingEntries) {
+    private void setMissingEntries(List<Transaction> missingEntries) {
         this.missingEntries = missingEntries;
     }
 
@@ -46,22 +48,20 @@ public class ReplicatedReply implements Compactable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ReplicatedReply that = (ReplicatedReply) o;
-        return Arrays.equals(replies, that.replies) && Arrays.equals(missingEntries, that.missingEntries);
+        ReplicatedReply reply = (ReplicatedReply) o;
+        return replies.equals(reply.replies) && missingEntries.equals(reply.missingEntries);
     }
 
     @Override
     public int hashCode() {
-        int result = Arrays.hashCode(replies);
-        result = 31 * result + Arrays.hashCode(missingEntries);
-        return result;
+        return Objects.hash(replies, missingEntries);
     }
 
     @Override
     public String toString() {
         return "ReplicatedReply{" +
-                "replies=" + Arrays.toString(replies) +
-                ", missingEntries=" + Arrays.toString(missingEntries) +
+                "replies=" + replies +
+                ", missingEntries=" + missingEntries +
                 '}';
     }
 }

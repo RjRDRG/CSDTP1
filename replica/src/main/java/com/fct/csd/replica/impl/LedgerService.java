@@ -4,8 +4,8 @@ package com.fct.csd.replica.impl;
 import com.fct.csd.common.exception.LedgerException;
 import com.fct.csd.common.exception.LedgerExceptionInfo;
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.request.ObtainValueTokensRequest;
-import com.fct.csd.common.request.TransferValueTokensRequest;
+import com.fct.csd.common.request.ObtainRequestBody;
+import com.fct.csd.common.request.TransferRequestBody;
 import com.fct.csd.replica.repository.TransactionEntity;
 import com.fct.csd.replica.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
@@ -24,12 +24,12 @@ public class LedgerService {
         this.repository = repository;
     }
 
-    public Transaction obtainValueTokens(ObtainValueTokensRequest request) {
+    public Transaction obtainValueTokens(ObtainRequestBody request) {
         TransactionEntity t = new TransactionEntity("", request.getRecipient(),request.getAmount());
         return repository.save(t).toItem();
     }
 
-    public Transaction transferValueTokens(TransferValueTokensRequest request) {
+    public Transaction transferValueTokens(TransferRequestBody request) {
         TransactionEntity t = new TransactionEntity(request.getSender(), request.getRecipient(),request.getAmount());
         return repository.save(t).toItem();
     }

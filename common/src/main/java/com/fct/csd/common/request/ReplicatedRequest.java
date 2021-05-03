@@ -1,29 +1,29 @@
 package com.fct.csd.common.request;
 
-import java.io.Serializable;
+import com.fct.csd.common.traits.Compactable;
+
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ReplicaRequest implements Serializable {
+public class ReplicatedRequest implements Compactable {
 
     private LedgerOperation operation;
     private byte[] request;
-
     private long lastEntryId;
 
-    public ReplicaRequest(LedgerOperation operation, byte[] request, long lastEntryId) {
+    public ReplicatedRequest(LedgerOperation operation, byte[] request, long lastEntryId) {
         this.operation = operation;
         this.request = request;
         this.lastEntryId = lastEntryId;
     }
 
-    public ReplicaRequest(LedgerOperation operation, long lastEntryId) {
+    public ReplicatedRequest(LedgerOperation operation, long lastEntryId) {
         this.operation = operation;
         this.request = new byte[0];
         this.lastEntryId = lastEntryId;
     }
 
-    ReplicaRequest() {
+    ReplicatedRequest() {
     }
 
     public LedgerOperation getOperation() {
@@ -54,7 +54,7 @@ public class ReplicaRequest implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ReplicaRequest that = (ReplicaRequest) o;
+        ReplicatedRequest that = (ReplicatedRequest) o;
         return lastEntryId == that.lastEntryId && operation == that.operation && Arrays.equals(request, that.request);
     }
 

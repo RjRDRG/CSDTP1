@@ -8,8 +8,8 @@ import com.fct.csd.common.exception.LedgerExceptionInfo;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.LedgerReplicatedReply;
 import com.fct.csd.common.request.LedgerReplicatedRequest;
-import com.fct.csd.common.request.ObtainValueTokensRequest;
-import com.fct.csd.common.request.TransferValueTokensRequest;
+import com.fct.csd.common.request.ObtainRequestBody;
+import com.fct.csd.common.request.TransferRequestBody;
 import com.fct.csd.replica.repository.TransactionEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,12 +52,12 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         ).orElse(false);
 
         if(pld) {
-            log.info("Preloading " + ledgerService.transferValueTokens(new TransferValueTokensRequest("Bilbo Baggins", "Frodo Baggins", 1)));
-            log.info("Preloading " + ledgerService.transferValueTokens(new TransferValueTokensRequest("Frodo Baggins", "Gandalf", 1)));
-            log.info("Preloading " + ledgerService.transferValueTokens(new TransferValueTokensRequest("Sauron", "Gandalf", 100000)));
-            log.info("Preloading " + ledgerService.transferValueTokens(new TransferValueTokensRequest("Gandalf", "Boromir", 1)));
-            log.info("Preloading " + ledgerService.transferValueTokens(new TransferValueTokensRequest("Boromir", "Nazgul", 2)));
-            log.info("Preloading " + ledgerService.transferValueTokens(new TransferValueTokensRequest("Nazgul", "Sauron", 1)));
+            log.info("Preloading " + ledgerService.transferValueTokens(new TransferRequestBody("Bilbo Baggins", "Frodo Baggins", 1)));
+            log.info("Preloading " + ledgerService.transferValueTokens(new TransferRequestBody("Frodo Baggins", "Gandalf", 1)));
+            log.info("Preloading " + ledgerService.transferValueTokens(new TransferRequestBody("Sauron", "Gandalf", 100000)));
+            log.info("Preloading " + ledgerService.transferValueTokens(new TransferRequestBody("Gandalf", "Boromir", 1)));
+            log.info("Preloading " + ledgerService.transferValueTokens(new TransferRequestBody("Boromir", "Nazgul", 2)));
+            log.info("Preloading " + ledgerService.transferValueTokens(new TransferRequestBody("Nazgul", "Sauron", 1)));
         }
     }
 
@@ -117,15 +117,15 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             switch (replicatedRequest.getOperation()) {
 
                 case OBTAIN: {
-                    ObtainValueTokensRequest request =
-                            (ObtainValueTokensRequest) deserialize(replicatedRequest.getRequest());
+                    ObtainRequestBody request =
+                            (ObtainRequestBody) deserialize(replicatedRequest.getRequest());
                     Transaction transaction = ledgerService.obtainValueTokens(request);
                     reply = serialize(transaction);
                     break;
                 }
                 case TRANSFER: {
-                    TransferValueTokensRequest request =
-                            (TransferValueTokensRequest) deserialize(replicatedRequest.getRequest());
+                    TransferRequestBody request =
+                            (TransferRequestBody) deserialize(replicatedRequest.getRequest());
                     Transaction transaction = ledgerService.transferValueTokens(request);
                     reply = serialize(transaction);
                     break;

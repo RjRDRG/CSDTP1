@@ -9,7 +9,7 @@ package com.fct.csd.common.traits;
  *
  * @param <T> type of the result value associated with success
  */
-public interface Result<T> extends Compactable{
+public interface Result<T> extends Compactable {
 
 	enum Status{ OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_ERROR, NOT_IMPLEMENTED, NOT_AVAILABLE };
 

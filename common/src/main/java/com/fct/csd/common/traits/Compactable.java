@@ -11,7 +11,7 @@ public interface Compactable extends Serializable {
 		return SerializationUtils.serialize(this);
 	}
 	
-	static <T extends Serializable> T decompact(byte[] bytes) {
+	static <T> T decompact(byte[] bytes) {
 		return SerializationUtils.deserialize(bytes);
 	}
 	
@@ -19,7 +19,11 @@ public interface Compactable extends Serializable {
 		return Base64.getEncoder().encodeToString(this.compact());
 	}
 	
-	static <T extends Serializable> T unstringify(String string) {
+	static <T> T unstringify(String string) {
 		return decompact(Base64.getDecoder().decode(string));
+ 	}
+
+	static String stringify(byte[] bytes) {
+		return Base64.getEncoder().encodeToString(bytes);
  	}
 }

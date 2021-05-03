@@ -46,19 +46,23 @@ public class SignatureSuite implements IDigestSuite {
 		}
 	}
 	
-	public SignatureSuite(ISuiteSpecification spec) throws Exception {
+	public SignatureSuite(ISuiteSpecification spec, boolean generateKeys) throws Exception {
 		String alg = spec.getString("alg");
 		String provider = spec.getString("provider");
 		if(provider != null)
 			this.suite = Signature.getInstance(alg, provider);
 		else
 			this.suite = Signature.getInstance(alg);
-		
-		AsymmetricKeyPairGenerator keyGen = new AsymmetricKeyPairGenerator(spec.getSubSpec("keyGenerator"));
-		KeyPair keyPair = keyGen.generateKeyPair();
-		
-		privateKey = keyPair.getPrivate();
-		publicKey = keyPair.getPublic();
+
+		if(generateKeys) {
+			AsymmetricKeyPairGenerator keyGen = new AsymmetricKeyPairGenerator(spec.getSubSpec("keyGenerator"));
+			KeyPair keyPair = keyGen.generateKeyPair();
+			privateKey = keyPair.getPrivate();
+			publicKey = keyPair.getPublic();
+		} else {
+			privateKey = null;
+			publicKey = null;
+		}
 	}
 	
 	public SignatureSuite(ISuiteSpecification spec, PublicKey pubKey) throws Exception {
@@ -82,6 +86,12 @@ public class SignatureSuite implements IDigestSuite {
 
 	@Override
 	public boolean verify(byte[] data, byte[] signature) throws Exception {
+		suite.initVerify(publicKey);
+		suite.update(data);
+		return suite.verify(signature);
+	}
+
+	public boolean verify(byte[] data, byte[] signature, PublicKey publicKey) throws Exception {
 		suite.initVerify(publicKey);
 		suite.update(data);
 		return suite.verify(signature);
