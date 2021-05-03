@@ -1,6 +1,7 @@
 package com.fct.csd.replica.repository;
 
 import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.traits.Compactable;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,19 +10,21 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-public class TransactionEntity implements Serializable {
+public class TransactionEntity implements Compactable {
 
     private @Id @GeneratedValue Long id;
     private String sender;
     private String recipient;
     private double amount;
+    private byte[] hashPreviousTransaction;
 
     public TransactionEntity() {}
 
-    public TransactionEntity(String sender, String recipient, double amount) {
+    public TransactionEntity(String sender, String recipient, double amount, byte[] hashPreviousTransaction) {
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+        this.hashPreviousTransaction = hashPreviousTransaction;
     }
 
     public Long getId() {
@@ -56,8 +59,16 @@ public class TransactionEntity implements Serializable {
         this.amount = amount;
     }
 
+    public byte[] getHashPreviousTransaction() {
+        return hashPreviousTransaction;
+    }
+
+    public void setHashPreviousTransaction(byte[] hashPreviousTransaction) {
+        this.hashPreviousTransaction = hashPreviousTransaction;
+    }
+
     public Transaction toItem() {
-        return new Transaction(id, sender, recipient, amount);
+        return new Transaction(id, Compactable.unstringify(sender), Compactable.unstringify(recipient), amount, hashPreviousTransaction);
     }
 
     @Override

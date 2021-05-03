@@ -9,6 +9,7 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.reply.ReplicatedReply;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
@@ -52,7 +53,7 @@ class LedgerController {
         try {
             valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
         } catch (Exception e) {
-            throw new ServerErrorException(e.getMessage());
+            throw new ForbiddenException(e.getMessage());
         }
 
         if(!valid) throw new ForbiddenException("Invalid Signature");
@@ -63,17 +64,17 @@ class LedgerController {
                 getLastTransactionId()
         );
 
-        ReplicatedReply replicatedReply;
+        ReplicaReply replicaReply;
         try{
-            replicatedReply = ledgerProxy.invokeOrdered(replicatedRequest);
-            if(!replicatedReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicatedReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
+            replicaReply = ledgerProxy.invokeOrdered(replicatedRequest);
+            if(!replicaReply.getMissingEntries().isEmpty()) {
+                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
             }
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<Transaction> result = replicatedReply.extractReply();
+        Result<Transaction> result = replicaReply.extractReply();
         throwPossibleException(result);
 
         return result.value();
@@ -86,7 +87,7 @@ class LedgerController {
         try {
             valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
         } catch (Exception e) {
-            throw new ServerErrorException(e.getMessage());
+            throw new ForbiddenException(e.getMessage());
         }
 
         if(!valid) throw new ForbiddenException("Invalid Signature");
@@ -97,17 +98,17 @@ class LedgerController {
                 getLastTransactionId()
         );
 
-        ReplicatedReply replicatedReply;
+        ReplicaReply replicaReply;
         try{
-            replicatedReply = ledgerProxy.invokeOrdered(replicatedRequest);
-            if(!replicatedReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicatedReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
+            replicaReply = ledgerProxy.invokeOrdered(replicatedRequest);
+            if(!replicaReply.getMissingEntries().isEmpty()) {
+                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
             }
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<Transaction> result = replicatedReply.extractReply();
+        Result<Transaction> result = replicaReply.extractReply();
         throwPossibleException(result);
 
         return result.value();
@@ -122,17 +123,17 @@ class LedgerController {
                 getLastTransactionId()
         );
 
-        ReplicatedReply replicatedReply;
+        ReplicaReply replicaReply;
         try{
-            replicatedReply = ledgerProxy.invokeUnordered(replicatedRequest);
-            if(!replicatedReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicatedReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
+            replicaReply = ledgerProxy.invokeUnordered(replicatedRequest);
+            if(!replicaReply.getMissingEntries().isEmpty()) {
+                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
             }
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<Double> result = replicatedReply.extractReply();
+        Result<Double> result = replicaReply.extractReply();
         throwPossibleException(result);
 
         return result.value();
@@ -146,17 +147,17 @@ class LedgerController {
                 getLastTransactionId()
         );
 
-        ReplicatedReply replicatedReply;
+        ReplicaReply replicaReply;
         try{
-            replicatedReply = ledgerProxy.invokeUnordered(replicatedRequest);
-            if(!replicatedReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicatedReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
+            replicaReply = ledgerProxy.invokeUnordered(replicatedRequest);
+            if(!replicaReply.getMissingEntries().isEmpty()) {
+                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
             }
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<List<Transaction>> result = replicatedReply.extractReply();
+        Result<List<Transaction>> result = replicaReply.extractReply();
         throwPossibleException(result);
 
         return result.value();
@@ -171,17 +172,17 @@ class LedgerController {
                 getLastTransactionId()
         );
 
-        ReplicatedReply replicatedReply;
+        ReplicaReply replicaReply;
         try{
-            replicatedReply = ledgerProxy.invokeUnordered(replicatedRequest);
-            if(!replicatedReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicatedReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
+            replicaReply = ledgerProxy.invokeUnordered(replicatedRequest);
+            if(!replicaReply.getMissingEntries().isEmpty()) {
+                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
             }
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<List<Transaction>> result = replicatedReply.extractReply();
+        Result<List<Transaction>> result = replicaReply.extractReply();
         throwPossibleException(result);
 
         return result.value();

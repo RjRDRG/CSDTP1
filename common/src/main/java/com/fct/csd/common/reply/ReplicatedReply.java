@@ -20,14 +20,6 @@ public class ReplicatedReply implements Compactable {
         this.missingEntries = missingEntries;
     }
 
-    public <T> Result<T> extractReply() {
-        Result<byte[]> result = replies.get(0).getData().getReply();
-        if(result.isOK())
-            return Result.ok(Compactable.decompact(result.value()));
-        else
-            return Result.error(result.error());
-    }
-
     public List<Signed<ReplicaReplyBody>> getReplies() {
         return replies;
     }

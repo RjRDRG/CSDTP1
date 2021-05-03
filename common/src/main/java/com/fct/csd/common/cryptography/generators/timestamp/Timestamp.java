@@ -1,5 +1,7 @@
 package com.fct.csd.common.cryptography.generators.timestamp;
 
+import com.fct.csd.common.traits.Compactable;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -8,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-public class Timestamp implements Serializable {
+public class Timestamp implements Compactable {
 
 	private static final long serialVersionUID = 4797942026816246761L;
 	

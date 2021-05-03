@@ -18,6 +18,13 @@ class ExceptionAdvice {
     }
 
     @ResponseBody
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    String transactionNotFoundHandler(ForbiddenException ex) {
+        return ex.getMessage();
+    }
+
+    @ResponseBody
     @ExceptionHandler(ServerErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     String clientNotFoundHandler(ServerErrorException ex) {

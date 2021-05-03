@@ -10,13 +10,15 @@ import java.util.Objects;
 
 public class ReplicaReplyBody implements Compactable {
 
+    private long requestId;
     private int replicaId;
     private Timestamp timestamp;
     private LedgerOperation operation;
     private byte[] request;
     private Result<byte[]> reply;
 
-    public ReplicaReplyBody(int replicaId, Timestamp timestamp, LedgerOperation operation, byte[] request, Result<byte[]> reply) {
+    public ReplicaReplyBody(long requestId, int replicaId, Timestamp timestamp, LedgerOperation operation, byte[] request, Result<byte[]> reply) {
+        this.requestId = requestId;
         this.replicaId = replicaId;
         this.timestamp = timestamp;
         this.operation = operation;
@@ -25,6 +27,14 @@ public class ReplicaReplyBody implements Compactable {
     }
 
     public ReplicaReplyBody() {
+    }
+
+    public long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(long requestId) {
+        this.requestId = requestId;
     }
 
     public int getReplicaId() {
@@ -72,12 +82,12 @@ public class ReplicaReplyBody implements Compactable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ReplicaReplyBody that = (ReplicaReplyBody) o;
-        return replicaId == that.replicaId && timestamp.equals(that.timestamp) && operation == that.operation && Arrays.equals(request, that.request) && reply.equals(that.reply);
+        return requestId == that.requestId && replicaId == that.replicaId && timestamp.equals(that.timestamp) && operation == that.operation && Arrays.equals(request, that.request) && reply.equals(that.reply);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(replicaId, timestamp, operation, reply);
+        int result = Objects.hash(requestId, replicaId, timestamp, operation, reply);
         result = 31 * result + Arrays.hashCode(request);
         return result;
     }
@@ -85,7 +95,8 @@ public class ReplicaReplyBody implements Compactable {
     @Override
     public String toString() {
         return "ReplicaReplyBody{" +
-                "replicaId=" + replicaId +
+                "requestId=" + requestId +
+                ", replicaId=" + replicaId +
                 ", timestamp=" + timestamp +
                 ", operation=" + operation +
                 ", request=" + Arrays.toString(request) +
