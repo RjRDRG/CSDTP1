@@ -26,7 +26,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,8 +93,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     String data = new ReplicaReplyBody(
                             requestId,
-                            replicaId,
-                            Timestamp.now(),
                             LedgerOperation.BALANCE,
                             clientId,
                             result.toString()
@@ -110,8 +107,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     String data = new ReplicaReplyBody(
                             requestId,
-                            replicaId,
-                            Timestamp.now(),
                             LedgerOperation.ALL_TRANSACTIONS,
                             "",
                             result.arrayToString()
@@ -127,8 +122,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     String data = new ReplicaReplyBody(
                             requestId,
-                            replicaId,
-                            Timestamp.now(),
                             LedgerOperation.CLIENT_TRANSACTIONS,
                             clientId,
                             result.arrayToString()
@@ -143,8 +136,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     String data = new ReplicaReplyBody(
                             requestId,
-                            replicaId,
-                            Timestamp.now(),
                             replicatedRequest.getOperation(),
                             "",
                             result.toString()
@@ -162,8 +153,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
             String data = new ReplicaReplyBody(
                     requestId,
-                    replicaId,
-                    Timestamp.now(),
                     replicatedRequest.getOperation(),
                     "",
                     result.toString()
@@ -195,8 +184,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     String data = new ReplicaReplyBody(
                             requestId,
-                            replicaId,
-                            Timestamp.now(),
                             LedgerOperation.OBTAIN,
                             request.toString(),
                             result.toString()
@@ -212,8 +199,6 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     String data = new ReplicaReplyBody(
                             requestId,
-                            replicaId,
-                            Timestamp.now(),
                             LedgerOperation.TRANSFER,
                             request.toString(),
                             result.toString()
@@ -224,19 +209,40 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 default: {
-                    return dataToBytes(new ReplicaReply(
-                            requestId, null,
-                            Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name()),
-                            new ArrayList<>()
-                    ));
+                    Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
+
+                    String data = new ReplicaReplyBody(
+                            requestId,
+                            replicatedRequest.getOperation(),
+                            "",
+                            result.toString()
+                    ).toString();
+
+                    Signed<String> signature = new Signed<>(data, replyDigestSuite);
+
+                    return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
             }
         } catch (Exception exception) {
-            return dataToBytes(new ReplicaReply(
-                    requestId, null,
-                    Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage()),
-                    new ArrayList<>()
-            ));
+            exception.printStackTrace();
+
+            Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
+
+            String data = new ReplicaReplyBody(
+                    requestId,
+                    replicatedRequest.getOperation(),
+                    "",
+                    result.toString()
+            ).toString();
+
+            Signed<String> signature = null;
+            try {
+                signature = new Signed<>(data, replyDigestSuite);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
         }
     }
 

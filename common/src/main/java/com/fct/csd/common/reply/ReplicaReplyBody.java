@@ -1,6 +1,5 @@
 package com.fct.csd.common.reply;
 
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.request.LedgerOperation;
 
 import java.io.Serializable;
@@ -9,16 +8,12 @@ import java.util.Objects;
 public class ReplicaReplyBody implements Serializable {
 
     private long requestId;
-    private int replicaId;
-    private Timestamp timestamp;
     private LedgerOperation operation;
     private String request;
     private String reply;
 
-    public ReplicaReplyBody(long requestId, int replicaId, Timestamp timestamp, LedgerOperation operation, String request, String reply) {
+    public ReplicaReplyBody(long requestId, LedgerOperation operation, String request, String reply) {
         this.requestId = requestId;
-        this.replicaId = replicaId;
-        this.timestamp = timestamp;
         this.operation = operation;
         this.request = request;
         this.reply = reply;
@@ -33,22 +28,6 @@ public class ReplicaReplyBody implements Serializable {
 
     public void setRequestId(long requestId) {
         this.requestId = requestId;
-    }
-
-    public int getReplicaId() {
-        return replicaId;
-    }
-
-    public void setReplicaId(int replicaId) {
-        this.replicaId = replicaId;
-    }
-
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
     }
 
     public LedgerOperation getOperation() {
@@ -80,20 +59,18 @@ public class ReplicaReplyBody implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ReplicaReplyBody that = (ReplicaReplyBody) o;
-        return requestId == that.requestId && replicaId == that.replicaId && timestamp.equals(that.timestamp) && operation == that.operation && request.equals(that.request) && reply.equals(that.reply);
+        return requestId == that.requestId && operation == that.operation && request.equals(that.request) && reply.equals(that.reply);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, replicaId, timestamp, operation, request, reply);
+        return Objects.hash(requestId, operation, request, reply);
     }
 
     @Override
     public String toString() {
         return "ReplicaReplyBody{" +
                 "requestId=" + requestId +
-                ", replicaId=" + replicaId +
-                ", timestamp=" + timestamp +
                 ", operation=" + operation +
                 ", request='" + request + '\'' +
                 ", reply='" + reply + '\'' +
