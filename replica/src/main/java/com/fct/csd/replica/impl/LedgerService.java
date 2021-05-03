@@ -49,7 +49,7 @@ public class LedgerService {
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
                         new IniSpecification("client_id_digest_suite", CONFIG_PATH),
-                        new StoredSecrets(new KeyStoresInfo("client_id_digest_suite",CONFIG_PATH))
+                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Verify);
 
@@ -58,7 +58,7 @@ public class LedgerService {
         ISuiteConfiguration transactionChainSuiteConfiguration =
                 new SuiteConfiguration(
                         new IniSpecification("transaction_chain_digest_suite", CONFIG_PATH),
-                        new StoredSecrets(new KeyStoresInfo("transaction_chain_digest_suite",CONFIG_PATH))
+                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
         this.transactionChainDigestSuite = new FlexibleDigestSuite(transactionChainSuiteConfiguration, SignatureSuite.Mode.Digest);
     }

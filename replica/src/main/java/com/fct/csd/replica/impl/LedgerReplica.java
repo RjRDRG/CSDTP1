@@ -56,7 +56,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         ISuiteConfiguration suiteConfiguration =
                 new SuiteConfiguration(
                         new IniSpecification("reply_digest_suite", CONFIG_PATH),
-                        new StoredSecrets(new KeyStoresInfo("reply_digest_suite",CONFIG_PATH))
+                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
         this.replyDigestSuite = new FlexibleDigestSuite(suiteConfiguration, SignatureSuite.Mode.Digest);
 

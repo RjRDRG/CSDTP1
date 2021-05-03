@@ -6,6 +6,7 @@ import com.fct.csd.common.reply.ReplicaReplyBody;
 import com.fct.csd.common.traits.Compactable;
 import com.fct.csd.common.traits.Signed;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,8 +23,11 @@ public class TestimonyEntity implements Serializable {
     private int replicaId;
     private String timestamp;
     private String operation;
+    @Column(length = 5000)
     private String request;
+    @Column(length = 5000)
     private String reply;
+    @Column(length = 2000)
     private String signature;
 
     public TestimonyEntity(Signed<ReplicaReplyBody> signedReply) {

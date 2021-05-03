@@ -3,6 +3,7 @@ package com.fct.csd.replica.repository;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.traits.Compactable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -15,6 +16,7 @@ public class TransactionEntity implements Compactable {
     private String sender;
     private String recipient;
     private double amount;
+    @Column(length = 2000)
     private String hashPreviousTransaction;
 
     public TransactionEntity() {}
