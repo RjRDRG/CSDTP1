@@ -9,6 +9,11 @@ import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
+import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.request.ObtainRequestBody;
+import com.fct.csd.common.request.OrderedRequest;
+import com.fct.csd.common.request.TransferRequestBody;
+import com.fct.csd.common.traits.Signed;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +48,9 @@ public class LedgerClient {
     static String proxyPort = "8080";
 
     static class ClientCredentials {
-        private final byte[] clientId;
-        private final EncodedPublicKey clientPublicKey;
+        public final byte[] clientId;
+        public final EncodedPublicKey clientPublicKey;
+        public final SignatureSuite signatureSuite;
 
         public ClientCredentials() throws Exception {
             ISuiteConfiguration clientIdSuiteConfiguration =
@@ -52,9 +58,9 @@ public class LedgerClient {
                             new IniSpecification("client_id_digest_suite", CONFIG_PATH),
                             new StoredSecrets(new KeyStoresInfo("stores", CONFIG_PATH))
                     );
-            FlexibleDigestSuite clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Verify);
-            SignatureSuite clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), true);
-            this.clientPublicKey = clientSignatureSuite.getPublicKey();
+            FlexibleDigestSuite clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Digest);
+            this.signatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), true);
+            this.clientPublicKey = signatureSuite.getPublicKey();
             this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEnconded());
         }
     }
@@ -62,9 +68,9 @@ public class LedgerClient {
     static String manualtoString(){
         return "Available operations : \n" +
                 "O - Set the proxy url and port; Eg: 0 {https://localhost} {8080} \n" +
-                "1 - Generate client credentials [key-pair and id]; Eg: 1 {wallet-nickname} \n" +
-                "2 - Obtain tokens;  Eg: 2 {wallet-nickname} {amount}\n" +
-                "3 - Transfer tokens; Eg: 3 {wallet-nickname} {recipientId} {amount}\n" +
+                "1 - Generate client [key-pair and id]; Eg: 1 {credentials-name} \n" +
+                "2 - Obtain tokens;  Eg: 2 {credentials-name} {amount}\n" +
+                "3 - Transfer tokens; Eg: 3 {credentials-name} {recipient-credentials-name} {amount}\n" +
                 "4 - Consult balance of a certain client; Eg: 4 {clientId}\n" +
                 "5 - Consult all transactions; Eg: 5\n" +
                 "6 - Consult all transactions of a certain client; Eg: 6 {clientId}\n" +
@@ -72,11 +78,11 @@ public class LedgerClient {
                 "8 - Exit";
     }
 
+    static Map<String,ClientCredentials> credentialsMap = new HashMap<>();
+
     public static void main(String[] args) throws Exception {
 
         System.out.println(manualtoString());
-
-        Map<String,ClientCredentials> credentialsMap = new HashMap<>();
 
         while(true) {
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -93,8 +99,10 @@ public class LedgerClient {
                         credentialsMap.put(command[1], new ClientCredentials());
                         break;
                     case 2:
+                        obtainTokens(command[1], Integer.parseInt(command[2]));
                         break;
                     case 3:
+                        transferTokens(command[1], command[2], Integer.parseInt(command[3]));
                         break;
                     case 4:
                         consultBalance(command[1]);
@@ -117,6 +125,41 @@ public class LedgerClient {
             } catch (Exception exception) {
                 System.out.println(exception.getMessage());
             }
+        }
+    }
+
+    static void obtainTokens(String credentials, int amount) {
+        String uri = proxyUrl + ":" + proxyPort + "/obtain";
+
+        try {
+            ClientCredentials clientCredentials = credentialsMap.get(credentials);
+
+            Signed<ObtainRequestBody> requestBody = new Signed<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
+            OrderedRequest<ObtainRequestBody> request = new OrderedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+
+            ResponseEntity<Transaction> transaction = restTemplate().postForEntity(uri, request, Transaction.class);
+
+            System.out.println(transaction);
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    static void transferTokens(String client, String recipient, int amount) {
+        String uri = proxyUrl + ":" + proxyPort + "/obtain";
+
+        try {
+            ClientCredentials clientCredentials = credentialsMap.get(client);
+            ClientCredentials recipientCredentials = credentialsMap.get(recipient);
+
+            Signed<TransferRequestBody> requestBody = new Signed<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
+            OrderedRequest<TransferRequestBody> request = new OrderedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+
+            ResponseEntity<Transaction> transaction = restTemplate().postForEntity(uri, request, Transaction.class);
+
+            System.out.println(transaction);
+        }catch(Exception ex){
+            ex.printStackTrace();
         }
     }
 
