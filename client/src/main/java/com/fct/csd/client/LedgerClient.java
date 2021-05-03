@@ -1,6 +1,13 @@
 package com.fct.csd.client;
 
+import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
+import com.fct.csd.common.cryptography.config.IniSpecification;
+import com.fct.csd.common.cryptography.config.StoredSecrets;
+import com.fct.csd.common.cryptography.config.SuiteConfiguration;
 import com.fct.csd.common.cryptography.key.EncodedPublicKey;
+import com.fct.csd.common.cryptography.key.KeyStoresInfo;
+import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
+import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -30,18 +37,25 @@ import java.util.Objects;
 @ActiveProfiles("ssl")
 public class LedgerClient {
 
-    private static final String TRANSACTIONS = "https://localhost:8080/transactions";
-    private static final String CLIENT_BALANCE = "https://localhost:8080/balance/";
+    static final String CONFIG_PATH = "security.conf";
 
     static String proxyUrl = "https://localhost";
     static String proxyPort = "8080";
 
     static class ClientCredentials {
-        private byte[] clientId;
-        private EncodedPublicKey clientPublicKey;
+        private final byte[] clientId;
+        private final EncodedPublicKey clientPublicKey;
 
-        public ClientCredentials() {
-
+        public ClientCredentials() throws Exception {
+            ISuiteConfiguration clientIdSuiteConfiguration =
+                    new SuiteConfiguration(
+                            new IniSpecification("client_id_digest_suite", CONFIG_PATH),
+                            new StoredSecrets(new KeyStoresInfo("stores", CONFIG_PATH))
+                    );
+            FlexibleDigestSuite clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Verify);
+            SignatureSuite clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH), true);
+            this.clientPublicKey = clientSignatureSuite.getPublicKey();
+            this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEnconded());
         }
     }
 
@@ -58,7 +72,7 @@ public class LedgerClient {
                 "8 - Exit";
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
         System.out.println(manualtoString());
 
