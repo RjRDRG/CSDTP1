@@ -18,7 +18,7 @@ public class Signed<T extends Serializable> implements Serializable {
 	}
 
 	public boolean verify(IDigestSuite suite) throws Exception {
-		return suite.verify(dataToBytes(data), signature);
+		return suite.verify(data, signature);
 	}
 
 	public T extractData() {
