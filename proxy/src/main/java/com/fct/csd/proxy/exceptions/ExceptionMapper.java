@@ -11,6 +11,7 @@ public class ExceptionMapper {
 
         switch (result.error()) {
             case NOT_FOUND:
+                System.out.println("dasdsad");
                 throw new NotFoundException(result.message());
             case FORBIDDEN:
                 throw new ForbiddenException(result.message());

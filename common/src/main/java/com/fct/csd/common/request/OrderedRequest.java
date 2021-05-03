@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.bytesToString;
+
 public class OrderedRequest<T extends Serializable> implements Serializable {
     private byte[] clientId;
     private EncodedPublicKey clientPublicKey;
@@ -73,7 +75,7 @@ public class OrderedRequest<T extends Serializable> implements Serializable {
     @Override
     public String toString() {
         return "OrderedRequest{" +
-                "clientId=" + Arrays.toString(clientId) +
+                "clientId=" + bytesToString(clientId) +
                 ", clientPublicKey=" + clientPublicKey +
                 ", requestBody=" + requestBody +
                 '}';

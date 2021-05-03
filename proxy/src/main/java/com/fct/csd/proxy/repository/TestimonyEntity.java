@@ -27,7 +27,7 @@ public class TestimonyEntity implements Serializable {
 
     public TestimonyEntity(ReplicaReply reply) {
         requestId = reply.getRequestId();
-        request = reply.getSignature().getData();
+        request = reply.getSignature().extractData();
         signature = bytesToString(reply.getSignature().getSignature());
     }
 

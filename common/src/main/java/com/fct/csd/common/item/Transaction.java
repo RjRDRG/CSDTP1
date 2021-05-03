@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.bytesToString;
+
 public class Transaction implements Serializable {
 
     private long id;
@@ -83,10 +85,10 @@ public class Transaction implements Serializable {
     public String toString() {
         return "Transaction{" +
                 "id=" + id +
-                ", sender=" + Arrays.toString(sender) +
-                ", recipient=" + Arrays.toString(recipient) +
+                ", sender=" + bytesToString(sender) +
+                ", recipient=" + bytesToString(recipient) +
                 ", amount=" + amount +
-                ", hashPreviousTransaction=" + Arrays.toString(hashPreviousTransaction) +
+                ", hashPreviousTransaction=" + bytesToString(hashPreviousTransaction) +
                 '}';
     }
 }

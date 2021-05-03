@@ -1,8 +1,0 @@
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/exception/LedgerExceptionInfo.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/ObtainValueTokensRequest.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/exception/RestExceptions.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/exception/LedgerException.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/TransferValueTokensRequest.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/LedgerReplicatedRequest.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/item/Transaction.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/reply/LedgerReplicatedReply.java

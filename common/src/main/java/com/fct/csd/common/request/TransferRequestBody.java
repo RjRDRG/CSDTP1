@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.bytesToString;
+
 public class TransferRequestBody implements Serializable {
     private byte[] recipientId;
     private double amount;
@@ -50,7 +52,7 @@ public class TransferRequestBody implements Serializable {
     @Override
     public String toString() {
         return "TransferRequestBody{" +
-                "recipientId=" + Arrays.toString(recipientId) +
+                "recipientId=" + bytesToString(recipientId) +
                 ", amount=" + amount +
                 '}';
     }

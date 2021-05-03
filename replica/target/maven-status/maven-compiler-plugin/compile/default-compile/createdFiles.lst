@@ -1,6 +1,0 @@
-com/fct/csd/replica/ReplicaApplication.class
-com/fct/csd/replica/impl/LedgerReplica$1.class
-com/fct/csd/replica/repository/TransactionEntity.class
-com/fct/csd/replica/repository/TransactionRepository.class
-com/fct/csd/replica/impl/LedgerService.class
-com/fct/csd/replica/impl/LedgerReplica.class

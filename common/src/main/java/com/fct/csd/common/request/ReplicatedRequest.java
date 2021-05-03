@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.bytesToString;
+
 public class ReplicatedRequest implements Serializable {
 
     private LedgerOperation operation;
@@ -68,7 +70,7 @@ public class ReplicatedRequest implements Serializable {
     public String toString() {
         return "LedgerReplicatedRequest{" +
                 "operation=" + operation +
-                ", request=" + Arrays.toString(request) +
+                ", request=" + bytesToString(request) +
                 ", lastEntryId=" + lastEntryId +
                 '}';
     }

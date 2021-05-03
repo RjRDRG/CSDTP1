@@ -13,21 +13,28 @@ class ExceptionAdvice {
     @ResponseBody
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    String transactionNotFoundHandler(NotFoundException ex) {
-        return ex.getMessage();
+    String notFoundHandler(NotFoundException ex) {
+        return "NOT_FOUND|"+ex.getMessage();
     }
 
     @ResponseBody
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    String transactionNotFoundHandler(ForbiddenException ex) {
-        return ex.getMessage();
+    String forbiddenHandler(ForbiddenException ex) {
+        return "FORBIDDEN|"+ex.getMessage();
+    }
+
+    @ResponseBody
+    @ExceptionHandler(NotImplementedException.class)
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    String notImplementedHandler(NotImplementedException ex) {
+        return "NOT_IMPLEMENTED|"+ex.getMessage();
     }
 
     @ResponseBody
     @ExceptionHandler(ServerErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    String clientNotFoundHandler(ServerErrorException ex) {
-        return ex.getMessage();
+    String internalErrorHandler(ServerErrorException ex) {
+        return "INTERNAL_SERVER_ERROR|"+ex.getMessage();
     }
 }

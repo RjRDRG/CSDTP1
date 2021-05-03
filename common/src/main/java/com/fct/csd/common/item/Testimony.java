@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.bytesToString;
+
 public class Testimony implements Serializable {
 
     private long requestId;
@@ -74,8 +76,7 @@ public class Testimony implements Serializable {
         return "Testimony{" +
                 "requestId=" + requestId +
                 ", request='" + request + '\'' +
-                ", encodedRequest=" + Arrays.toString(encodedRequest) +
-                ", signature=" + Arrays.toString(signature) +
+                ", signature=" + bytesToString(signature) +
                 '}';
     }
 }

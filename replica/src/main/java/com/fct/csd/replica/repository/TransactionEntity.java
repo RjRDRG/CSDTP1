@@ -30,16 +30,14 @@ public class TransactionEntity implements Serializable {
         this.hashPreviousTransaction = hashPreviousTransaction;
     }
 
-    public TransactionEntity(Transaction transaction) {
-        this.id = transaction.getId();
-        this.sender = bytesToString(transaction.getSender());
-        this.recipient = bytesToString(transaction.getRecipient());
-        this.amount = transaction.getAmount();
-        this.hashPreviousTransaction = bytesToString(transaction.getHashPreviousTransaction());
-    }
-
     public Transaction toItem() {
-        return new Transaction(id, stringToBytes(sender), stringToBytes(recipient), amount, stringToBytes(hashPreviousTransaction));
+        return new Transaction(
+            id,
+            stringToBytes(sender),
+            stringToBytes(recipient),
+            amount,
+            stringToBytes(hashPreviousTransaction)
+        );
     }
 
     public Long getId() {

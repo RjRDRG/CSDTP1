@@ -1,9 +1,0 @@
-com/fct/csd/common/request/LedgerReplicatedRequest$LedgerOperation.class
-com/fct/csd/common/reply/LedgerReplicatedReply.class
-com/fct/csd/common/exception/RestExceptions.class
-com/fct/csd/common/request/LedgerReplicatedRequest.class
-com/fct/csd/common/request/TransferValueTokensRequest.class
-com/fct/csd/common/exception/LedgerExceptionInfo.class
-com/fct/csd/common/item/Transaction.class
-com/fct/csd/common/request/ObtainValueTokensRequest.class
-com/fct/csd/common/exception/LedgerException.class

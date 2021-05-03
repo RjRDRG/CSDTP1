@@ -70,12 +70,12 @@ public class LedgerService {
         ).orElse(false);
 
         if(pld) {
-            TransactionEntity t0 = new TransactionEntity(-6L, "Bilbo Baggins", "Frodo Baggins", 1, "");
-            TransactionEntity t1 = new TransactionEntity(-5L, "Frodo Baggins", "Gandalf", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t0))));
-            TransactionEntity t2 = new TransactionEntity(-4L, "Sauron", "Gandalf", 100000, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t1))));
-            TransactionEntity t3 = new TransactionEntity(-3L, "Gandalf", "Boromir", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t2))));
-            TransactionEntity t4 = new TransactionEntity(-2L, "Boromir", "Nazgul", 2, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t3))));
-            TransactionEntity t5 = new TransactionEntity(-1L, "Nazgul", "Sauron", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t4))));
+            TransactionEntity t0 = new TransactionEntity(1L, "Bilbo Baggins", "Frodo Baggins", 1, "INITIAL");
+            TransactionEntity t1 = new TransactionEntity(2L, "Frodo Baggins", "Gandalf", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t0))));
+            TransactionEntity t2 = new TransactionEntity(3L, "Sauron", "Gandalf", 100000, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t1))));
+            TransactionEntity t3 = new TransactionEntity(4L, "Gandalf", "Boromir", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t2))));
+            TransactionEntity t4 = new TransactionEntity(5L, "Boromir", "Nazgul", 2, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t3))));
+            TransactionEntity t5 = new TransactionEntity(6L, "Nazgul", "Sauron", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t4))));
             log.info("Preloading " + repository.save(t0));
             log.info("Preloading " + repository.save(t1));
             log.info("Preloading " + repository.save(t2));
@@ -100,7 +100,7 @@ public class LedgerService {
             if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
             String recipientId = bytesToString(request.getClientId());
-            ObtainRequestBody requestBody = request.getRequestBody().getData();
+            ObtainRequestBody requestBody = request.getRequestBody().extractData();
 
             TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), hashPreviousTransaction());
             return Result.ok(repository.save(t).toItem());
@@ -116,7 +116,7 @@ public class LedgerService {
 
             if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
-            TransferRequestBody requestBody = request.getRequestBody().getData();
+            TransferRequestBody requestBody = request.getRequestBody().extractData();
             String senderId = bytesToString(request.getClientId());
             String recipientId = bytesToString(requestBody.getRecipientId());
 

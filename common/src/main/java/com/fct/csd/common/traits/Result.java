@@ -1,6 +1,7 @@
 package com.fct.csd.common.traits;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static com.fct.csd.common.util.Serialization.dataToBytes;
 
@@ -45,13 +46,18 @@ public interface Result<T extends Serializable> extends Serializable {
 	String message();
 
 	Result<byte[]> encode();
-	
+
+	@Override
+	String toString();
+
+	String arrayToString();
+
 	/**
 	 * Convenience method for returning non error results of the given type
 	 * @param result of value of the result
 	 * @return the value of the result
 	 */
-	static <T extends Serializable> Result<T> ok(T result ) {
+	static <T extends Serializable> Result<T> ok(T result) {
 		return new OkResult<>(result);
 	}
 
@@ -120,6 +126,13 @@ class OkResult<T extends Serializable> implements Result<T> {
 				"result=" + result +
 				'}';
 	}
+
+	@Override
+	public String arrayToString() {
+		return "OkResult{" +
+				"result=" + Arrays.deepToString((Object[]) result) +
+				'}';
+	}
 }
 
 class ErrorResult<T extends Serializable> implements Result<T> {
@@ -163,5 +176,10 @@ class ErrorResult<T extends Serializable> implements Result<T> {
 				"error=" + error +
 				", message='" + message + '\'' +
 				'}';
+	}
+
+	@Override
+	public String arrayToString() {
+		return toString();
 	}
 }

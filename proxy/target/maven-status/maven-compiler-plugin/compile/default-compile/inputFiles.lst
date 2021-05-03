@@ -1,9 +1,0 @@
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/repository/TransactionRepository.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/exceptions/ExceptionAdvice.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/exceptions/ExceptionMapper.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/impl/LedgerProxy.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/exceptions/ServerErrorException.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/exceptions/NotFoundException.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/impl/LedgerController.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/ProxyApplication.java
-/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/repository/TransactionEntity.java

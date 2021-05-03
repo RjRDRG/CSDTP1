@@ -140,6 +140,7 @@ class LedgerController {
         }
 
         Result<Double> result = replicaReply.extractReply();
+        System.out.println(result);
         throwPossibleException(result);
 
         return result.value();
@@ -204,7 +205,7 @@ class LedgerController {
     }
 
     private long getLastTransactionId() {
-        long lastId = -1;
+        long lastId = 0L;
         List<TransactionEntity> last = ledger.findTopByOrderByIdDesc();
         if(!last.isEmpty()) lastId = last.get(0).getId();
         return lastId;
