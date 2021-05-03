@@ -20,7 +20,7 @@ public class TestimonyEntity implements Serializable {
 
     private long requestId;
 
-    private int sender;
+    private int matchedReplies;
 
     private String timestamp;
 
@@ -30,15 +30,16 @@ public class TestimonyEntity implements Serializable {
     @Column(length = 2000)
     private String signature;
 
-    public TestimonyEntity(ReplicaReply reply, int sender) {
-        requestId = reply.getRequestId();
-        timestamp = Timestamp.now().toString();
-        request = reply.getSignature().extractData();
-        signature = bytesToString(reply.getSignature().getSignature());
+    public TestimonyEntity(ReplicaReply reply, int matchedReplies) {
+        this.requestId = reply.getRequestId();
+        this.matchedReplies = matchedReplies;
+        this.timestamp = Timestamp.now().toString();
+        this.request = reply.getSignature().extractData();
+        this.signature = bytesToString(reply.getSignature().getSignature());
     }
 
     public Testimony toItem() {
-        return new Testimony(requestId, sender, request, stringToBytes(request), stringToBytes(signature));
+        return new Testimony(requestId, matchedReplies, request, stringToBytes(request), stringToBytes(signature));
     }
 
     public TestimonyEntity() {
@@ -60,6 +61,22 @@ public class TestimonyEntity implements Serializable {
         this.requestId = requestId;
     }
 
+    public int getMatchedReplies() {
+        return matchedReplies;
+    }
+
+    public void setMatchedReplies(int matchedReplies) {
+        this.matchedReplies = matchedReplies;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public String getRequest() {
         return request;
     }
@@ -76,25 +93,17 @@ public class TestimonyEntity implements Serializable {
         this.signature = signature;
     }
 
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TestimonyEntity that = (TestimonyEntity) o;
-        return requestId == that.requestId && id.equals(that.id) && timestamp.equals(that.timestamp) && request.equals(that.request) && signature.equals(that.signature);
+        return requestId == that.requestId && matchedReplies == that.matchedReplies && id.equals(that.id) && timestamp.equals(that.timestamp) && request.equals(that.request) && signature.equals(that.signature);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, requestId, timestamp, request, signature);
+        return Objects.hash(id, requestId, matchedReplies, timestamp, request, signature);
     }
 
     @Override
@@ -102,6 +111,7 @@ public class TestimonyEntity implements Serializable {
         return "TestimonyEntity{" +
                 "id=" + id +
                 ", requestId=" + requestId +
+                ", matchedReplies=" + matchedReplies +
                 ", timestamp='" + timestamp + '\'' +
                 ", request='" + request + '\'' +
                 ", signature='" + signature + '\'' +

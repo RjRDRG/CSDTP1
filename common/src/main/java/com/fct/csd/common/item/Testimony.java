@@ -9,14 +9,14 @@ import static com.fct.csd.common.util.Serialization.bytesToString;
 public class Testimony implements Serializable {
 
     private long requestId;
-    private int sender;
+    private int matchedReplies;
     private String request;
     private byte[] encodedRequest;
     private byte[] signature;
 
-    public Testimony(long requestId, int sender, String request, byte[] encodedRequest, byte[] signature) {
+    public Testimony(long requestId, int matchedReplies, String request, byte[] encodedRequest, byte[] signature) {
         this.requestId = requestId;
-        this.sender = sender;
+        this.matchedReplies = matchedReplies;
         this.request = request;
         this.encodedRequest = encodedRequest;
         this.signature = signature;
@@ -33,12 +33,12 @@ public class Testimony implements Serializable {
         this.requestId = requestId;
     }
 
-    public int getSender() {
-        return sender;
+    public int getMatchedReplies() {
+        return matchedReplies;
     }
 
-    public void setSender(int sender) {
-        this.sender = sender;
+    public void setMatchedReplies(int matchedReplies) {
+        this.matchedReplies = matchedReplies;
     }
 
     public String getRequest() {
@@ -70,12 +70,12 @@ public class Testimony implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Testimony testimony = (Testimony) o;
-        return requestId == testimony.requestId && sender == testimony.sender && Objects.equals(request, testimony.request) && Arrays.equals(encodedRequest, testimony.encodedRequest) && Arrays.equals(signature, testimony.signature);
+        return requestId == testimony.requestId && matchedReplies == testimony.matchedReplies && Objects.equals(request, testimony.request) && Arrays.equals(encodedRequest, testimony.encodedRequest) && Arrays.equals(signature, testimony.signature);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(requestId, sender, request);
+        int result = Objects.hash(requestId, matchedReplies, request);
         result = 31 * result + Arrays.hashCode(encodedRequest);
         result = 31 * result + Arrays.hashCode(signature);
         return result;
@@ -85,7 +85,7 @@ public class Testimony implements Serializable {
     public String toString() {
         return "Testimony{" +
                 "requestId=" + requestId +
-                ", sender=" + sender +
+                ", matchedReplies=" + matchedReplies +
                 ", request='" + request + '\'' +
                 ", signature=" + bytesToString(signature) +
                 '}';

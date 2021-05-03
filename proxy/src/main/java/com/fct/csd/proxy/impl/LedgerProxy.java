@@ -50,7 +50,8 @@ public class LedgerProxy extends ServiceProxy {
         @Override
         public TOMMessage extractResponse(TOMMessage[] replies, int sameContent, int lastReceived) {
             for (TOMMessage reply : replies) {
-                testimonyRepository.save(new TestimonyEntity(bytesToData(reply.getContent()), reply.getSender()));
+                if(reply!=null && reply.getContent()!=null)
+                    testimonyRepository.save(new TestimonyEntity(bytesToData(reply.getContent()), sameContent));
             }
             return replies[lastReceived];
         }

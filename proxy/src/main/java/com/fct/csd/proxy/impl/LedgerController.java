@@ -14,6 +14,7 @@ import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
+import com.fct.csd.proxy.exceptions.NotFoundException;
 import com.fct.csd.proxy.exceptions.ServerErrorException;
 import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
@@ -198,7 +199,11 @@ class LedgerController {
     @GetMapping("/testimonies/{requestId}")
     public Testimony[] consultTestimonies(@PathVariable long requestId) {
         try {
-            return testimonies.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).toArray(Testimony[]::new);
+            Testimony[] t = testimonies.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).toArray(Testimony[]::new);
+            if (t.length == 0)
+                throw new NotFoundException("Transaction Not Found");
+            else
+                return t;
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
