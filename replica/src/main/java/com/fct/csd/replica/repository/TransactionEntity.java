@@ -6,69 +6,69 @@ import com.fct.csd.common.traits.Compactable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 public class TransactionEntity implements Compactable {
 
-    private @Id @GeneratedValue Long id;
+    private @Id Long id;
     private String sender;
     private String recipient;
     private double amount;
-    private byte[] hashPreviousTransaction;
+    private String hashPreviousTransaction;
 
     public TransactionEntity() {}
 
-    public TransactionEntity(String sender, String recipient, double amount, byte[] hashPreviousTransaction) {
+    public TransactionEntity(long id, String sender, String recipient, double amount, byte[] hashPreviousTransaction) {
+        this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
-        this.hashPreviousTransaction = hashPreviousTransaction;
+        this.hashPreviousTransaction = Compactable.stringify(hashPreviousTransaction);
+    }
+
+    public Transaction toItem() {
+        return new Transaction(id, Compactable.unstringify(sender), Compactable.unstringify(recipient), amount, Compactable.unstringify(hashPreviousTransaction));
     }
 
     public Long getId() {
-        return this.id;
-    }
-
-    public String getSender() {
-        return this.sender;
-    }
-
-    public String getRecipient() {
-        return this.recipient;
-    }
-
-    public double getAmount() {
-        return amount;
+        return id;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    public void setSender(String name) {
-        this.sender = name;
+    public String getSender() {
+        return sender;
     }
 
-    public void setRecipient(String role) {
-        this.recipient = role;
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
+    }
+
+    public double getAmount() {
+        return amount;
     }
 
     public void setAmount(double amount) {
         this.amount = amount;
     }
 
-    public byte[] getHashPreviousTransaction() {
+    public String getHashPreviousTransaction() {
         return hashPreviousTransaction;
     }
 
-    public void setHashPreviousTransaction(byte[] hashPreviousTransaction) {
+    public void setHashPreviousTransaction(String hashPreviousTransaction) {
         this.hashPreviousTransaction = hashPreviousTransaction;
-    }
-
-    public Transaction toItem() {
-        return new Transaction(id, Compactable.unstringify(sender), Compactable.unstringify(recipient), amount, hashPreviousTransaction);
     }
 
     @Override
@@ -76,12 +76,12 @@ public class TransactionEntity implements Compactable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TransactionEntity that = (TransactionEntity) o;
-        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient);
+        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient) && hashPreviousTransaction.equals(that.hashPreviousTransaction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sender, recipient, amount);
+        return Objects.hash(id, sender, recipient, amount, hashPreviousTransaction);
     }
 
     @Override
@@ -91,6 +91,7 @@ public class TransactionEntity implements Compactable {
                 ", sender='" + sender + '\'' +
                 ", recipient='" + recipient + '\'' +
                 ", amount=" + amount +
+                ", hashPreviousTransaction='" + hashPreviousTransaction + '\'' +
                 '}';
     }
 }

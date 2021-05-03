@@ -30,31 +30,31 @@ public class TransactionEntity implements Serializable {
     }
 
     public Long getId() {
-        return this.id;
-    }
-
-    public String getSender() {
-        return this.sender;
-    }
-
-    public String getRecipient() {
-        return this.recipient;
-    }
-
-    public double getAmount() {
-        return amount;
+        return id;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    public void setSender(String name) {
-        this.sender = name;
+    public String getSender() {
+        return sender;
     }
 
-    public void setRecipient(String role) {
-        this.recipient = role;
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
+    }
+
+    public double getAmount() {
+        return amount;
     }
 
     public void setAmount(double amount) {
@@ -68,6 +68,7 @@ public class TransactionEntity implements Serializable {
     public void setHashPreviousTransaction(byte[] hashPreviousTransaction) {
         this.hashPreviousTransaction = hashPreviousTransaction;
     }
+
 
     @Override
     public boolean equals(Object o) {

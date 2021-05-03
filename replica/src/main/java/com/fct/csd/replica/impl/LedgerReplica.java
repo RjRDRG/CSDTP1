@@ -37,12 +37,15 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
     private static final Logger log = LoggerFactory.getLogger(LedgerReplica.class);
 
-    private final LedgerService ledgerService;
     private final Environment environment;
+
+    private int replicaId;
+
+    private final LedgerService ledgerService;
 
     private final IDigestSuite replyDigestSuite;
 
-    private int replicaId;
+    private long requestCounter;
 
     public LedgerReplica(LedgerService ledgerService, Environment environment) throws Exception {
         this.ledgerService = ledgerService;
@@ -54,6 +57,8 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                         new StoredSecrets(new KeyStoresInfo("ReplyDigestSuite","Path"))
                 );
         this.replyDigestSuite = new FlexibleDigestSuite(suiteConfiguration, SignatureSuite.Mode.Digest);
+
+        this.requestCounter = 0;
     }
 
     public void start(String[] args) {
@@ -70,6 +75,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     @Override
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
 
+        long requestId = requestCounter++;
         ReplicatedRequest replicatedRequest = Compactable.decompact(command);
 
         ReplicaReplyBody replicaReplyBody = null;
@@ -162,6 +168,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
 
+        long requestId = requestCounter++;
         ReplicatedRequest replicatedRequest = Compactable.decompact(command);
 
         ReplicaReplyBody replicaReplyBody = null;
@@ -169,7 +176,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             switch (replicatedRequest.getOperation()) {
                 case OBTAIN: {
                     OrderedRequest<ObtainRequestBody> request = Compactable.decompact(replicatedRequest.getRequest());
-                    Result<Transaction> result = ledgerService.obtainValueTokens(request);
+                    Result<Transaction> result = ledgerService.obtainValueTokens(request,requestId);
                     Result<byte[]> encodedResult;
 
                     if(result.isOK())
@@ -189,7 +196,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 }
                 case TRANSFER: {
                     OrderedRequest<TransferRequestBody> request = Compactable.decompact(replicatedRequest.getRequest());
-                    Result<Transaction> result = ledgerService.transferValueTokens(request);
+                    Result<Transaction> result = ledgerService.transferValueTokens(request,requestId);
                     Result<byte[]> encodedResult;
 
                     if(result.isOK())
@@ -234,15 +241,17 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        return serialize(ledgerService.repository.findAll());
+        Snapshot snapshot = new Snapshot(ledgerService.repository.findAll(), requestCounter);
+        return snapshot.compact();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void installSnapshot(byte[] state) {
-        List<TransactionEntity> transactions = (List<TransactionEntity>) deserialize(state);
+        Snapshot snapshot = Compactable.decompact(state);
+        List<TransactionEntity> transactions = snapshot.getEntityList();
 
-        if (transactions == null) transactions = new ArrayList<>();
+        this.requestCounter = snapshot.getRequestCounter();
 
         ledgerService.repository.deleteAll();
         ledgerService.repository.saveAll(transactions);

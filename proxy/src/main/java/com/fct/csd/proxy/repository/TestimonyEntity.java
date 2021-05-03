@@ -1,6 +1,9 @@
 package com.fct.csd.proxy.repository;
 
+import com.fct.csd.common.item.Testimony;
+import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReplyBody;
+import com.fct.csd.common.traits.Compactable;
 import com.fct.csd.common.traits.Signed;
 
 import javax.persistence.Entity;
@@ -31,6 +34,19 @@ public class TestimonyEntity implements Serializable {
         this.request = stringify(signedReply.getData().getRequest());
         this.reply = signedReply.getData().getReply().stringify();
         this.signature = stringify(signedReply.getSignature());
+    }
+
+    public Testimony toItem() {
+        return new Testimony(
+                id,
+                requestId,
+                replicaId,
+                Compactable.unstringify(timestamp),
+                Compactable.unstringify(operation),
+                Compactable.unstringify(request),
+                Compactable.unstringify(reply),
+                Compactable.unstringify(signature)
+        );
     }
 
     public TestimonyEntity() {

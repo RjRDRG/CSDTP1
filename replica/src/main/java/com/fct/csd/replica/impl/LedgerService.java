@@ -68,12 +68,12 @@ public class LedgerService {
         ).orElse(false);
 
         if(pld) {
-            TransactionEntity t0 = new TransactionEntity("Bilbo Baggins", "Frodo Baggins", 1, new byte[0]);
-            TransactionEntity t1 = new TransactionEntity("Frodo Baggins", "Gandalf", 1, transactionChainDigestSuite.digest(t0.compact()));
-            TransactionEntity t2 = new TransactionEntity("Sauron", "Gandalf", 100000, transactionChainDigestSuite.digest(t1.compact()));
-            TransactionEntity t3 = new TransactionEntity("Gandalf", "Boromir", 1, transactionChainDigestSuite.digest(t2.compact()));
-            TransactionEntity t4 = new TransactionEntity("Boromir", "Nazgul", 2, transactionChainDigestSuite.digest(t3.compact()));
-            TransactionEntity t5 = new TransactionEntity("Nazgul", "Sauron", 1, transactionChainDigestSuite.digest(t4.compact()));
+            TransactionEntity t0 = new TransactionEntity(-6, "Bilbo Baggins", "Frodo Baggins", 1, new byte[0]);
+            TransactionEntity t1 = new TransactionEntity(-5, "Frodo Baggins", "Gandalf", 1, transactionChainDigestSuite.digest(t0.compact()));
+            TransactionEntity t2 = new TransactionEntity(-4, "Sauron", "Gandalf", 100000, transactionChainDigestSuite.digest(t1.compact()));
+            TransactionEntity t3 = new TransactionEntity(-3, "Gandalf", "Boromir", 1, transactionChainDigestSuite.digest(t2.compact()));
+            TransactionEntity t4 = new TransactionEntity(-2, "Boromir", "Nazgul", 2, transactionChainDigestSuite.digest(t3.compact()));
+            TransactionEntity t5 = new TransactionEntity(-1, "Nazgul", "Sauron", 1, transactionChainDigestSuite.digest(t4.compact()));
             log.info("Preloading " + repository.save(t0));
             log.info("Preloading " + repository.save(t1));
             log.info("Preloading " + repository.save(t2));
@@ -91,7 +91,7 @@ public class LedgerService {
         return hashPreviousTransaction;
     }
 
-    public Result<Transaction> obtainValueTokens(OrderedRequest<ObtainRequestBody> request) {
+    public Result<Transaction> obtainValueTokens(OrderedRequest<ObtainRequestBody> request, long requestId) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -100,7 +100,7 @@ public class LedgerService {
             String recipientId = Compactable.stringify(request.getClientId());
             ObtainRequestBody requestBody = request.getRequestBody().getData();
 
-            TransactionEntity t = new TransactionEntity("", recipientId, requestBody.getAmount(), hashPreviousTransaction());
+            TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), hashPreviousTransaction());
             return Result.ok(repository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();
@@ -108,7 +108,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Transaction> transferValueTokens(OrderedRequest<TransferRequestBody> request) {
+    public Result<Transaction> transferValueTokens(OrderedRequest<TransferRequestBody> request, long requestId) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -118,7 +118,7 @@ public class LedgerService {
             String senderId = Compactable.stringify(request.getClientId());
             String recipientId = Compactable.stringify(requestBody.getRecipientId());
 
-            TransactionEntity t = new TransactionEntity(senderId, recipientId, requestBody.getAmount(), hashPreviousTransaction());
+            TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), hashPreviousTransaction());
             return Result.ok(repository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();

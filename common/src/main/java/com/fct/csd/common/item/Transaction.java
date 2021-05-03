@@ -2,7 +2,6 @@ package com.fct.csd.common.item;
 
 import com.fct.csd.common.traits.Compactable;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -22,7 +21,7 @@ public class Transaction implements Compactable {
         this.hashPreviousTransaction = hashPreviousTransaction;
     }
 
-    Transaction() {}
+    public Transaction() {}
 
     public long getId() {
         return id;

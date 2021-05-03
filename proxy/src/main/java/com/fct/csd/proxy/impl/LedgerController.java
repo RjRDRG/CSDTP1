@@ -8,6 +8,7 @@ import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.reply.ReplicatedReply;
@@ -15,11 +16,14 @@ import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
 import com.fct.csd.proxy.exceptions.ServerErrorException;
+import com.fct.csd.proxy.repository.TestimonyEntity;
+import com.fct.csd.proxy.repository.TestimonyRepository;
 import com.fct.csd.proxy.repository.TransactionEntity;
 import com.fct.csd.proxy.repository.TransactionRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.fct.csd.proxy.exceptions.ExceptionMapper.throwPossibleException;
@@ -30,12 +34,14 @@ class LedgerController {
 
     private final LedgerProxy ledgerProxy;
     private final TransactionRepository ledger;
+    private final TestimonyRepository testimonys;
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
 
-    LedgerController(LedgerProxy ledgerProxy, TransactionRepository ledger) throws Exception {
+    LedgerController(LedgerProxy ledgerProxy, TransactionRepository ledger, TestimonyRepository testimonys) throws Exception {
         this.ledgerProxy = ledgerProxy;
+        this.testimonys = testimonys;
         this.ledger = ledger;
         ISuiteConfiguration suiteConfiguration =
                 new SuiteConfiguration(
@@ -81,7 +87,7 @@ class LedgerController {
     }
 
     @PostMapping("/transfer")
-    public Transaction tranferValueTokens(@RequestBody OrderedRequest<TransferRequestBody> request) {
+    public Transaction transferValueTokens(@RequestBody OrderedRequest<TransferRequestBody> request) {
 
         boolean valid;
         try {
@@ -186,6 +192,15 @@ class LedgerController {
         throwPossibleException(result);
 
         return result.value();
+    }
+
+    @GetMapping("/testimonies/{requestId}")
+    public List<Testimony> consultTestimonies(@PathVariable long requestId) {
+        try {
+            return testimonys.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ServerErrorException(e.getMessage());
+        }
     }
 
     private long getLastTransactionId() {

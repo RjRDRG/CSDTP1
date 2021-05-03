@@ -10,6 +10,8 @@ public class ExceptionMapper {
         switch (result.error()) {
             case NOT_FOUND:
                 throw new NotFoundException(result.message());
+            case FORBIDDEN:
+                throw new ForbiddenException(result.message());
             case INTERNAL_ERROR:
                 throw new ServerErrorException(result.message());
         }
