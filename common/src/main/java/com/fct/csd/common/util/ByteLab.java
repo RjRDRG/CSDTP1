@@ -14,14 +14,4 @@ public class ByteLab {
 		System.arraycopy(second, 0, result, first.length, second.length);
 		return result;
 	}
-	
-	public static long bytesToInt(byte[] bytes) {
-	     return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
-	}
-	
-	public static byte[] intToBytes(long value) {
-	    byte[] bytes = new byte[Integer.BYTES];
-	    ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putLong(value);
-	    return bytes;
-	}
 }

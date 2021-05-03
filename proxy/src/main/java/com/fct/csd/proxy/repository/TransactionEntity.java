@@ -1,15 +1,15 @@
 package com.fct.csd.proxy.repository;
 
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.traits.Compactable;
+import com.fct.csd.common.util.Serialization;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Objects;
+
+import static com.fct.csd.common.util.Serialization.bytesToString;
 
 @Entity
 public class TransactionEntity implements Serializable {
@@ -25,10 +25,10 @@ public class TransactionEntity implements Serializable {
 
     public TransactionEntity(Transaction transaction) {
         this.id = transaction.getId();
-        this.sender = Compactable.stringify(transaction.getSender());
-        this.recipient = Compactable.stringify(transaction.getRecipient());
+        this.sender = bytesToString(transaction.getSender());
+        this.recipient = bytesToString(transaction.getRecipient());
         this.amount = transaction.getAmount();
-        this.hashPreviousTransaction = Compactable.stringify(transaction.getHashPreviousTransaction());
+        this.hashPreviousTransaction = bytesToString(transaction.getHashPreviousTransaction());
     }
 
     public Long getId() {

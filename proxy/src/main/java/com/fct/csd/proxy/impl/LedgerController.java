@@ -146,7 +146,7 @@ class LedgerController {
     }
 
     @GetMapping("/transactions")
-    public List<Transaction> allTransactions() {
+    public Transaction[] allTransactions() {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.ALL_TRANSACTIONS,
@@ -163,14 +163,14 @@ class LedgerController {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<List<Transaction>> result = replicaReply.extractReply();
+        Result<Transaction[]> result = replicaReply.extractReply();
         throwPossibleException(result);
 
         return result.value();
     }
 
     @GetMapping("/transactions/{clientId}")
-    public List<Transaction> clientTransactions(@PathVariable String clientId) {
+    public Transaction[] clientTransactions(@PathVariable String clientId) {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.CLIENT_TRANSACTIONS,
@@ -188,16 +188,16 @@ class LedgerController {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<List<Transaction>> result = replicaReply.extractReply();
+        Result<Transaction[]> result = replicaReply.extractReply();
         throwPossibleException(result);
 
         return result.value();
     }
 
     @GetMapping("/testimonies/{requestId}")
-    public List<Testimony> consultTestimonies(@PathVariable long requestId) {
+    public Testimony[] consultTestimonies(@PathVariable long requestId) {
         try {
-            return testimonies.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).collect(Collectors.toList());
+            return testimonies.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).toArray(Testimony[]::new);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }

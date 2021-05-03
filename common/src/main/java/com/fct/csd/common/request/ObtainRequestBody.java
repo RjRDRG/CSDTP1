@@ -1,10 +1,9 @@
 package com.fct.csd.common.request;
 
-import com.fct.csd.common.traits.Compactable;
-
+import java.io.Serializable;
 import java.util.Objects;
 
-public class ObtainRequestBody implements Compactable {
+public class ObtainRequestBody implements Serializable {
     private double amount;
 
     public ObtainRequestBody(double amount) {

@@ -3,20 +3,17 @@ package com.fct.csd.proxy.impl;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.util.Extractor;
-import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
-import com.fct.csd.common.reply.ReplicaReplyBody;
-import com.fct.csd.common.reply.ReplicatedReply;
-import com.fct.csd.common.traits.Compactable;
-import com.fct.csd.common.traits.Signed;
 import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import static com.fct.csd.common.util.Serialization.dataToBytes;
+import static com.fct.csd.common.util.Serialization.bytesToData;
 
 @Component
 public class LedgerProxy extends ServiceProxy {
@@ -31,15 +28,15 @@ public class LedgerProxy extends ServiceProxy {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Compactable> ReplicaReply invokeUnordered(T request) {
-        byte[] reply = super.invokeUnordered(request.compact());
-        return Compactable.decompact(reply);
+    public <T extends Serializable> ReplicaReply invokeUnordered(T request) {
+        byte[] reply = super.invokeUnordered(dataToBytes(request));
+        return bytesToData(reply);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Compactable> ReplicaReply invokeOrdered(T request) {
-        byte[] reply = super.invokeOrdered(request.compact());
-        return Compactable.decompact(reply);
+    public <T extends Serializable> ReplicaReply invokeOrdered(T request) {
+        byte[] reply = super.invokeOrdered(dataToBytes(request));
+        return bytesToData(reply);
     }
 
     static class ReplicatedReplyExtractor implements Extractor {
@@ -52,10 +49,9 @@ public class LedgerProxy extends ServiceProxy {
 
         @Override
         public TOMMessage extractResponse(TOMMessage[] replies, int sameContent, int lastReceived) {
-            List<ReplicaReply> replicaReplies = Arrays.stream(replies).map(r -> (ReplicaReply)Compactable.decompact(r.getContent())).collect(Collectors.toList());
-            List<Signed<ReplicaReplyBody>> signatures = replicaReplies.stream().map(ReplicaReply::getBody).collect(Collectors.toList());
-            for (Signed<ReplicaReplyBody> signature : signatures) {
-                testimonyRepository.save(new TestimonyEntity(signature));
+            ReplicaReply[] replicaReplies = Arrays.stream(replies).map(r -> (ReplicaReply) bytesToData(r.getContent())).toArray(ReplicaReply[]::new);
+            for (ReplicaReply reply : replicaReplies) {
+                testimonyRepository.save(new TestimonyEntity(reply));
             }
             return replies[lastReceived];
         }

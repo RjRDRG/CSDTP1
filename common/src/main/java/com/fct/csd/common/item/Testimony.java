@@ -1,41 +1,24 @@
 package com.fct.csd.common.item;
 
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
-import com.fct.csd.common.request.LedgerOperation;
-import com.fct.csd.common.traits.Result;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
 public class Testimony implements Serializable {
 
-    private long id;
     private long requestId;
-    private int replicaId;
-    private Timestamp timestamp;
-    private LedgerOperation operation;
-    private byte[] request;
-    private Result<byte[]> reply;
+    private String request;
+    private byte[] encodedRequest;
     private byte[] signature;
 
-    public Testimony(long id, long requestId, int replicaId, Timestamp timestamp, LedgerOperation operation, byte[] request, Result<byte[]> reply, byte[] signature) {
-        this.id = id;
+    public Testimony(long requestId, String request, byte[] encodedRequest, byte[] signature) {
         this.requestId = requestId;
-        this.replicaId = replicaId;
-        this.timestamp = timestamp;
-        this.operation = operation;
         this.request = request;
-        this.reply = reply;
+        this.encodedRequest = encodedRequest;
         this.signature = signature;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
+    public Testimony() {
     }
 
     public long getRequestId() {
@@ -46,44 +29,20 @@ public class Testimony implements Serializable {
         this.requestId = requestId;
     }
 
-    public int getReplicaId() {
-        return replicaId;
-    }
-
-    public void setReplicaId(int replicaId) {
-        this.replicaId = replicaId;
-    }
-
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public LedgerOperation getOperation() {
-        return operation;
-    }
-
-    public void setOperation(LedgerOperation operation) {
-        this.operation = operation;
-    }
-
-    public byte[] getRequest() {
+    public String getRequest() {
         return request;
     }
 
-    public void setRequest(byte[] request) {
+    public void setRequest(String request) {
         this.request = request;
     }
 
-    public Result<byte[]> getReply() {
-        return reply;
+    public byte[] getEncodedRequest() {
+        return encodedRequest;
     }
 
-    public void setReply(Result<byte[]> reply) {
-        this.reply = reply;
+    public void setEncodedRequest(byte[] encodedRequest) {
+        this.encodedRequest = encodedRequest;
     }
 
     public byte[] getSignature() {
@@ -99,13 +58,13 @@ public class Testimony implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Testimony testimony = (Testimony) o;
-        return id == testimony.id && requestId == testimony.requestId && replicaId == testimony.replicaId && timestamp.equals(testimony.timestamp) && operation == testimony.operation && Arrays.equals(request, testimony.request) && reply.equals(testimony.reply) && Arrays.equals(signature, testimony.signature);
+        return requestId == testimony.requestId && request.equals(testimony.request) && Arrays.equals(encodedRequest, testimony.encodedRequest) && Arrays.equals(signature, testimony.signature);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, requestId, replicaId, timestamp, operation, reply);
-        result = 31 * result + Arrays.hashCode(request);
+        int result = Objects.hash(requestId, request);
+        result = 31 * result + Arrays.hashCode(encodedRequest);
         result = 31 * result + Arrays.hashCode(signature);
         return result;
     }
@@ -113,13 +72,9 @@ public class Testimony implements Serializable {
     @Override
     public String toString() {
         return "Testimony{" +
-                "id=" + id +
-                ", requestId=" + requestId +
-                ", replicaId=" + replicaId +
-                ", timestamp=" + timestamp +
-                ", operation=" + operation +
-                ", request=" + Arrays.toString(request) +
-                ", reply=" + reply +
+                "requestId=" + requestId +
+                ", request='" + request + '\'' +
+                ", encodedRequest=" + Arrays.toString(encodedRequest) +
                 ", signature=" + Arrays.toString(signature) +
                 '}';
     }

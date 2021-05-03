@@ -1,11 +1,10 @@
 package com.fct.csd.common.request;
 
-import com.fct.csd.common.traits.Compactable;
-
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ReplicatedRequest implements Compactable {
+public class ReplicatedRequest implements Serializable {
 
     private LedgerOperation operation;
     private byte[] request;

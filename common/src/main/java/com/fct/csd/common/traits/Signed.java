@@ -2,7 +2,11 @@ package com.fct.csd.common.traits;
 
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 
-public class Signed<T extends Compactable> implements Compactable {
+import java.io.Serializable;
+
+import static com.fct.csd.common.util.Serialization.dataToBytes;
+
+public class Signed<T extends Serializable> implements Serializable {
 	private static final long serialVersionUID = -7492394231279641146L;
 
 	T data;
@@ -10,11 +14,11 @@ public class Signed<T extends Compactable> implements Compactable {
 
 	public Signed(T data, IDigestSuite suite) throws Exception {
 		this.data = data;
-		this.signature = suite.digest(data.compact());
+		this.signature = suite.digest(dataToBytes(data));
 	}
 
 	public boolean verify(IDigestSuite suite) throws Exception {
-		return suite.verify(data.compact(), signature);
+		return suite.verify(dataToBytes(data), signature);
 	}
 
 	Signed() {

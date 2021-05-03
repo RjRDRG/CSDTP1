@@ -13,7 +13,6 @@ import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.ObtainRequestBody;
 import com.fct.csd.common.request.OrderedRequest;
 import com.fct.csd.common.request.TransferRequestBody;
-import com.fct.csd.common.traits.Compactable;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.replica.repository.TransactionEntity;
 import com.fct.csd.replica.repository.TransactionRepository;
@@ -25,7 +24,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static com.fct.csd.common.util.Serialization.*;
 
 @Service
 public class LedgerService {
@@ -70,12 +70,12 @@ public class LedgerService {
         ).orElse(false);
 
         if(pld) {
-            TransactionEntity t0 = new TransactionEntity(-6, "Bilbo Baggins", "Frodo Baggins", 1, new byte[0]);
-            TransactionEntity t1 = new TransactionEntity(-5, "Frodo Baggins", "Gandalf", 1, transactionChainDigestSuite.digest(t0.compact()));
-            TransactionEntity t2 = new TransactionEntity(-4, "Sauron", "Gandalf", 100000, transactionChainDigestSuite.digest(t1.compact()));
-            TransactionEntity t3 = new TransactionEntity(-3, "Gandalf", "Boromir", 1, transactionChainDigestSuite.digest(t2.compact()));
-            TransactionEntity t4 = new TransactionEntity(-2, "Boromir", "Nazgul", 2, transactionChainDigestSuite.digest(t3.compact()));
-            TransactionEntity t5 = new TransactionEntity(-1, "Nazgul", "Sauron", 1, transactionChainDigestSuite.digest(t4.compact()));
+            TransactionEntity t0 = new TransactionEntity(-6L, "Bilbo Baggins", "Frodo Baggins", 1, "");
+            TransactionEntity t1 = new TransactionEntity(-5L, "Frodo Baggins", "Gandalf", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t0))));
+            TransactionEntity t2 = new TransactionEntity(-4L, "Sauron", "Gandalf", 100000, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t1))));
+            TransactionEntity t3 = new TransactionEntity(-3L, "Gandalf", "Boromir", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t2))));
+            TransactionEntity t4 = new TransactionEntity(-2L, "Boromir", "Nazgul", 2, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t3))));
+            TransactionEntity t5 = new TransactionEntity(-1L, "Nazgul", "Sauron", 1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t4))));
             log.info("Preloading " + repository.save(t0));
             log.info("Preloading " + repository.save(t1));
             log.info("Preloading " + repository.save(t2));
@@ -85,12 +85,12 @@ public class LedgerService {
         }
     }
 
-    private byte[] hashPreviousTransaction() throws Exception {
+    private String hashPreviousTransaction() throws Exception {
         List<TransactionEntity> previous = repository.findTopByOrderByIdDesc();
         byte[] hashPreviousTransaction = new byte[0];
         if (!previous.isEmpty())
-            hashPreviousTransaction = transactionChainDigestSuite.digest(previous.get(0).compact());
-        return hashPreviousTransaction;
+            hashPreviousTransaction = transactionChainDigestSuite.digest(dataToBytes(previous.get(0)));
+        return bytesToString(hashPreviousTransaction);
     }
 
     public Result<Transaction> obtainValueTokens(OrderedRequest<ObtainRequestBody> request, long requestId) {
@@ -99,7 +99,7 @@ public class LedgerService {
 
             if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
-            String recipientId = Compactable.stringify(request.getClientId());
+            String recipientId = bytesToString(request.getClientId());
             ObtainRequestBody requestBody = request.getRequestBody().getData();
 
             TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), hashPreviousTransaction());
@@ -117,8 +117,8 @@ public class LedgerService {
             if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
             TransferRequestBody requestBody = request.getRequestBody().getData();
-            String senderId = Compactable.stringify(request.getClientId());
-            String recipientId = Compactable.stringify(requestBody.getRecipientId());
+            String senderId = bytesToString(request.getClientId());
+            String recipientId = bytesToString(requestBody.getRecipientId());
 
             TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), hashPreviousTransaction());
             return Result.ok(repository.save(t).toItem());
@@ -152,23 +152,23 @@ public class LedgerService {
         }
     }
 
-    public Result<List<Transaction>> allTransactions() {
+    public Result<Transaction[]> allTransactions() {
         try {
-            return Result.ok(repository.findAll().stream().map(TransactionEntity::toItem).collect(Collectors.toList()));
+            return Result.ok(repository.findAll().stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
         }
     }
 
-    public Result<List<Transaction>> clientTransactions(String clientId) {
+    public Result<Transaction[]> clientTransactions(String clientId) {
         try {
             List<TransactionEntity> transactions = repository.findBySenderOrRecipient(clientId, clientId);
 
             if (transactions.isEmpty())
                 return Result.error(Result.Status.NOT_FOUND, "Client not found");
 
-            return Result.ok(transactions.stream().map(TransactionEntity::toItem).collect(Collectors.toList()));
+            return Result.ok(transactions.stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());

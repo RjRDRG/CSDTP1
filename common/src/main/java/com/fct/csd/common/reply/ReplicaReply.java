@@ -1,41 +1,60 @@
 package com.fct.csd.common.reply;
 
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.traits.Compactable;
+import com.fct.csd.common.util.Serialization;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.common.traits.Signed;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public class ReplicaReply implements Compactable {
+public class ReplicaReply implements Serializable {
 
-    private Signed<ReplicaReplyBody> body;
+    private long requestId;
+    private Signed<String> signature;
+    private Result<byte[]> encodedResult;
     private List<Transaction> missingEntries;
 
-    public ReplicaReply(Signed<ReplicaReplyBody> body, List<Transaction> missingEntries) {
-        this.body = body;
-        this.missingEntries = missingEntries;
+    public <T extends Serializable> Result<T> extractReply() {
+        if(encodedResult.isOK())
+            return Result.ok((T)Serialization.bytesToData(encodedResult.value()));
+        else
+            return Result.error(encodedResult.error());
     }
 
-    public <T> Result<T> extractReply() {
-        Result<byte[]> result = body.getData().getReply();
-        if(result.isOK())
-            return Result.ok(Compactable.decompact(result.value()));
-        else
-            return Result.error(result.error());
+    public ReplicaReply(long requestId, Signed<String> signature, Result<byte[]> encodedResult, List<Transaction> missingEntries) {
+        this.requestId = requestId;
+        this.signature = signature;
+        this.encodedResult = encodedResult;
+        this.missingEntries = missingEntries;
     }
 
     public ReplicaReply() {
     }
 
-    public Signed<ReplicaReplyBody> getBody() {
-        return body;
+    public long getRequestId() {
+        return requestId;
     }
 
-    public void setBody(Signed<ReplicaReplyBody> body) {
-        this.body = body;
+    public void setRequestId(long requestId) {
+        this.requestId = requestId;
+    }
+
+    public Signed<String> getSignature() {
+        return signature;
+    }
+
+    public void setSignature(Signed<String> signature) {
+        this.signature = signature;
+    }
+
+    public Result<byte[]> getEncodedResult() {
+        return encodedResult;
+    }
+
+    public void setEncodedResult(Result<byte[]> encodedResult) {
+        this.encodedResult = encodedResult;
     }
 
     public List<Transaction> getMissingEntries() {
@@ -50,19 +69,21 @@ public class ReplicaReply implements Compactable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ReplicaReply that = (ReplicaReply) o;
-        return body.equals(that.body) && missingEntries.equals(that.missingEntries);
+        ReplicaReply reply = (ReplicaReply) o;
+        return requestId == reply.requestId && signature.equals(reply.signature) && encodedResult.equals(reply.encodedResult) && missingEntries.equals(reply.missingEntries);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(body, missingEntries);
+        return Objects.hash(requestId, signature, encodedResult, missingEntries);
     }
 
     @Override
     public String toString() {
         return "ReplicaReply{" +
-                "body=" + body +
+                "requestId=" + requestId +
+                ", signature=" + signature +
+                ", encodedResult=" + encodedResult +
                 ", missingEntries=" + missingEntries +
                 '}';
     }

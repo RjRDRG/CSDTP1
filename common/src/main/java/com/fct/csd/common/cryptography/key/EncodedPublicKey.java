@@ -1,15 +1,13 @@
 package com.fct.csd.common.cryptography.key;
 
-import com.fct.csd.common.traits.Compactable;
-
-import java.security.Key;
+import java.io.Serializable;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class EncodedPublicKey implements Compactable {
+public class EncodedPublicKey implements Serializable {
 	private static final long serialVersionUID = -1440213254532977043L;
 	
 	byte[] enconded;

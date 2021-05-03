@@ -1,12 +1,12 @@
 package com.fct.csd.replica.impl;
 
-import com.fct.csd.common.traits.Compactable;
 import com.fct.csd.replica.repository.TransactionEntity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public class Snapshot implements Compactable {
+public class Snapshot implements Serializable {
     private List<TransactionEntity> entityList;
     private long requestCounter;
 

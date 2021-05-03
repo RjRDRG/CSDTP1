@@ -1,16 +1,17 @@
 package com.fct.csd.replica.repository;
 
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.traits.Compactable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.*;
+
 @Entity
-public class TransactionEntity implements Compactable {
+public class TransactionEntity implements Serializable {
 
     private @Id Long id;
     private String sender;
@@ -21,16 +22,24 @@ public class TransactionEntity implements Compactable {
 
     public TransactionEntity() {}
 
-    public TransactionEntity(long id, String sender, String recipient, double amount, byte[] hashPreviousTransaction) {
+    public TransactionEntity(Long id, String sender, String recipient, double amount, String hashPreviousTransaction) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
-        this.hashPreviousTransaction = Compactable.stringify(hashPreviousTransaction);
+        this.hashPreviousTransaction = hashPreviousTransaction;
+    }
+
+    public TransactionEntity(Transaction transaction) {
+        this.id = transaction.getId();
+        this.sender = bytesToString(transaction.getSender());
+        this.recipient = bytesToString(transaction.getRecipient());
+        this.amount = transaction.getAmount();
+        this.hashPreviousTransaction = bytesToString(transaction.getHashPreviousTransaction());
     }
 
     public Transaction toItem() {
-        return new Transaction(id, Compactable.unstringify(sender), Compactable.unstringify(recipient), amount, Compactable.unstringify(hashPreviousTransaction));
+        return new Transaction(id, stringToBytes(sender), stringToBytes(recipient), amount, stringToBytes(hashPreviousTransaction));
     }
 
     public Long getId() {

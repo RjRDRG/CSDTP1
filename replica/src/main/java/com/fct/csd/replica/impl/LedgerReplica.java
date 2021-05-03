@@ -16,7 +16,7 @@ import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.reply.ReplicaReplyBody;
 import com.fct.csd.common.request.*;
-import com.fct.csd.common.traits.Compactable;
+import com.fct.csd.common.util.Serialization;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.common.traits.Signed;
 import com.fct.csd.replica.repository.TransactionEntity;
@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.util.SerializationUtils.deserialize;
-import static org.springframework.util.SerializationUtils.serialize;
+import static com.fct.csd.common.util.Serialization.dataToBytes;
+import static com.fct.csd.common.util.Serialization.bytesToData;
 
 @Component
 public class LedgerReplica extends DefaultSingleRecoverable {
@@ -78,179 +78,147 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
 
         long requestId = requestCounter++;
-        ReplicatedRequest replicatedRequest = Compactable.decompact(command);
+        ReplicatedRequest replicatedRequest = Serialization.bytesToData(command);
 
-        ReplicaReplyBody replicaReplyBody = null;
+        ReplicaReply reply;
+
         try {
             switch (replicatedRequest.getOperation()) {
                 case BALANCE: {
-                    String clientId = (String) deserialize(replicatedRequest.getRequest());
+                    String clientId = bytesToData(replicatedRequest.getRequest());
                     Result<Double> result = ledgerService.consultBalance(clientId);
-                    Result<byte[]> encodedResult;
 
-                    if(result.isOK())
-                        encodedResult = Result.ok(serialize(result.value()));
-                    else
-                        encodedResult = Result.error(result.error(),result.message());
-
-                    replicaReplyBody = new ReplicaReplyBody(
+                    String data = new ReplicaReplyBody(
                             requestId,
                             replicaId,
                             Timestamp.now(),
                             LedgerOperation.BALANCE,
-                            command,
-                            encodedResult
-                    );
-                    break;
+                            clientId,
+                            result.toString()
+                    ).toString();
+
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+
+                    return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 case ALL_TRANSACTIONS: {
-                    Result<List<Transaction>> result = ledgerService.allTransactions();
-                    Result<byte[]> encodedResult;
+                    Result<Transaction[]> result = ledgerService.allTransactions();
 
-                    if(result.isOK())
-                        encodedResult = Result.ok(serialize(result.value()));
-                    else
-                        encodedResult = Result.error(result.error(),result.message());
-
-                    replicaReplyBody = new ReplicaReplyBody(
+                    String data = new ReplicaReplyBody(
                             requestId,
                             replicaId,
                             Timestamp.now(),
                             LedgerOperation.ALL_TRANSACTIONS,
-                            command,
-                            encodedResult
-                    );
-                    break;
+                            "",
+                            result.toString()
+                    ).toString();
+
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+
+                    return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 case CLIENT_TRANSACTIONS: {
-                    String clientId = (String) deserialize(replicatedRequest.getRequest());
-                    Result<List<Transaction>> result = ledgerService.clientTransactions(clientId);
-                    Result<byte[]> encodedResult;
+                    String clientId = bytesToData(replicatedRequest.getRequest());
+                    Result<Transaction[]> result = ledgerService.clientTransactions(clientId);
 
-                    if(result.isOK())
-                        encodedResult = Result.ok(serialize(result.value()));
-                    else
-                        encodedResult = Result.error(result.error(),result.message());
-
-                    replicaReplyBody = new ReplicaReplyBody(
+                    String data = new ReplicaReplyBody(
                             requestId,
                             replicaId,
                             Timestamp.now(),
                             LedgerOperation.CLIENT_TRANSACTIONS,
-                            command,
-                            encodedResult
-                    );
-                    break;
+                            clientId,
+                            result.toString()
+                    ).toString();
+
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+
+                    return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
+                }
+                default: {
+                    return dataToBytes(new ReplicaReply(
+                            requestId, null,
+                            Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name()),
+                            new ArrayList<>()
+                    ));
                 }
             }
         } catch (Exception exception) {
-            replicaReplyBody = new ReplicaReplyBody(
-                    requestId,
-                    replicaId,
-                    Timestamp.now(),
-                    replicatedRequest.getOperation(),
-                    command,
-                    Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage())
-            );
+            return dataToBytes(new ReplicaReply(
+                    requestId, null,
+                    Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage()),
+                    new ArrayList<>()
+            ));
         }
-
-        Signed<ReplicaReplyBody> signedReply = null;
-        try {
-            assert replicaReplyBody != null;
-            signedReply = new Signed<>(replicaReplyBody, replyDigestSuite);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-
-        ReplicaReply replicaReply = new ReplicaReply(signedReply, getRecentTransactions(replicatedRequest.getLastTransactionId()));
-
-        return replicaReply.compact();
     }
 
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
 
         long requestId = requestCounter++;
-        ReplicatedRequest replicatedRequest = Compactable.decompact(command);
+        ReplicatedRequest replicatedRequest = bytesToData(command);
 
-        ReplicaReplyBody replicaReplyBody = null;
         try {
             switch (replicatedRequest.getOperation()) {
                 case OBTAIN: {
-                    OrderedRequest<ObtainRequestBody> request = Compactable.decompact(replicatedRequest.getRequest());
+                    OrderedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction> result = ledgerService.obtainValueTokens(request,requestId);
-                    Result<byte[]> encodedResult;
 
-                    if(result.isOK())
-                        encodedResult = Result.ok(serialize(result.value()));
-                    else
-                        encodedResult = Result.error(result.error(),result.message());
-
-                    replicaReplyBody = new ReplicaReplyBody(
+                    String data = new ReplicaReplyBody(
                             requestId,
                             replicaId,
                             Timestamp.now(),
                             LedgerOperation.OBTAIN,
-                            command,
-                            encodedResult
-                    );
-                    break;
+                            request.toString(),
+                            result.toString()
+                    ).toString();
+
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+
+                    return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 case TRANSFER: {
-                    OrderedRequest<TransferRequestBody> request = Compactable.decompact(replicatedRequest.getRequest());
+                    OrderedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction> result = ledgerService.transferValueTokens(request,requestId);
-                    Result<byte[]> encodedResult;
 
-                    if(result.isOK())
-                        encodedResult = Result.ok(serialize(result.value()));
-                    else
-                        encodedResult = Result.error(result.error(),result.message());
-
-                    replicaReplyBody = new ReplicaReplyBody(
+                    String data = new ReplicaReplyBody(
                             requestId,
                             replicaId,
                             Timestamp.now(),
                             LedgerOperation.TRANSFER,
-                            command,
-                            encodedResult
-                    );
-                    break;
+                            request.toString(),
+                            result.toString()
+                    ).toString();
+
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+
+                    return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
+                }
+                default: {
+                    return dataToBytes(new ReplicaReply(
+                            requestId, null,
+                            Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name()),
+                            new ArrayList<>()
+                    ));
                 }
             }
         } catch (Exception exception) {
-            replicaReplyBody = new ReplicaReplyBody(
-                    requestId,
-                    replicaId,
-                    Timestamp.now(),
-                    replicatedRequest.getOperation(),
-                    command,
-                    Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage())
-            );
+            return dataToBytes(new ReplicaReply(
+                    requestId, null,
+                    Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage()),
+                    new ArrayList<>()
+            ));
         }
-
-        Signed<ReplicaReplyBody> signedReply = null;
-        try {
-            assert replicaReplyBody != null;
-            signedReply = new Signed<>(replicaReplyBody, replyDigestSuite);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-
-        ReplicaReply replicaReply = new ReplicaReply(signedReply, getRecentTransactions(replicatedRequest.getLastTransactionId()));
-
-        return replicaReply.compact();
     }
 
     @Override
     public byte[] getSnapshot() {
-        Snapshot snapshot = new Snapshot(ledgerService.repository.findAll(), requestCounter);
-        return snapshot.compact();
+        return dataToBytes(new Snapshot(ledgerService.repository.findAll(), requestCounter));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void installSnapshot(byte[] state) {
-        Snapshot snapshot = Compactable.decompact(state);
+        Snapshot snapshot = bytesToData(state);
         List<TransactionEntity> transactions = snapshot.getEntityList();
 
         this.requestCounter = snapshot.getRequestCounter();

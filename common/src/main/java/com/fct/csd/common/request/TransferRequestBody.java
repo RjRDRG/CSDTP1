@@ -1,11 +1,10 @@
 package com.fct.csd.common.request;
 
-import com.fct.csd.common.traits.Compactable;
-
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class TransferRequestBody implements Compactable {
+public class TransferRequestBody implements Serializable {
     private byte[] recipientId;
     private double amount;
 
@@ -50,7 +49,7 @@ public class TransferRequestBody implements Compactable {
 
     @Override
     public String toString() {
-        return "TransferValueTokensRequest{" +
+        return "TransferRequestBody{" +
                 "recipientId=" + Arrays.toString(recipientId) +
                 ", amount=" + amount +
                 '}';

@@ -1,8 +1,8 @@
 package com.fct.csd.common.cryptography.generators.nonce;
 
-import com.fct.csd.common.traits.Compactable;
+import java.io.Serializable;
 
-public interface INonce extends Compactable {
+public interface INonce extends Serializable {
 	INonce increment();
 	boolean prior(INonce other);
 	String toString();

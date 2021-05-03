@@ -2,22 +2,20 @@ package com.fct.csd.common.reply;
 
 import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.request.LedgerOperation;
-import com.fct.csd.common.traits.Compactable;
-import com.fct.csd.common.traits.Result;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class ReplicaReplyBody implements Compactable {
+public class ReplicaReplyBody implements Serializable {
 
     private long requestId;
     private int replicaId;
     private Timestamp timestamp;
     private LedgerOperation operation;
-    private byte[] request;
-    private Result<byte[]> reply;
+    private String request;
+    private String reply;
 
-    public ReplicaReplyBody(long requestId, int replicaId, Timestamp timestamp, LedgerOperation operation, byte[] request, Result<byte[]> reply) {
+    public ReplicaReplyBody(long requestId, int replicaId, Timestamp timestamp, LedgerOperation operation, String request, String reply) {
         this.requestId = requestId;
         this.replicaId = replicaId;
         this.timestamp = timestamp;
@@ -61,19 +59,19 @@ public class ReplicaReplyBody implements Compactable {
         this.operation = operation;
     }
 
-    public byte[] getRequest() {
+    public String getRequest() {
         return request;
     }
 
-    public void setRequest(byte[] request) {
+    public void setRequest(String request) {
         this.request = request;
     }
 
-    public Result<byte[]> getReply() {
+    public String getReply() {
         return reply;
     }
 
-    public void setReply(Result<byte[]> reply) {
+    public void setReply(String reply) {
         this.reply = reply;
     }
 
@@ -82,14 +80,12 @@ public class ReplicaReplyBody implements Compactable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ReplicaReplyBody that = (ReplicaReplyBody) o;
-        return requestId == that.requestId && replicaId == that.replicaId && timestamp.equals(that.timestamp) && operation == that.operation && Arrays.equals(request, that.request) && reply.equals(that.reply);
+        return requestId == that.requestId && replicaId == that.replicaId && timestamp.equals(that.timestamp) && operation == that.operation && request.equals(that.request) && reply.equals(that.reply);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(requestId, replicaId, timestamp, operation, reply);
-        result = 31 * result + Arrays.hashCode(request);
-        return result;
+        return Objects.hash(requestId, replicaId, timestamp, operation, request, reply);
     }
 
     @Override
@@ -99,8 +95,8 @@ public class ReplicaReplyBody implements Compactable {
                 ", replicaId=" + replicaId +
                 ", timestamp=" + timestamp +
                 ", operation=" + operation +
-                ", request=" + Arrays.toString(request) +
-                ", reply=" + reply +
+                ", request='" + request + '\'' +
+                ", reply='" + reply + '\'' +
                 '}';
     }
 }

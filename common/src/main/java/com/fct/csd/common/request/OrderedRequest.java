@@ -3,13 +3,13 @@ package com.fct.csd.common.request;
 import com.fct.csd.common.cryptography.key.EncodedPublicKey;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
-import com.fct.csd.common.traits.Compactable;
 import com.fct.csd.common.traits.Signed;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class OrderedRequest<T extends Compactable> implements Compactable{
+public class OrderedRequest<T extends Serializable> implements Serializable {
     private byte[] clientId;
     private EncodedPublicKey clientPublicKey;
     private Signed<T> requestBody;
@@ -25,7 +25,7 @@ public class OrderedRequest<T extends Compactable> implements Compactable{
     }
 
     public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {
-        return signatureSuite.verify(requestBody.getData().compact(), requestBody.getSignature(), clientPublicKey.toPublicKey());
+        return requestBody.verify(signatureSuite);
     }
 
     public OrderedRequest() {
