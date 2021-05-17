@@ -164,11 +164,12 @@ class LedgerController {
         return result.value();
     }
 
-    @GetMapping("/transactions")
-    public Transaction[] allTransactions() {
+    @PostMapping("/transactions")
+    public Transaction[] allTransactions(@RequestBody AllTransactionsRequestBody request) {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.ALL_TRANSACTIONS,
+                dataToBytes(request),
                 getLastTransactionId()
         );
 

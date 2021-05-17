@@ -11,10 +11,7 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.request.ConsultBalanceRequestBody;
-import com.fct.csd.common.request.ObtainRequestBody;
-import com.fct.csd.common.request.AuthenticatedRequest;
-import com.fct.csd.common.request.TransferRequestBody;
+import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.replica.repository.TransactionEntity;
 import com.fct.csd.replica.repository.TransactionRepository;
@@ -25,6 +22,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -160,9 +159,17 @@ public class LedgerService {
         }
     }
 
-    public Result<Transaction[]> allTransactions() {
+    public Result<Transaction[]> allTransactions(AllTransactionsRequestBody request) {
         try {
-            return Result.ok(repository.findAll().stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
+            ZonedDateTime initDate = ZonedDateTime.parse(request.getInitDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            ZonedDateTime endDate = ZonedDateTime.parse(request.getEndDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            return Result.ok(repository.findAll().stream()
+                    .filter(te-> {
+                        ZonedDateTime date = ZonedDateTime.parse(te.getDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                        return date.isAfter(initDate) && date.isBefore(endDate);
+                    })
+                    .map(TransactionEntity::toItem).toArray(Transaction[]::new)
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());

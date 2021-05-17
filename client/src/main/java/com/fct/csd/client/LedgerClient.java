@@ -13,10 +13,7 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.request.ConsultBalanceRequestBody;
-import com.fct.csd.common.request.ObtainRequestBody;
-import com.fct.csd.common.request.AuthenticatedRequest;
-import com.fct.csd.common.request.TransferRequestBody;
+import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Signed;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -37,6 +34,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.security.KeyStore;
 import java.security.Security;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,10 +88,10 @@ public class LedgerClient {
                 "a - Obtain tokens;  Eg: a {wallet_id} {amount}\n" +
                 "b - Transfer tokens; Eg: b {wallet_id} {recipient_wallet_id} {amount}\n" +
                 "c - Consult balance of a certain client; Eg: c {wallet_id}\n" +
-                "d - Consult all transactions; Eg: d\n" +
+                "d - Consult all transactions; Eg: d {seconds_from_current_date} {seconds_from_current_date} : d 10 9\n" +
                 "e - Consult all transactions of a certain client; Eg: e {wallet_id}\n" +
                 "E - Consult all transactions of a certain client; Eg: E {client_id}\n" +
-                "f - Consult all transaction events; Eg: f {transaction_id}\n" +
+                "f - Consult all events of transaction; Eg: f {transaction_id}\n" +
                 "z - Exit";
     }
 
@@ -130,7 +129,7 @@ public class LedgerClient {
                         consultBalance(command[1]);
                         break;
                     case 'd':
-                        allTransactions();
+                        allTransactions(Integer.parseInt(command[1]), Integer.parseInt(command[2]));
                         break;
                     case 'e':
                         clientTransactions(credentialsMap.get(command[1]).getUrlSafeClientId());
@@ -205,12 +204,17 @@ public class LedgerClient {
         }
     }
 
-    static void allTransactions(){
+    static void allTransactions(int initSeconds, int endSeconds){
         String uri = proxyUrl + ":" + proxyPort + "/transactions";
 
         try {
-            Transaction[] result = restTemplate().getForObject(uri, Transaction[].class);
-            System.out.println(Arrays.deepToString(result));
+            String initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            String endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            AllTransactionsRequestBody request = new AllTransactionsRequestBody(initDate,endDate);
+
+            ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
+
+            System.out.println(Arrays.deepToString(transactions.getBody()));
         }catch(Exception ex){
             ex.printStackTrace();
         }

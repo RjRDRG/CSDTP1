@@ -107,7 +107,8 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 case ALL_TRANSACTIONS: {
-                    Result<Transaction[]> result = ledgerService.allTransactions();
+                    AllTransactionsRequestBody request = bytesToData(replicatedRequest.getRequest());
+                    Result<Transaction[]> result = ledgerService.allTransactions(request);
 
                     String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.ALL_TRANSACTIONS,
