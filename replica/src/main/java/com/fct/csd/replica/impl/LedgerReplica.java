@@ -103,7 +103,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             result
                     ));
 
-                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -116,7 +116,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             result
                     ));
 
-                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -130,7 +130,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             result
                     ));
 
-                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -143,7 +143,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             result
                     ));
 
-                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -166,7 +166,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
             Signed<String> signature = null;
             try {
-                signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                signature = new Signed<>(data,replyDigestSuite);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -194,7 +194,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             result
                     ));
 
-                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -208,7 +208,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             result
                     ));
 
-                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -221,7 +221,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             result
                     ));
 
-                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -244,7 +244,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
             Signed<String> signature = null;
             try {
-                signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
+                signature = new Signed<>(data,replyDigestSuite);
             } catch (Exception e) {
                 e.printStackTrace();
             }

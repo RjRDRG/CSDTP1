@@ -105,7 +105,7 @@ class LedgerController {
 
         if(!valid) throw new ForbiddenException("Invalid Signature");
 
-        if(request.getRequestBody().extractData().getAmount()<0) throw new BadRequestException("Amount must be positive");
+        if(request.getRequestBody().getData().getAmount()<0) throw new BadRequestException("Amount must be positive");
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.TRANSFER,

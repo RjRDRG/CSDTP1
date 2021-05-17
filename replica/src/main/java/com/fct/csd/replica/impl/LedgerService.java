@@ -101,7 +101,7 @@ public class LedgerService {
             if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
             String recipientId = bytesToString(request.getClientId());
-            ObtainRequestBody requestBody = request.getRequestBody().extractData();
+            ObtainRequestBody requestBody = request.getRequestBody().getData();
 
             TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), date.toString(), hashPreviousTransaction());
             return Result.ok(repository.save(t).toItem());
@@ -117,7 +117,7 @@ public class LedgerService {
 
             if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
-            TransferRequestBody requestBody = request.getRequestBody().extractData();
+            TransferRequestBody requestBody = request.getRequestBody().getData();
             String senderId = bytesToString(request.getClientId());
             String recipientId = bytesToString(requestBody.getRecipientId());
 
