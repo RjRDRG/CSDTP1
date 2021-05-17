@@ -1,5 +1,7 @@
 package com.fct.csd.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -22,10 +24,14 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.bytesToString;
 
 @ActiveProfiles("ssl")
 public class LedgerClient {
@@ -69,60 +76,81 @@ public class LedgerClient {
             this.clientPublicKey = signatureSuite.getPublicKey();
             this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEncoded());
         }
+
+        String getUrlSafeClientId() {
+            return bytesToString(clientId);
+        }
     }
 
     static String manualtoString(){
         return "Available operations : \n" +
+                "h - Help \n" +
                 "O - Set the proxy url and port; Eg: 0 {https://localhost} {8080} \n" +
-                "1 - Generate client [key-pair and id]; Eg: 1 {credentials-name} \n" +
-                "2 - Obtain tokens;  Eg: 2 {credentials-name} {amount}\n" +
-                "3 - Transfer tokens; Eg: 3 {credentials-name} {recipient-credentials-name} {amount}\n" +
-                "4 - Consult balance of a certain client; Eg: 4 {clientId}\n" +
-                "5 - Consult all transactions; Eg: 5\n" +
-                "6 - Consult all transactions of a certain client; Eg: 6 {clientId}\n" +
-                "7 - Consult all transaction events; Eg: 7 {transactionId}\n" +
-                "8 - Exit";
+                "1 - Create wallet; Eg: 1 {wallet_id} \n" +
+                "a - Obtain tokens;  Eg: a {wallet_id} {amount}\n" +
+                "b - Transfer tokens; Eg: b {wallet_id} {recipient_wallet_id} {amount}\n" +
+                "c - Consult balance of a certain client; Eg: c {wallet_id}\n" +
+                "C - Consult balance of a certain client; Eg: C {client_id}\n" +
+                "d - Consult all transactions; Eg: d\n" +
+                "e - Consult all transactions of a certain client; Eg: e {wallet_id}\n" +
+                "E - Consult all transactions of a certain client; Eg: E {client_id}\n" +
+                "f - Consult all transaction events; Eg: f {transaction_id}\n" +
+                "F - Consult all transaction events; Eg: F {transaction_id}\n" +
+                "z - Exit";
     }
 
     static Map<String,ClientCredentials> credentialsMap = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
 
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
         System.out.println(manualtoString());
 
         while(true) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
             try {
                 String[] command = in.readLine().split(" ");
-                int op = Integer.parseInt(command[0]);
+                char op = command[0].charAt(0);
                 switch (op) {
-                    case 0:
+                    case 'h':
+                        System.out.println(manualtoString());
+                        break;
+                    case '0':
                         proxyUrl = command[1];
                         proxyPort = command[2];
                         break;
-                    case 1:
+                    case '1':
                         credentialsMap.put(command[1], new ClientCredentials());
                         break;
-                    case 2:
+                    case 'a':
                         obtainTokens(command[1], Integer.parseInt(command[2]));
                         break;
-                    case 3:
+                    case 'b':
                         transferTokens(command[1], command[2], Integer.parseInt(command[3]));
                         break;
-                    case 4:
+                    case 'c':
+                        consultBalance(credentialsMap.get(command[1]).getUrlSafeClientId());
+                        break;
+                    case 'C':
                         consultBalance(command[1]);
                         break;
-                    case 5:
+                    case 'd':
                         allTransactions();
                         break;
-                    case 6:
+                    case 'e':
+                        clientTransactions(credentialsMap.get(command[1]).getUrlSafeClientId());
+                        break;
+                    case 'E':
                         clientTransactions(command[1]);
                         break;
-                    case 7:
+                    case 'f':
+                        transactionsEvents(credentialsMap.get(command[1]).getUrlSafeClientId());
+                        break;
+                    case 'F':
                         transactionsEvents(command[1]);
                         break;
-                    case 8:
+                    case 'z':
                         return;
                     default:
                         System.out.println("Chosen operation does not exist. Please try again.");
@@ -184,8 +212,8 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/transactions";
 
         try {
-            String result = restTemplate().getForObject(uri, String.class);
-            System.out.println(result);
+            Transaction[] result = restTemplate().getForObject(uri, Transaction[].class);
+            System.out.println(Arrays.deepToString(result));
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -196,8 +224,8 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/transactions/";
 
         try {
-            ResponseEntity<String> result = restTemplate().exchange(uri + clientId, HttpMethod.GET, null, String.class);
-            System.out.println(result.getBody());
+            ResponseEntity<Transaction[]> result = restTemplate().exchange(uri + clientId, HttpMethod.GET, null, Transaction[].class);
+            System.out.println(Arrays.deepToString(result.getBody()));
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -214,9 +242,22 @@ public class LedgerClient {
         }
     }
 
+    static MappingJackson2HttpMessageConverter createMappingJacksonHttpMessageConverter() {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        ObjectMapper om = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(byte[].class, new ByteSerializer());
+        module.addDeserializer(byte[].class, new ByteDeserializer());
+        om.registerModule(module);
+        converter.setObjectMapper(om);
+        return converter;
+    }
+
     static RestTemplate restTemplate() throws Exception {
         try {
             RestTemplate restTemplate = new RestTemplate();
+
+            restTemplate.getMessageConverters().add(0,createMappingJacksonHttpMessageConverter());
 
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
@@ -243,6 +284,4 @@ public class LedgerClient {
             return null;
         }
     }
-
 }
-

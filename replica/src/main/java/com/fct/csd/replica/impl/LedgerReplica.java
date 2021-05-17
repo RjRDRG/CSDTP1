@@ -7,7 +7,6 @@ import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
 import com.fct.csd.common.cryptography.config.SuiteConfiguration;
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;

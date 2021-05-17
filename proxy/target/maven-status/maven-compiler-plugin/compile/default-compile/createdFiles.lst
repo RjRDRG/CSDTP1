@@ -8,6 +8,7 @@ com/fct/csd/proxy/ProxyApplication.class
 com/fct/csd/proxy/exceptions/ServerErrorException.class
 com/fct/csd/proxy/exceptions/ForbiddenException.class
 com/fct/csd/proxy/exceptions/ExceptionMapper$1.class
+com/fct/csd/proxy/exceptions/BadRequestException.class
 com/fct/csd/proxy/repository/TestimonyEntity.class
 com/fct/csd/proxy/repository/TestimonyRepository.class
 com/fct/csd/proxy/exceptions/ExceptionMapper.class

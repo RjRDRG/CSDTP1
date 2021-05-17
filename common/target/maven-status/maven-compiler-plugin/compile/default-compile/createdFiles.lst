@@ -41,4 +41,5 @@ com/fct/csd/common/cryptography/generators/StringGenerator.class
 com/fct/csd/common/request/OrderedRequest.class
 com/fct/csd/common/cryptography/generators/nonce/Counter.class
 com/fct/csd/common/cryptography/suites/digest/SignatureSuite$1.class
+com/fct/csd/common/util/ByteSerializer.class
 com/fct/csd/common/request/LedgerOperation.class

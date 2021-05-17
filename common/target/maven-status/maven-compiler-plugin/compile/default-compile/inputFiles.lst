@@ -20,6 +20,7 @@
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/generators/key/SymmetricKeyGenerator.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/OrderedRequest.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/config/StoredSecrets.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/util/ByteSerializer.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/generators/IvGenerator.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/key/KeyInfo.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/config/SuiteConfiguration.java

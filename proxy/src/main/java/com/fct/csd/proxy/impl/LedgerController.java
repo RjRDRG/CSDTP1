@@ -144,7 +144,6 @@ class LedgerController {
         }
 
         Result<Double> result = replicaReply.extractReply();
-        System.out.println(result);
         throwPossibleException(result);
 
         return result.value();

@@ -3,9 +3,9 @@ package com.fct.csd.common.util;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.SerializationUtils;
+import java.util.Base64;
 
 public class Serialization {
 
@@ -18,11 +18,11 @@ public class Serialization {
 	}
 
 	public static byte[] stringToBytes(String string) {
-		return string.getBytes(StandardCharsets.ISO_8859_1);
+		return Base64.getUrlDecoder().decode(string);
 	}
 
 	public static String bytesToString(byte[] data) {
-		return new String(data, StandardCharsets.ISO_8859_1);
+		return Base64.getUrlEncoder().encodeToString(data);
 	}
 
 	public static long bytesToInt(byte[] bytes) {

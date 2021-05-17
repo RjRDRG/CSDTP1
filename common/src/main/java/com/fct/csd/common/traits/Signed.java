@@ -3,7 +3,6 @@ package com.fct.csd.common.traits;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import static com.fct.csd.common.util.Serialization.*;
 

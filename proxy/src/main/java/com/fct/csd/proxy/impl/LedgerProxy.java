@@ -10,7 +10,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import static com.fct.csd.common.util.Serialization.dataToBytes;
 import static com.fct.csd.common.util.Serialization.bytesToData;
