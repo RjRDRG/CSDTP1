@@ -1,5 +1,6 @@
 package com.fct.csd.replica.repository;
 
+import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Transaction;
 
 import javax.persistence.Column;
@@ -17,16 +18,18 @@ public class TransactionEntity implements Serializable {
     private String sender;
     private String recipient;
     private double amount;
+    private String date;
     @Column(length = 2000)
     private String hashPreviousTransaction;
 
     public TransactionEntity() {}
 
-    public TransactionEntity(Long id, String sender, String recipient, double amount, String hashPreviousTransaction) {
+    public TransactionEntity(Long id, String sender, String recipient, double amount, String date, String hashPreviousTransaction) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+        this.date = date;
         this.hashPreviousTransaction = hashPreviousTransaction;
     }
 
@@ -36,6 +39,7 @@ public class TransactionEntity implements Serializable {
             stringToBytes(sender),
             stringToBytes(recipient),
             amount,
+            Timestamp.fromString(date),
             stringToBytes(hashPreviousTransaction)
         );
     }
@@ -72,6 +76,14 @@ public class TransactionEntity implements Serializable {
         this.amount = amount;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     public String getHashPreviousTransaction() {
         return hashPreviousTransaction;
     }
@@ -85,12 +97,12 @@ public class TransactionEntity implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TransactionEntity that = (TransactionEntity) o;
-        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient) && hashPreviousTransaction.equals(that.hashPreviousTransaction);
+        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient) && date.equals(that.date) && hashPreviousTransaction.equals(that.hashPreviousTransaction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sender, recipient, amount, hashPreviousTransaction);
+        return Objects.hash(id, sender, recipient, amount, date, hashPreviousTransaction);
     }
 
     @Override
@@ -100,6 +112,7 @@ public class TransactionEntity implements Serializable {
                 ", sender='" + sender + '\'' +
                 ", recipient='" + recipient + '\'' +
                 ", amount=" + amount +
+                ", date=" + date +
                 ", hashPreviousTransaction='" + hashPreviousTransaction + '\'' +
                 '}';
     }

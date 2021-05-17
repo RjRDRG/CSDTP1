@@ -179,7 +179,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             switch (replicatedRequest.getOperation()) {
                 case OBTAIN: {
                     OrderedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
-                    Result<Transaction> result = ledgerService.obtainValueTokens(request,requestId);
+                    Result<Transaction> result = ledgerService.obtainValueTokens(request,requestId, replicatedRequest.getDate());
 
                     String data = new ReplicaReplyBody(
                             requestId,
@@ -194,7 +194,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 }
                 case TRANSFER: {
                     OrderedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
-                    Result<Transaction> result = ledgerService.transferValueTokens(request,requestId);
+                    Result<Transaction> result = ledgerService.transferValueTokens(request,requestId, replicatedRequest.getDate());
 
                     String data = new ReplicaReplyBody(
                             requestId,

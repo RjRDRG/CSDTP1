@@ -1,5 +1,6 @@
 package com.fct.csd.proxy.repository;
 
+import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.util.Serialization;
 
@@ -18,6 +19,7 @@ public class TransactionEntity implements Serializable {
     private String sender;
     private String recipient;
     private double amount;
+    private Timestamp date;
     @Column(length = 2000)
     private String hashPreviousTransaction;
 
@@ -28,6 +30,7 @@ public class TransactionEntity implements Serializable {
         this.sender = bytesToString(transaction.getSender());
         this.recipient = bytesToString(transaction.getRecipient());
         this.amount = transaction.getAmount();
+        this.date = transaction.getDate();
         this.hashPreviousTransaction = bytesToString(transaction.getHashPreviousTransaction());
     }
 
@@ -63,6 +66,14 @@ public class TransactionEntity implements Serializable {
         this.amount = amount;
     }
 
+    public Timestamp getDate() {
+        return date;
+    }
+
+    public void setDate(Timestamp date) {
+        this.date = date;
+    }
+
     public String getHashPreviousTransaction() {
         return hashPreviousTransaction;
     }
@@ -76,12 +87,12 @@ public class TransactionEntity implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TransactionEntity that = (TransactionEntity) o;
-        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient) && hashPreviousTransaction.equals(that.hashPreviousTransaction);
+        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient) && date.equals(that.date) && hashPreviousTransaction.equals(that.hashPreviousTransaction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sender, recipient, amount, hashPreviousTransaction);
+        return Objects.hash(id, sender, recipient, amount, date, hashPreviousTransaction);
     }
 
     @Override
@@ -91,6 +102,7 @@ public class TransactionEntity implements Serializable {
                 ", sender='" + sender + '\'' +
                 ", recipient='" + recipient + '\'' +
                 ", amount=" + amount +
+                ", date=" + date +
                 ", hashPreviousTransaction='" + hashPreviousTransaction + '\'' +
                 '}';
     }

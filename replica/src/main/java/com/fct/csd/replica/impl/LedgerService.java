@@ -5,6 +5,7 @@ import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
 import com.fct.csd.common.cryptography.config.SuiteConfiguration;
+import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
@@ -70,12 +71,12 @@ public class LedgerService {
         ).orElse(false);
 
         if(pld) {
-            TransactionEntity t0 = new TransactionEntity(1L, bytesToString("Bilbo Baggins".getBytes()), bytesToString("Frodo Baggins".getBytes()), 1, bytesToString("".getBytes()));
-            TransactionEntity t1 = new TransactionEntity(2L, bytesToString("Frodo Baggins".getBytes()), bytesToString("Gandalf".getBytes()),       1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t0))));
-            TransactionEntity t2 = new TransactionEntity(3L, bytesToString("Sauron".getBytes()),        bytesToString("Gandalf".getBytes()),  100000, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t1))));
-            TransactionEntity t3 = new TransactionEntity(4L, bytesToString("Gandalf".getBytes()),       bytesToString("Boromir".getBytes()),       1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t2))));
-            TransactionEntity t4 = new TransactionEntity(5L, bytesToString("Boromir".getBytes()),       bytesToString("Nazgul".getBytes()),        2, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t3))));
-            TransactionEntity t5 = new TransactionEntity(6L, bytesToString("Nazgul".getBytes()),        bytesToString("Sauron".getBytes()),        1, bytesToString(transactionChainDigestSuite.digest(dataToBytes(t4))));
+            TransactionEntity t0 = new TransactionEntity(1L, bytesToString("Bilbo Baggins".getBytes()), bytesToString("Frodo Baggins".getBytes()), 1, Timestamp.zero().toString(), bytesToString("".getBytes()));
+            TransactionEntity t1 = new TransactionEntity(2L, bytesToString("Frodo Baggins".getBytes()), bytesToString("Gandalf".getBytes()),       1, Timestamp.zero().toString(), bytesToString(transactionChainDigestSuite.digest(dataToBytes(t0))));
+            TransactionEntity t2 = new TransactionEntity(3L, bytesToString("Sauron".getBytes()),        bytesToString("Gandalf".getBytes()),  100000, Timestamp.zero().toString(), bytesToString(transactionChainDigestSuite.digest(dataToBytes(t1))));
+            TransactionEntity t3 = new TransactionEntity(4L, bytesToString("Gandalf".getBytes()),       bytesToString("Boromir".getBytes()),       1, Timestamp.zero().toString(), bytesToString(transactionChainDigestSuite.digest(dataToBytes(t2))));
+            TransactionEntity t4 = new TransactionEntity(5L, bytesToString("Boromir".getBytes()),       bytesToString("Nazgul".getBytes()),        2, Timestamp.zero().toString(), bytesToString(transactionChainDigestSuite.digest(dataToBytes(t3))));
+            TransactionEntity t5 = new TransactionEntity(6L, bytesToString("Nazgul".getBytes()),        bytesToString("Sauron".getBytes()),        1, Timestamp.zero().toString(), bytesToString(transactionChainDigestSuite.digest(dataToBytes(t4))));
             log.info("Preloading " + repository.save(t0));
             log.info("Preloading " + repository.save(t1));
             log.info("Preloading " + repository.save(t2));
@@ -93,7 +94,7 @@ public class LedgerService {
         return bytesToString(hashPreviousTransaction);
     }
 
-    public Result<Transaction> obtainValueTokens(OrderedRequest<ObtainRequestBody> request, long requestId) {
+    public Result<Transaction> obtainValueTokens(OrderedRequest<ObtainRequestBody> request, long requestId, Timestamp date) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -102,7 +103,7 @@ public class LedgerService {
             String recipientId = bytesToString(request.getClientId());
             ObtainRequestBody requestBody = request.getRequestBody().extractData();
 
-            TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), hashPreviousTransaction());
+            TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), date.toString(), hashPreviousTransaction());
             return Result.ok(repository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,7 +111,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Transaction> transferValueTokens(OrderedRequest<TransferRequestBody> request, long requestId) {
+    public Result<Transaction> transferValueTokens(OrderedRequest<TransferRequestBody> request, long requestId, Timestamp date) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -120,7 +121,7 @@ public class LedgerService {
             String senderId = bytesToString(request.getClientId());
             String recipientId = bytesToString(requestBody.getRecipientId());
 
-            TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), hashPreviousTransaction());
+            TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), date.toString(), hashPreviousTransaction());
             return Result.ok(repository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,5 +1,7 @@
 package com.fct.csd.common.item;
 
+import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
@@ -12,13 +14,15 @@ public class Transaction implements Serializable {
     private byte[] sender;
     private byte[] recipient;
     private double amount;
+    private Timestamp date;
     private byte[] hashPreviousTransaction;
 
-    public Transaction(long id, byte[] sender, byte[] recipient, double amount, byte[] hashPreviousTransaction) {
+    public Transaction(long id, byte[] sender, byte[] recipient, double amount, Timestamp date, byte[] hashPreviousTransaction) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+        this.date = date;
         this.hashPreviousTransaction = hashPreviousTransaction;
     }
 
@@ -56,6 +60,14 @@ public class Transaction implements Serializable {
         this.amount = amount;
     }
 
+    public Timestamp getDate() {
+        return date;
+    }
+
+    public void setDate(Timestamp date) {
+        this.date = date;
+    }
+
     public byte[] getHashPreviousTransaction() {
         return hashPreviousTransaction;
     }
@@ -69,12 +81,12 @@ public class Transaction implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Transaction that = (Transaction) o;
-        return id == that.id && Double.compare(that.amount, amount) == 0 && Arrays.equals(sender, that.sender) && Arrays.equals(recipient, that.recipient) && Arrays.equals(hashPreviousTransaction, that.hashPreviousTransaction);
+        return id == that.id && Double.compare(that.amount, amount) == 0 && Arrays.equals(sender, that.sender) && Arrays.equals(recipient, that.recipient) && date.equals(that.date) && Arrays.equals(hashPreviousTransaction, that.hashPreviousTransaction);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, amount);
+        int result = Objects.hash(id, amount, date);
         result = 31 * result + Arrays.hashCode(sender);
         result = 31 * result + Arrays.hashCode(recipient);
         result = 31 * result + Arrays.hashCode(hashPreviousTransaction);
@@ -88,6 +100,7 @@ public class Transaction implements Serializable {
                 ", sender=" + bytesToString(sender) +
                 ", recipient=" + bytesToString(recipient) +
                 ", amount=" + amount +
+                ", date=" + date +
                 ", hashPreviousTransaction=" + bytesToString(hashPreviousTransaction) +
                 '}';
     }
