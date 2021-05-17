@@ -112,7 +112,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.ALL_TRANSACTIONS,
-                            "",
+                            request,
                             result
                     ));
 
@@ -121,12 +121,12 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 case CLIENT_TRANSACTIONS: {
-                    String clientId = bytesToData(replicatedRequest.getRequest());
-                    Result<Transaction[]> result = ledgerService.clientTransactions(clientId);
+                    ClientTransactionsRequestBody request = bytesToData(replicatedRequest.getRequest());
+                    Result<Transaction[]> result = ledgerService.clientTransactions(request);
 
                     String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.CLIENT_TRANSACTIONS,
-                            clientId,
+                            request,
                             result
                     ));
 

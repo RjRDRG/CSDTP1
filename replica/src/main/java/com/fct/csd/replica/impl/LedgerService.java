@@ -176,14 +176,23 @@ public class LedgerService {
         }
     }
 
-    public Result<Transaction[]> clientTransactions(String clientId) {
+    public Result<Transaction[]> clientTransactions(ClientTransactionsRequestBody request) {
         try {
-            List<TransactionEntity> transactions = repository.findBySenderOrRecipient(clientId, clientId);
+            ZonedDateTime initDate = ZonedDateTime.parse(request.getInitDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            ZonedDateTime endDate = ZonedDateTime.parse(request.getEndDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+
+            List<TransactionEntity> transactions = repository.findBySenderOrRecipient(request.getClientId(),request.getClientId());
 
             if (transactions.isEmpty())
                 return Result.error(Result.Status.NOT_FOUND, "Client not found");
 
-            return Result.ok(transactions.stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
+            return Result.ok(transactions.stream()
+                    .filter(te-> {
+                        ZonedDateTime date = ZonedDateTime.parse(te.getDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                        return date.isAfter(initDate) && date.isBefore(endDate);
+                    })
+                    .map(TransactionEntity::toItem).toArray(Transaction[]::new)
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());

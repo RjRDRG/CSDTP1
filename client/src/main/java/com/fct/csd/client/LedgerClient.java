@@ -88,9 +88,9 @@ public class LedgerClient {
                 "a - Obtain tokens;  Eg: a {wallet_id} {amount}\n" +
                 "b - Transfer tokens; Eg: b {wallet_id} {recipient_wallet_id} {amount}\n" +
                 "c - Consult balance of a certain client; Eg: c {wallet_id}\n" +
-                "d - Consult all transactions; Eg: d {seconds_from_current_date} {seconds_from_current_date} : d 10 9\n" +
-                "e - Consult all transactions of a certain client; Eg: e {wallet_id}\n" +
-                "E - Consult all transactions of a certain client; Eg: E {client_id}\n" +
+                "d - Consult all transactions; Eg: d {seconds_from_current_date} {seconds_from_current_date}\n" +
+                "e - Consult all transactions of a certain client; Eg: e {wallet_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
+                "E - Consult all transactions of a certain client; Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "f - Consult all events of transaction; Eg: f {transaction_id}\n" +
                 "z - Exit";
     }
@@ -132,10 +132,10 @@ public class LedgerClient {
                         allTransactions(Integer.parseInt(command[1]), Integer.parseInt(command[2]));
                         break;
                     case 'e':
-                        clientTransactions(credentialsMap.get(command[1]).getUrlSafeClientId());
+                        clientTransactions(credentialsMap.get(command[1]).getUrlSafeClientId(),Integer.parseInt(command[2]), Integer.parseInt(command[3]));
                         break;
                     case 'E':
-                        clientTransactions(command[1]);
+                        clientTransactions(command[1],Integer.parseInt(command[2]), Integer.parseInt(command[3]));
                         break;
                     case 'f':
                         transactionsEvents(command[1]);
@@ -221,12 +221,17 @@ public class LedgerClient {
 
     }
 
-    static void clientTransactions(String clientId){
-        String uri = proxyUrl + ":" + proxyPort + "/transactions/";
+    static void clientTransactions(String clientId, int initSeconds, int endSeconds){
+        String uri = proxyUrl + ":" + proxyPort + "/transactions/client";
 
         try {
-            ResponseEntity<Transaction[]> result = restTemplate().exchange(uri + clientId, HttpMethod.GET, null, Transaction[].class);
-            System.out.println(Arrays.deepToString(result.getBody()));
+            String initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            String endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            ClientTransactionsRequestBody request = new ClientTransactionsRequestBody(clientId,initDate,endDate);
+
+            ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
+
+            System.out.println(Arrays.deepToString(transactions.getBody()));
         }catch(Exception ex){
             ex.printStackTrace();
         }
