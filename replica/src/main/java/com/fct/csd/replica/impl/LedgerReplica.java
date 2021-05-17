@@ -28,7 +28,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,12 +93,12 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         try {
             switch (replicatedRequest.getOperation()) {
                 case BALANCE: {
-                    String clientId = bytesToData(replicatedRequest.getRequest());
-                    Result<Double> result = ledgerService.consultBalance(clientId);
+                    AuthenticatedRequest<ConsultBalanceRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    Result<Double> result = ledgerService.consultBalance(request);
 
                     String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.BALANCE,
-                            clientId,
+                            request,
                             result
                     ));
 
@@ -185,8 +184,8 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         try {
             switch (replicatedRequest.getOperation()) {
                 case OBTAIN: {
-                    OrderedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
-                    Result<Transaction> result = ledgerService.obtainValueTokens(request,requestId, replicatedRequest.getDate());
+                    AuthenticatedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    Result<Transaction> result = ledgerService.obtainValueTokens(request, requestId, replicatedRequest.getDate());
 
                     String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.OBTAIN,
@@ -199,7 +198,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 case TRANSFER: {
-                    OrderedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    AuthenticatedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction> result = ledgerService.transferValueTokens(request,requestId, replicatedRequest.getDate());
 
                     String data = mapper.writeValueAsString(new TestimonyData<>(

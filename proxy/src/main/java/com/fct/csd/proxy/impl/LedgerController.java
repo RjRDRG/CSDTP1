@@ -18,16 +18,17 @@ import com.fct.csd.proxy.exceptions.BadRequestException;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
 import com.fct.csd.proxy.exceptions.NotFoundException;
 import com.fct.csd.proxy.exceptions.ServerErrorException;
-import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
 import com.fct.csd.proxy.repository.TransactionEntity;
 import com.fct.csd.proxy.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.fct.csd.common.util.Serialization.dataToBytes;
 import static com.fct.csd.proxy.exceptions.ExceptionMapper.throwPossibleException;
 import static org.springframework.util.SerializationUtils.*;
 
@@ -60,7 +61,7 @@ class LedgerController {
     }
 
     @PostMapping("/obtain")
-    public Transaction obtainValueTokens(@RequestBody OrderedRequest<ObtainRequestBody> request) {
+    public Transaction obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
 
         boolean valid;
         try {
@@ -73,7 +74,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.OBTAIN,
-                serialize(request),
+                dataToBytes(request),
                 getLastTransactionId()
         );
 
@@ -94,7 +95,7 @@ class LedgerController {
     }
 
     @PostMapping("/transfer")
-    public Transaction transferValueTokens(@RequestBody OrderedRequest<TransferRequestBody> request) {
+    public Transaction transferValueTokens(@RequestBody AuthenticatedRequest<TransferRequestBody> request) {
 
         boolean valid;
         try {
@@ -109,7 +110,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.TRANSFER,
-                serialize(request),
+                dataToBytes(request),
                 getLastTransactionId()
         );
 
@@ -129,12 +130,21 @@ class LedgerController {
         return result.value();
     }
 
-    @GetMapping("/balance/{clientId}")
-    public Double consultBalance(@PathVariable String clientId) {
+    @PostMapping("/balance")
+    public Double consultBalance(@RequestBody AuthenticatedRequest<ConsultBalanceRequestBody> request) {
+
+        boolean valid;
+        try {
+            valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
+        } catch (Exception e) {
+            throw new ForbiddenException(e.getMessage());
+        }
+
+        if(!valid) throw new ForbiddenException("Invalid Signature");
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.BALANCE,
-                serialize(clientId),
+                dataToBytes(request),
                 getLastTransactionId()
         );
 
@@ -183,7 +193,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 LedgerOperation.CLIENT_TRANSACTIONS,
-                serialize(clientId),
+                dataToBytes(clientId),
                 getLastTransactionId()
         );
 

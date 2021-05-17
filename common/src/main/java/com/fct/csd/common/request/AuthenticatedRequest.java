@@ -11,12 +11,12 @@ import java.util.Objects;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
 
-public class OrderedRequest<T extends Serializable> implements Serializable {
+public class AuthenticatedRequest<T extends Serializable> implements Serializable {
     private byte[] clientId;
     private EncodedPublicKey clientPublicKey;
     private Signed<T> requestBody;
 
-    public OrderedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, Signed<T> requestBody) {
+    public AuthenticatedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, Signed<T> requestBody) {
         this.clientId = clientId;
         this.clientPublicKey = clientPublicKey;
         this.requestBody = requestBody;
@@ -31,7 +31,7 @@ public class OrderedRequest<T extends Serializable> implements Serializable {
         return requestBody.verify(signatureSuite);
     }
 
-    public OrderedRequest() {
+    public AuthenticatedRequest() {
     }
 
     public byte[] getClientId() {
@@ -62,7 +62,7 @@ public class OrderedRequest<T extends Serializable> implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        OrderedRequest<?> that = (OrderedRequest<?>) o;
+        AuthenticatedRequest<?> that = (AuthenticatedRequest<?>) o;
         return Arrays.equals(clientId, that.clientId) && clientPublicKey.equals(that.clientPublicKey) && requestBody.equals(that.requestBody);
     }
 

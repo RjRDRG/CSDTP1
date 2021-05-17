@@ -6,14 +6,16 @@ import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
 import com.fct.csd.common.cryptography.config.SuiteConfiguration;
+import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.cryptography.key.EncodedPublicKey;
 import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.request.ConsultBalanceRequestBody;
 import com.fct.csd.common.request.ObtainRequestBody;
-import com.fct.csd.common.request.OrderedRequest;
+import com.fct.csd.common.request.AuthenticatedRequest;
 import com.fct.csd.common.request.TransferRequestBody;
 import com.fct.csd.common.traits.Signed;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -24,14 +26,11 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
@@ -90,7 +89,6 @@ public class LedgerClient {
                 "a - Obtain tokens;  Eg: a {wallet_id} {amount}\n" +
                 "b - Transfer tokens; Eg: b {wallet_id} {recipient_wallet_id} {amount}\n" +
                 "c - Consult balance of a certain client; Eg: c {wallet_id}\n" +
-                "C - Consult balance of a certain client; Eg: C {client_id}\n" +
                 "d - Consult all transactions; Eg: d\n" +
                 "e - Consult all transactions of a certain client; Eg: e {wallet_id}\n" +
                 "E - Consult all transactions of a certain client; Eg: E {client_id}\n" +
@@ -129,9 +127,6 @@ public class LedgerClient {
                         transferTokens(command[1], command[2], Integer.parseInt(command[3]));
                         break;
                     case 'c':
-                        consultBalance(credentialsMap.get(command[1]).getUrlSafeClientId());
-                        break;
-                    case 'C':
                         consultBalance(command[1]);
                         break;
                     case 'd':
@@ -158,47 +153,53 @@ public class LedgerClient {
         }
     }
 
-    static void obtainTokens(String credentials, int amount) {
+    static void obtainTokens(String walletId, int amount) {
         String uri = proxyUrl + ":" + proxyPort + "/obtain";
 
         try {
-            ClientCredentials clientCredentials = credentialsMap.get(credentials);
+            ClientCredentials clientCredentials = credentialsMap.get(walletId);
 
             Signed<ObtainRequestBody> requestBody = new Signed<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
-            OrderedRequest<ObtainRequestBody> request = new OrderedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+            AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
             ResponseEntity<Transaction> transaction = restTemplate().postForEntity(uri, request, Transaction.class);
 
-            System.out.println(transaction);
+            System.out.println(transaction.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
     }
 
-    static void transferTokens(String client, String recipient, int amount) {
+    static void transferTokens(String walletId, String recipient, int amount) {
         String uri = proxyUrl + ":" + proxyPort + "/transfer";
 
         try {
-            ClientCredentials clientCredentials = credentialsMap.get(client);
+            ClientCredentials clientCredentials = credentialsMap.get(walletId);
             ClientCredentials recipientCredentials = credentialsMap.get(recipient);
 
             Signed<TransferRequestBody> requestBody = new Signed<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
-            OrderedRequest<TransferRequestBody> request = new OrderedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+            AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
             ResponseEntity<Transaction> transaction = restTemplate().postForEntity(uri, request, Transaction.class);
 
-            System.out.println(transaction);
+            System.out.println(transaction.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
     }
 
-    static void consultBalance(String clientId){
-        String uri = proxyUrl + ":" + proxyPort + "/balance/";
+    static void consultBalance(String walletId){
+        String uri = proxyUrl + ":" + proxyPort + "/balance";
 
         try {
-            ResponseEntity<String> result = restTemplate().exchange(uri + clientId, HttpMethod.GET, null, String.class);
-            System.out.println(result.getBody());
+            ClientCredentials clientCredentials = credentialsMap.get(walletId);
+
+            Signed<ConsultBalanceRequestBody> requestBody = new Signed<>(new ConsultBalanceRequestBody(Timestamp.now().toString()), clientCredentials.signatureSuite);
+            AuthenticatedRequest<ConsultBalanceRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+
+            ResponseEntity<Double> balance = restTemplate().postForEntity(uri, request, Double.class);
+
+            System.out.println(balance.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }

@@ -11,8 +11,9 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.request.ConsultBalanceRequestBody;
 import com.fct.csd.common.request.ObtainRequestBody;
-import com.fct.csd.common.request.OrderedRequest;
+import com.fct.csd.common.request.AuthenticatedRequest;
 import com.fct.csd.common.request.TransferRequestBody;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.replica.repository.TransactionEntity;
@@ -23,6 +24,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,7 +96,7 @@ public class LedgerService {
         return bytesToString(hashPreviousTransaction);
     }
 
-    public Result<Transaction> obtainValueTokens(OrderedRequest<ObtainRequestBody> request, long requestId, Timestamp date) {
+    public Result<Transaction> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, long requestId, Timestamp date) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -111,7 +113,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Transaction> transferValueTokens(OrderedRequest<TransferRequestBody> request, long requestId, Timestamp date) {
+    public Result<Transaction> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, long requestId, Timestamp date) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -129,8 +131,13 @@ public class LedgerService {
         }
     }
 
-    public Result<Double> consultBalance(String clientId) {
+    public Result<Double> consultBalance(AuthenticatedRequest<ConsultBalanceRequestBody> request) {
         try {
+            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
+
+            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+
+            String clientId = bytesToString(request.getClientId());
             List<TransactionEntity> received = repository.findByRecipient(clientId);
             List<TransactionEntity> sent = repository.findBySender(clientId);
 
