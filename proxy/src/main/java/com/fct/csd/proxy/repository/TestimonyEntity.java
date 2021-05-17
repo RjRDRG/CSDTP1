@@ -3,6 +3,8 @@ package com.fct.csd.proxy.repository;
 import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.reply.ReplicaReply;
+import com.fct.csd.common.reply.TestimonyData;
+import com.fct.csd.common.traits.Signed;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,7 +27,7 @@ public class TestimonyEntity implements Serializable {
     private String timestamp;
 
     @Column(length = 5000)
-    private String request;
+    private String request; //TODO needs to be data not string?
 
     @Column(length = 2000)
     private String signature;
@@ -34,12 +36,12 @@ public class TestimonyEntity implements Serializable {
         this.requestId = reply.getRequestId();
         this.matchedReplies = matchedReplies;
         this.timestamp = Timestamp.now().toString();
-        this.request = reply.getSignature().extractData();
-        this.signature = bytesToString(reply.getSignature().getSignature());
+        this.request = reply.getTestimony().extractData();
+        this.signature = bytesToString(reply.getTestimony().getSignature());
     }
 
     public Testimony toItem() {
-        return new Testimony(requestId, matchedReplies, request, stringToBytes(request), stringToBytes(signature));
+        return new Testimony(requestId, matchedReplies, new Signed<TestimonyData>(dataToBytes(request), stringToBytes(signature)));
     }
 
     public TestimonyEntity() {

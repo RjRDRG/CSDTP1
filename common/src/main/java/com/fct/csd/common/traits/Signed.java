@@ -16,6 +16,11 @@ public class Signed<T extends Serializable> implements Serializable {
 		this.signature = suite.digest(this.data);
 	}
 
+	public Signed(byte[] data, byte[] signature) {
+		this.data = data;
+		this.signature = signature;
+	}
+
 	public boolean verify(IDigestSuite suite) throws Exception {
 		return suite.verify(data, signature);
 	}
@@ -45,8 +50,9 @@ public class Signed<T extends Serializable> implements Serializable {
 
 	@Override
 	public String toString() {
+		T value = bytesToData(this.data);
 		return "Signed{" +
-				"data=" + bytesToString(data) +
+				"data=" + value.toString() +
 				", signature=" + bytesToString(signature) +
 				'}';
 	}

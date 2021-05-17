@@ -13,7 +13,7 @@ import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
-import com.fct.csd.common.reply.ReplicaReplyBody;
+import com.fct.csd.common.reply.TestimonyData;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.util.Serialization;
 import com.fct.csd.common.traits.Result;
@@ -90,8 +90,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     String clientId = bytesToData(replicatedRequest.getRequest());
                     Result<Double> result = ledgerService.consultBalance(clientId);
 
-                    String data = new ReplicaReplyBody(
-                            requestId,
+                    String data = new TestimonyData(
                             LedgerOperation.BALANCE,
                             clientId,
                             result.toString()
@@ -104,8 +103,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 case ALL_TRANSACTIONS: {
                     Result<Transaction[]> result = ledgerService.allTransactions();
 
-                    String data = new ReplicaReplyBody(
-                            requestId,
+                    String data = new TestimonyData(
                             LedgerOperation.ALL_TRANSACTIONS,
                             "",
                             result.arrayToString()
@@ -119,8 +117,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     String clientId = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction[]> result = ledgerService.clientTransactions(clientId);
 
-                    String data = new ReplicaReplyBody(
-                            requestId,
+                    String data = new TestimonyData(
                             LedgerOperation.CLIENT_TRANSACTIONS,
                             clientId,
                             result.arrayToString()
@@ -133,8 +130,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 default: {
                     Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-                    String data = new ReplicaReplyBody(
-                            requestId,
+                    String data = new TestimonyData(
                             replicatedRequest.getOperation(),
                             "",
                             result.toString()
@@ -150,8 +146,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
             Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-            String data = new ReplicaReplyBody(
-                    requestId,
+            String data = new TestimonyData(
                     replicatedRequest.getOperation(),
                     "",
                     result.toString()
@@ -181,8 +176,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     OrderedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction> result = ledgerService.obtainValueTokens(request,requestId, replicatedRequest.getDate());
 
-                    String data = new ReplicaReplyBody(
-                            requestId,
+                    String data = new TestimonyData(
                             LedgerOperation.OBTAIN,
                             request.toString(),
                             result.toString()
@@ -196,8 +190,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     OrderedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction> result = ledgerService.transferValueTokens(request,requestId, replicatedRequest.getDate());
 
-                    String data = new ReplicaReplyBody(
-                            requestId,
+                    String data = new TestimonyData(
                             LedgerOperation.TRANSFER,
                             request.toString(),
                             result.toString()
@@ -210,8 +203,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 default: {
                     Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-                    String data = new ReplicaReplyBody(
-                            requestId,
+                    String data = new TestimonyData(
                             replicatedRequest.getOperation(),
                             "",
                             result.toString()
@@ -227,8 +219,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
             Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-            String data = new ReplicaReplyBody(
-                    requestId,
+            String data = new TestimonyData(
                     replicatedRequest.getOperation(),
                     "",
                     result.toString()

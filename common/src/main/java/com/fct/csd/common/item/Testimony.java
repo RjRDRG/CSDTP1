@@ -1,25 +1,21 @@
 package com.fct.csd.common.item;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Objects;
+import com.fct.csd.common.reply.TestimonyData;
+import com.fct.csd.common.traits.Signed;
 
-import static com.fct.csd.common.util.Serialization.bytesToString;
+import java.io.Serializable;
+import java.util.Objects;
 
 public class Testimony implements Serializable {
 
     private long requestId;
     private int matchedReplies;
-    private String request;
-    private byte[] encodedRequest;
-    private byte[] signature;
+    private Signed<TestimonyData> data;
 
-    public Testimony(long requestId, int matchedReplies, String request, byte[] encodedRequest, byte[] signature) {
+    public Testimony(long requestId, int matchedReplies, Signed<TestimonyData> data) {
         this.requestId = requestId;
         this.matchedReplies = matchedReplies;
-        this.request = request;
-        this.encodedRequest = encodedRequest;
-        this.signature = signature;
+        this.data = data;
     }
 
     public Testimony() {
@@ -41,28 +37,12 @@ public class Testimony implements Serializable {
         this.matchedReplies = matchedReplies;
     }
 
-    public String getRequest() {
-        return request;
+    public Signed<TestimonyData> getData() {
+        return data;
     }
 
-    public void setRequest(String request) {
-        this.request = request;
-    }
-
-    public byte[] getEncodedRequest() {
-        return encodedRequest;
-    }
-
-    public void setEncodedRequest(byte[] encodedRequest) {
-        this.encodedRequest = encodedRequest;
-    }
-
-    public byte[] getSignature() {
-        return signature;
-    }
-
-    public void setSignature(byte[] signature) {
-        this.signature = signature;
+    public void setData(Signed<TestimonyData> data) {
+        this.data = data;
     }
 
     @Override
@@ -70,15 +50,12 @@ public class Testimony implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Testimony testimony = (Testimony) o;
-        return requestId == testimony.requestId && matchedReplies == testimony.matchedReplies && Objects.equals(request, testimony.request) && Arrays.equals(encodedRequest, testimony.encodedRequest) && Arrays.equals(signature, testimony.signature);
+        return requestId == testimony.requestId && matchedReplies == testimony.matchedReplies && data.equals(testimony.data);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(requestId, matchedReplies, request);
-        result = 31 * result + Arrays.hashCode(encodedRequest);
-        result = 31 * result + Arrays.hashCode(signature);
-        return result;
+        return Objects.hash(requestId, matchedReplies, data);
     }
 
     @Override
@@ -86,8 +63,7 @@ public class Testimony implements Serializable {
         return "Testimony{" +
                 "requestId=" + requestId +
                 ", matchedReplies=" + matchedReplies +
-                ", request='" + request + '\'' +
-                ", signature=" + bytesToString(signature) +
+                ", data=" + data +
                 '}';
     }
 }

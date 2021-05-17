@@ -95,7 +95,6 @@ public class LedgerClient {
                 "e - Consult all transactions of a certain client; Eg: e {wallet_id}\n" +
                 "E - Consult all transactions of a certain client; Eg: E {client_id}\n" +
                 "f - Consult all transaction events; Eg: f {transaction_id}\n" +
-                "F - Consult all transaction events; Eg: F {transaction_id}\n" +
                 "z - Exit";
     }
 
@@ -145,9 +144,6 @@ public class LedgerClient {
                         clientTransactions(command[1]);
                         break;
                     case 'f':
-                        transactionsEvents(credentialsMap.get(command[1]).getUrlSafeClientId());
-                        break;
-                    case 'F':
                         transactionsEvents(command[1]);
                         break;
                     case 'z':
@@ -231,7 +227,7 @@ public class LedgerClient {
         }
     }
 
-    static void transactionsEvents(String transactionId){
+    static void transactionsEvents(String transactionId){ //TODO: fix serialization bug
         String uri = proxyUrl + ":" + proxyPort + "/testimonies/";
 
         try {

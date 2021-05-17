@@ -12,7 +12,7 @@ import java.util.Objects;
 public class ReplicaReply implements Serializable {
 
     private long requestId;
-    private Signed<String> signature;
+    private Signed<String> testimony;
     private Result<byte[]> encodedResult;
     private List<Transaction> missingEntries;
 
@@ -23,9 +23,9 @@ public class ReplicaReply implements Serializable {
             return Result.error(encodedResult.error());
     }
 
-    public ReplicaReply(long requestId, Signed<String> signature, Result<byte[]> encodedResult, List<Transaction> missingEntries) {
+    public ReplicaReply(long requestId, Signed<String> testimony, Result<byte[]> encodedResult, List<Transaction> missingEntries) {
         this.requestId = requestId;
-        this.signature = signature;
+        this.testimony = testimony;
         this.encodedResult = encodedResult;
         this.missingEntries = missingEntries;
     }
@@ -41,12 +41,12 @@ public class ReplicaReply implements Serializable {
         this.requestId = requestId;
     }
 
-    public Signed<String> getSignature() {
-        return signature;
+    public Signed<String> getTestimony() {
+        return testimony;
     }
 
-    public void setSignature(Signed<String> signature) {
-        this.signature = signature;
+    public void setTestimony(Signed<String> testimony) {
+        this.testimony = testimony;
     }
 
     public Result<byte[]> getEncodedResult() {
@@ -70,19 +70,19 @@ public class ReplicaReply implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ReplicaReply reply = (ReplicaReply) o;
-        return requestId == reply.requestId && signature.equals(reply.signature) && encodedResult.equals(reply.encodedResult) && missingEntries.equals(reply.missingEntries);
+        return requestId == reply.requestId && testimony.equals(reply.testimony) && encodedResult.equals(reply.encodedResult) && missingEntries.equals(reply.missingEntries);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, signature, encodedResult, missingEntries);
+        return Objects.hash(requestId, testimony, encodedResult, missingEntries);
     }
 
     @Override
     public String toString() {
         return "ReplicaReply{" +
                 "requestId=" + requestId +
-                ", signature=" + signature +
+                ", testimony=" + testimony +
                 ", encodedResult=" + encodedResult +
                 ", missingEntries=" + missingEntries +
                 '}';
