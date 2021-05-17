@@ -82,17 +82,18 @@ public class LedgerClient {
 
     static String manualtoString(){
         return "Available operations : \n" +
-                "h - Help \n" +
-                "O - Set the proxy url and port; Eg: 0 {https://localhost} {8080} \n" +
-                "1 - Create wallet; Eg: 1 {wallet_id} \n" +
-                "a - Obtain tokens;  Eg: a {wallet_id} {amount}\n" +
-                "b - Transfer tokens; Eg: b {wallet_id} {recipient_wallet_id} {amount}\n" +
-                "c - Consult balance of a certain client; Eg: c {wallet_id}\n" +
-                "d - Consult all transactions; Eg: d {seconds_from_current_date} {seconds_from_current_date}\n" +
-                "e - Consult all transactions of a certain client; Eg: e {wallet_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
-                "E - Consult all transactions of a certain client; Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
-                "f - Consult all events of transaction; Eg: f {transaction_id}\n" +
-                "z - Exit";
+                "h - Help;                                             Eg: h \n"+
+                "w - List wallets ids;                                 Eg: w \n"+
+                "O - Set the proxy url and port;                       Eg: 0 {https://localhost} {8080} \n" +
+                "1 - Create wallet;                                    Eg: 1 {wallet_id} \n" +
+                "a - Obtain tokens;                                    Eg: a {wallet_id} {amount}\n" +
+                "b - Transfer tokens;                                  Eg: b {wallet_id} {recipient_wallet_id} {amount}\n" +
+                "c - Consult balance of a certain client;              Eg: c {wallet_id}\n" +
+                "d - Consult all transactions;                         Eg: d {seconds_from_current_date} {seconds_from_current_date}\n" +
+                "e - Consult all transactions of a certain client;     Eg: e {wallet_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
+                "E - Consult all transactions of a certain client;     Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
+                "f - Consult all events of transaction;                Eg: f {transaction_id}\n" +
+                "z - Exit                                              Eg: z";
     }
 
     static Map<String,ClientCredentials> credentialsMap = new HashMap<>();
@@ -111,6 +112,9 @@ public class LedgerClient {
                 switch (op) {
                     case 'h':
                         System.out.println(manualtoString());
+                        break;
+                    case 'w':
+                        System.out.println(credentialsMap.keySet());
                         break;
                     case '0':
                         proxyUrl = command[1];

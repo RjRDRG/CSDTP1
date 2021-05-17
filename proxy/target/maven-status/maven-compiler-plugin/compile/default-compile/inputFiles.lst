@@ -1,4 +1,5 @@
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/exceptions/ExceptionAdvice.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/JacksonConfig.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/exceptions/ForbiddenException.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/repository/TestimonyRepository.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/proxy/src/main/java/com/fct/csd/proxy/ProxyApplication.java

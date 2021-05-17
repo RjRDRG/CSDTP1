@@ -1,11 +1,14 @@
 com/fct/csd/proxy/exceptions/NotImplementedException.class
 com/fct/csd/proxy/impl/LedgerProxy$ReplicatedReplyExtractor.class
 com/fct/csd/proxy/impl/LedgerProxy.class
+com/fct/csd/proxy/JacksonConfig$BytesJsonDeserializer.class
 com/fct/csd/proxy/exceptions/ExceptionAdvice.class
 com/fct/csd/proxy/repository/TransactionRepository.class
 com/fct/csd/proxy/impl/LedgerController.class
+com/fct/csd/proxy/JacksonConfig$BytesJsonSerializer.class
 com/fct/csd/proxy/ProxyApplication.class
 com/fct/csd/proxy/exceptions/ServerErrorException.class
+com/fct/csd/proxy/JacksonConfig.class
 com/fct/csd/proxy/exceptions/ForbiddenException.class
 com/fct/csd/proxy/exceptions/ExceptionMapper$1.class
 com/fct/csd/proxy/exceptions/BadRequestException.class
