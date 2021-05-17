@@ -1,5 +1,6 @@
 package com.fct.csd.proxy.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -21,6 +22,7 @@ import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
 import com.fct.csd.proxy.repository.TransactionEntity;
 import com.fct.csd.proxy.repository.TransactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +33,9 @@ import static org.springframework.util.SerializationUtils.*;
 
 @RestController
 class LedgerController {
+
+    @Autowired
+    private ObjectMapper mapper;
 
     public static final String CONFIG_PATH = "security.conf";
 
@@ -201,7 +206,7 @@ class LedgerController {
     @GetMapping("/testimonies/{requestId}")
     public Testimony[] consultTestimonies(@PathVariable long requestId) {
         try {
-            Testimony[] t = testimonies.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).toArray(Testimony[]::new);
+            Testimony[] t = testimonies.findByRequestId(requestId).stream().map(te -> te.toItem(mapper)).toArray(Testimony[]::new);
             if (t.length == 0)
                 throw new NotFoundException("Transaction Not Found");
             else

@@ -1,7 +1,5 @@
 package com.fct.csd.common.item;
 
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
@@ -14,10 +12,10 @@ public class Transaction implements Serializable {
     private byte[] sender;
     private byte[] recipient;
     private double amount;
-    private Timestamp date;
+    private String date;
     private byte[] hashPreviousTransaction;
 
-    public Transaction(long id, byte[] sender, byte[] recipient, double amount, Timestamp date, byte[] hashPreviousTransaction) {
+    public Transaction(long id, byte[] sender, byte[] recipient, double amount, String date, byte[] hashPreviousTransaction) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
@@ -60,11 +58,11 @@ public class Transaction implements Serializable {
         this.amount = amount;
     }
 
-    public Timestamp getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Timestamp date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

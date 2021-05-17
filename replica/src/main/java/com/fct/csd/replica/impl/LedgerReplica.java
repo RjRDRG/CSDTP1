@@ -3,6 +3,8 @@ package com.fct.csd.replica.impl;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -21,10 +23,12 @@ import com.fct.csd.common.traits.Signed;
 import com.fct.csd.replica.repository.TransactionEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +37,9 @@ import static com.fct.csd.common.util.Serialization.bytesToData;
 
 @Component
 public class LedgerReplica extends DefaultSingleRecoverable {
+
+    @Autowired
+    private ObjectMapper mapper;
 
     public static final String CONFIG_PATH = "security.conf";
 
@@ -90,26 +97,26 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     String clientId = bytesToData(replicatedRequest.getRequest());
                     Result<Double> result = ledgerService.consultBalance(clientId);
 
-                    String data = new TestimonyData(
+                    String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.BALANCE,
                             clientId,
-                            result.toString()
-                    ).toString();
+                            result
+                    ));
 
-                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 case ALL_TRANSACTIONS: {
                     Result<Transaction[]> result = ledgerService.allTransactions();
 
-                    String data = new TestimonyData(
+                    String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.ALL_TRANSACTIONS,
                             "",
-                            result.arrayToString()
-                    ).toString();
+                            result
+                    ));
 
-                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -117,26 +124,26 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     String clientId = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction[]> result = ledgerService.clientTransactions(clientId);
 
-                    String data = new TestimonyData(
+                    String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.CLIENT_TRANSACTIONS,
                             clientId,
-                            result.arrayToString()
-                    ).toString();
+                            result
+                    ));
 
-                    Signed<String> signature = new Signed<>(data, replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 default: {
                     Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-                    String data = new TestimonyData(
+                    String data = mapper.writeValueAsString(new TestimonyData<>(
                             replicatedRequest.getOperation(),
                             "",
-                            result.toString()
-                    ).toString();
+                            result
+                    ));
 
-                    Signed<String> signature = new Signed<>(data, replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -146,15 +153,20 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
             Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-            String data = new TestimonyData(
-                    replicatedRequest.getOperation(),
-                    "",
-                    result.toString()
-            ).toString();
+            String data = null;
+            try {
+                data = mapper.writeValueAsString(new TestimonyData<>(
+                        replicatedRequest.getOperation(),
+                        "",
+                        result
+                ));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
 
             Signed<String> signature = null;
             try {
-                signature = new Signed<>(data, replyDigestSuite);
+                signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -176,13 +188,13 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     OrderedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction> result = ledgerService.obtainValueTokens(request,requestId, replicatedRequest.getDate());
 
-                    String data = new TestimonyData(
+                    String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.OBTAIN,
-                            request.toString(),
-                            result.toString()
-                    ).toString();
+                            request,
+                            result
+                    ));
 
-                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -190,26 +202,26 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     OrderedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Transaction> result = ledgerService.transferValueTokens(request,requestId, replicatedRequest.getDate());
 
-                    String data = new TestimonyData(
+                    String data = mapper.writeValueAsString(new TestimonyData<>(
                             LedgerOperation.TRANSFER,
-                            request.toString(),
-                            result.toString()
-                    ).toString();
+                            request,
+                            result
+                    ));
 
-                    Signed<String> signature = new Signed<>(data,replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
                 default: {
                     Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-                    String data = new TestimonyData(
+                    String data = mapper.writeValueAsString(new TestimonyData<>(
                             replicatedRequest.getOperation(),
                             "",
-                            result.toString()
-                    ).toString();
+                            result
+                    ));
 
-                    Signed<String> signature = new Signed<>(data, replyDigestSuite);
+                    Signed<String> signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
 
                     return dataToBytes(new ReplicaReply(requestId, signature, result.encode(), getRecentTransactions(replicatedRequest.getLastTransactionId())));
                 }
@@ -219,15 +231,20 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
             Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
 
-            String data = new TestimonyData(
-                    replicatedRequest.getOperation(),
-                    "",
-                    result.toString()
-            ).toString();
+            String data = null;
+            try {
+                data = mapper.writeValueAsString(new TestimonyData<>(
+                        replicatedRequest.getOperation(),
+                        "",
+                        result
+                ));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
 
             Signed<String> signature = null;
             try {
-                signature = new Signed<>(data, replyDigestSuite);
+                signature = new Signed<>(data.getBytes(StandardCharsets.UTF_8),replyDigestSuite);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -39,7 +39,7 @@ public class TransactionEntity implements Serializable {
             stringToBytes(sender),
             stringToBytes(recipient),
             amount,
-            Timestamp.fromString(date),
+            date,
             stringToBytes(hashPreviousTransaction)
         );
     }

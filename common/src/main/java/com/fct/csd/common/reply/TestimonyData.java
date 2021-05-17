@@ -5,13 +5,13 @@ import com.fct.csd.common.request.LedgerOperation;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class TestimonyData implements Serializable {
+public class TestimonyData<T,E> implements Serializable {
 
     private LedgerOperation operation;
-    private String request;
-    private String reply;
+    private T request;
+    private E reply;
 
-    public TestimonyData(LedgerOperation operation, String request, String reply) {
+    public TestimonyData(LedgerOperation operation, T request, E reply) {
         this.operation = operation;
         this.request = request;
         this.reply = reply;
@@ -28,19 +28,19 @@ public class TestimonyData implements Serializable {
         this.operation = operation;
     }
 
-    public String getRequest() {
+    public T getRequest() {
         return request;
     }
 
-    public void setRequest(String request) {
+    public void setRequest(T request) {
         this.request = request;
     }
 
-    public String getReply() {
+    public E getReply() {
         return reply;
     }
 
-    public void setReply(String reply) {
+    public void setReply(E reply) {
         this.reply = reply;
     }
 
@@ -48,7 +48,7 @@ public class TestimonyData implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TestimonyData that = (TestimonyData) o;
+        TestimonyData<?, ?> that = (TestimonyData<?, ?>) o;
         return operation == that.operation && request.equals(that.request) && reply.equals(that.reply);
     }
 
@@ -61,8 +61,8 @@ public class TestimonyData implements Serializable {
     public String toString() {
         return "TestimonyData{" +
                 "operation=" + operation +
-                ", request='" + request + '\'' +
-                ", reply='" + reply + '\'' +
+                ", request=" + request +
+                ", reply=" + reply +
                 '}';
     }
 }

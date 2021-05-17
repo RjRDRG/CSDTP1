@@ -1,8 +1,6 @@
 package com.fct.csd.proxy.repository;
 
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.util.Serialization;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +17,7 @@ public class TransactionEntity implements Serializable {
     private String sender;
     private String recipient;
     private double amount;
-    private Timestamp date;
+    private String date;
     @Column(length = 2000)
     private String hashPreviousTransaction;
 
@@ -30,7 +28,7 @@ public class TransactionEntity implements Serializable {
         this.sender = bytesToString(transaction.getSender());
         this.recipient = bytesToString(transaction.getRecipient());
         this.amount = transaction.getAmount();
-        this.date = transaction.getDate();
+        this.date = transaction.getDate().toString();
         this.hashPreviousTransaction = bytesToString(transaction.getHashPreviousTransaction());
     }
 
@@ -66,11 +64,11 @@ public class TransactionEntity implements Serializable {
         this.amount = amount;
     }
 
-    public Timestamp getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Timestamp date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
@@ -102,7 +100,7 @@ public class TransactionEntity implements Serializable {
                 ", sender='" + sender + '\'' +
                 ", recipient='" + recipient + '\'' +
                 ", amount=" + amount +
-                ", date=" + date +
+                ", date='" + date + '\'' +
                 ", hashPreviousTransaction='" + hashPreviousTransaction + '\'' +
                 '}';
     }

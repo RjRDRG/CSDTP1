@@ -1,5 +1,6 @@
 package com.fct.csd.proxy.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.reply.ReplicaReply;
@@ -27,7 +28,7 @@ public class TestimonyEntity implements Serializable {
     private String timestamp;
 
     @Column(length = 5000)
-    private String request; //TODO needs to be data not string?
+    private String data;
 
     @Column(length = 2000)
     private String signature;
@@ -36,12 +37,12 @@ public class TestimonyEntity implements Serializable {
         this.requestId = reply.getRequestId();
         this.matchedReplies = matchedReplies;
         this.timestamp = Timestamp.now().toString();
-        this.request = reply.getTestimony().extractData();
+        this.data = new String(reply.getTestimony().getData());
         this.signature = bytesToString(reply.getTestimony().getSignature());
     }
 
-    public Testimony toItem() {
-        return new Testimony(requestId, matchedReplies, new Signed<TestimonyData>(dataToBytes(request), stringToBytes(signature)));
+    public Testimony toItem(ObjectMapper mapper) {
+        return new Testimony(requestId, matchedReplies, timestamp, data, signature);
     }
 
     public TestimonyEntity() {
@@ -79,12 +80,12 @@ public class TestimonyEntity implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public String getRequest() {
-        return request;
+    public String getData() {
+        return data;
     }
 
-    public void setRequest(String request) {
-        this.request = request;
+    public void setData(String request) {
+        this.data = request;
     }
 
     public String getSignature() {
@@ -100,12 +101,12 @@ public class TestimonyEntity implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TestimonyEntity that = (TestimonyEntity) o;
-        return requestId == that.requestId && matchedReplies == that.matchedReplies && id.equals(that.id) && timestamp.equals(that.timestamp) && request.equals(that.request) && signature.equals(that.signature);
+        return requestId == that.requestId && matchedReplies == that.matchedReplies && id.equals(that.id) && timestamp.equals(that.timestamp) && data.equals(that.data) && signature.equals(that.signature);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, requestId, matchedReplies, timestamp, request, signature);
+        return Objects.hash(id, requestId, matchedReplies, timestamp, data, signature);
     }
 
     @Override
@@ -115,7 +116,7 @@ public class TestimonyEntity implements Serializable {
                 ", requestId=" + requestId +
                 ", matchedReplies=" + matchedReplies +
                 ", timestamp='" + timestamp + '\'' +
-                ", request='" + request + '\'' +
+                ", data='" + data + '\'' +
                 ", signature='" + signature + '\'' +
                 '}';
     }

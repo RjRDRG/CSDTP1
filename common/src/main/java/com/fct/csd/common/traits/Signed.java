@@ -16,6 +16,11 @@ public class Signed<T extends Serializable> implements Serializable {
 		this.signature = suite.digest(this.data);
 	}
 
+	public Signed(byte[] data, IDigestSuite suite) throws Exception {
+		this.data = data;
+		this.signature = suite.digest(this.data);
+	}
+
 	public Signed(byte[] data, byte[] signature) {
 		this.data = data;
 		this.signature = signature;
