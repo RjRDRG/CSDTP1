@@ -65,11 +65,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 );
         this.replyDigestSuite = new FlexibleDigestSuite(suiteConfiguration, SignatureSuite.Mode.Digest);
 
-        try {
-            this.requestCounter = ledgerService.repository.findTopByOrderByIdDesc().get(0).getId() + 1;
-        } catch (NullPointerException e) {
-            this.requestCounter = 1L;
-        }
+        this.requestCounter = 0;
     }
 
     public void start(String[] args) {
