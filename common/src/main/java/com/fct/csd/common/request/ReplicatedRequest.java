@@ -3,33 +3,52 @@ package com.fct.csd.common.request;
 import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static com.fct.csd.common.util.Serialization.bytesToString;
-
 public class ReplicatedRequest implements Serializable {
 
+    private String requestId;
+    private OffsetDateTime timestamp;
     private LedgerOperation operation;
     private byte[] request;
     private Timestamp date;
-    private long lastEntryId;
+    private long lastBlockId;
 
-    public ReplicatedRequest(LedgerOperation operation, byte[] request, long lastEntryId) {
+    public ReplicatedRequest(String requestId, LedgerOperation operation, byte[] request, long lastBlockId) {
+        this.requestId = requestId;
+        this.timestamp = OffsetDateTime.now();
         this.operation = operation;
         this.request = request;
         this.date = Timestamp.now();
-        this.lastEntryId = lastEntryId;
+        this.lastBlockId = lastBlockId;
     }
 
-    public ReplicatedRequest(LedgerOperation operation, long lastEntryId) {
+    public ReplicatedRequest(LedgerOperation operation, long lastBlockId) {
         this.operation = operation;
         this.request = new byte[0];
         this.date = Timestamp.now();
-        this.lastEntryId = lastEntryId;
+        this.lastBlockId = lastBlockId;
     }
 
     ReplicatedRequest() {
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public OffsetDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(OffsetDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 
     public LedgerOperation getOperation() {
@@ -56,12 +75,12 @@ public class ReplicatedRequest implements Serializable {
         this.date = date;
     }
 
-    public long getLastTransactionId() {
-        return lastEntryId;
+    public long getLastBlockId() {
+        return lastBlockId;
     }
 
-    public void setLastEntryId(long lastEntryId) {
-        this.lastEntryId = lastEntryId;
+    public void setLastBlockId(long lastBlockId) {
+        this.lastBlockId = lastBlockId;
     }
 
     @Override
@@ -69,12 +88,12 @@ public class ReplicatedRequest implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ReplicatedRequest that = (ReplicatedRequest) o;
-        return lastEntryId == that.lastEntryId && operation == that.operation && Arrays.equals(request, that.request) && date.equals(that.date);
+        return lastBlockId == that.lastBlockId && requestId.equals(that.requestId) && timestamp.equals(that.timestamp) && operation == that.operation && Arrays.equals(request, that.request) && date.equals(that.date);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(operation, date, lastEntryId);
+        int result = Objects.hash(requestId, timestamp, operation, date, lastBlockId);
         result = 31 * result + Arrays.hashCode(request);
         return result;
     }
@@ -82,10 +101,12 @@ public class ReplicatedRequest implements Serializable {
     @Override
     public String toString() {
         return "ReplicatedRequest{" +
-                "operation=" + operation +
-                ", request=" + bytesToString(request) +
-                ", date=" + date.toString() +
-                ", lastEntryId=" + lastEntryId +
+                "requestId=" + requestId +
+                ", timestamp=" + timestamp +
+                ", operation=" + operation +
+                ", request=" + Arrays.toString(request) +
+                ", date=" + date +
+                ", lastBlockId=" + lastBlockId +
                 '}';
     }
 }

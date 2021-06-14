@@ -1,6 +1,7 @@
 
 package com.fct.csd.replica.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -13,19 +14,17 @@ import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
-import com.fct.csd.replica.repository.TransactionEntity;
-import com.fct.csd.replica.repository.TransactionRepository;
+import com.fct.csd.replica.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.fct.csd.common.util.Serialization.*;
 
@@ -36,16 +35,23 @@ public class LedgerService {
 
     private static final Logger log = LoggerFactory.getLogger(LedgerService.class);
 
-    public final TransactionRepository repository;
+    @Autowired
+    private ObjectMapper mapper;
     private final Environment environment;
+
+    public final OpenTransactionRepository openTransactionRepository;
+    public final TransactionRepository transactionRepository;
+    public final BlockRepository blockRepository;
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
 
-    private final IDigestSuite transactionChainDigestSuite;
+    private final IDigestSuite blockChainDigestSuite;
 
-    public LedgerService(TransactionRepository repository, Environment environment) throws Exception {
-        this.repository = repository;
+    public LedgerService(OpenTransactionRepository openTransactionRepository, TransactionRepository transactionRepository, BlockRepository blockRepository, Environment environment) throws Exception {
+        this.openTransactionRepository = openTransactionRepository;
+        this.transactionRepository = transactionRepository;
+        this.blockRepository = blockRepository;
         this.environment = environment;
 
         ISuiteConfiguration clientIdSuiteConfiguration =
@@ -59,21 +65,27 @@ public class LedgerService {
 
         ISuiteConfiguration transactionChainSuiteConfiguration =
                 new SuiteConfiguration(
-                        new IniSpecification("transaction_chain_digest_suite", CONFIG_PATH),
+                        new IniSpecification("block_chain_digest_suite", CONFIG_PATH),
                         new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
-        this.transactionChainDigestSuite = new FlexibleDigestSuite(transactionChainSuiteConfiguration, SignatureSuite.Mode.Digest);
+        this.blockChainDigestSuite = new FlexibleDigestSuite(transactionChainSuiteConfiguration, SignatureSuite.Mode.Digest);
     }
 
-    private String hashPreviousTransaction() throws Exception {
-        List<TransactionEntity> previous = repository.findTopByOrderByIdDesc();
-        byte[] hashPreviousTransaction = new byte[0];
-        if (!previous.isEmpty())
-            hashPreviousTransaction = transactionChainDigestSuite.digest(dataToBytes(previous.get(0)));
+    @PostConstruct
+    private void genesisBlock() {
+        BlockEntity genesis = new BlockEntity(0, 0, null, "GENESIS", 0, null, new ArrayList<>(0));
+        log.info("Genesis " + blockRepository.save(genesis));
+    }
+
+    private String hashPreviousBlock() throws Exception {
+        BlockEntity previous = blockRepository.findTopByOrderByIdDesc();
+
+        byte[] hashPreviousTransaction = blockChainDigestSuite.digest(mapper.writeValueAsString(previous).getBytes(StandardCharsets.UTF_8));
+
         return bytesToString(hashPreviousTransaction);
     }
 
-    public Result<Transaction> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, long requestId, Timestamp date) {
+    public Result<Transaction> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, String requestId, Timestamp date) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -83,14 +95,14 @@ public class LedgerService {
             ObtainRequestBody requestBody = request.getRequestBody().getData();
 
             TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), date.toString(), hashPreviousTransaction());
-            return Result.ok(repository.save(t).toItem());
+            return Result.ok(transactionRepository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
         }
     }
 
-    public Result<Transaction> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, long requestId, Timestamp date) {
+    public Result<Transaction> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, String requestId, Timestamp date) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -101,76 +113,7 @@ public class LedgerService {
             String recipientId = bytesToString(requestBody.getRecipientId());
 
             TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), date.toString(), hashPreviousTransaction());
-            return Result.ok(repository.save(t).toItem());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
-        }
-    }
-
-    public Result<Double> consultBalance(AuthenticatedRequest<ConsultBalanceRequestBody> request) {
-        try {
-            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-
-            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
-
-            String clientId = bytesToString(request.getClientId());
-            List<TransactionEntity> received = repository.findByRecipient(clientId);
-            List<TransactionEntity> sent = repository.findBySender(clientId);
-
-            if (received.isEmpty() && sent.isEmpty())
-                return Result.error(Result.Status.NOT_FOUND, "Client not found");
-
-            double balance = 0.0;
-            for (TransactionEntity t : received) {
-                balance += t.getAmount();
-            }
-
-            for (TransactionEntity t : sent) {
-                balance -= t.getAmount();
-            }
-
-            return Result.ok(balance);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
-        }
-    }
-
-    public Result<Transaction[]> allTransactions(AllTransactionsRequestBody request) {
-        try {
-            ZonedDateTime initDate = ZonedDateTime.parse(request.getInitDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
-            ZonedDateTime endDate = ZonedDateTime.parse(request.getEndDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
-            return Result.ok(repository.findAll().stream()
-                    .filter(te-> {
-                        ZonedDateTime date = ZonedDateTime.parse(te.getDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
-                        return date.isAfter(initDate) && date.isBefore(endDate);
-                    })
-                    .map(TransactionEntity::toItem).toArray(Transaction[]::new)
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
-        }
-    }
-
-    public Result<Transaction[]> clientTransactions(ClientTransactionsRequestBody request) {
-        try {
-            ZonedDateTime initDate = ZonedDateTime.parse(request.getInitDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
-            ZonedDateTime endDate = ZonedDateTime.parse(request.getEndDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
-
-            List<TransactionEntity> transactions = repository.findBySenderOrRecipient(request.getClientId(),request.getClientId());
-
-            if (transactions.isEmpty())
-                return Result.error(Result.Status.NOT_FOUND, "Client not found");
-
-            return Result.ok(transactions.stream()
-                    .filter(te-> {
-                        ZonedDateTime date = ZonedDateTime.parse(te.getDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
-                        return date.isAfter(initDate) && date.isBefore(endDate);
-                    })
-                    .map(TransactionEntity::toItem).toArray(Transaction[]::new)
-            );
+            return Result.ok(transactionRepository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());

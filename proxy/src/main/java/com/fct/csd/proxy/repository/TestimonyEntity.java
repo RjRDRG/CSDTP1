@@ -41,7 +41,7 @@ public class TestimonyEntity implements Serializable {
         this.signature = bytesToString(reply.getTestimony().getSignature());
     }
 
-    public Testimony toItem(ObjectMapper mapper) {
+    public Testimony toItem() {
         return new Testimony(requestId, matchedReplies, timestamp, data, signature);
     }
 

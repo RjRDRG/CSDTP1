@@ -1,36 +1,32 @@
 package com.fct.csd.common.item;
 
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.Objects;
-
-import static com.fct.csd.common.util.Serialization.bytesToString;
 
 public class Transaction implements Serializable {
 
-    private long id;
+    private String id;
     private byte[] sender;
     private byte[] recipient;
     private double amount;
-    private String date;
-    private byte[] hashPreviousTransaction;
+    private OffsetDateTime timestamp;
 
-    public Transaction(long id, byte[] sender, byte[] recipient, double amount, String date, byte[] hashPreviousTransaction) {
+    public Transaction(String id, byte[] sender, byte[] recipient, double amount, OffsetDateTime timestamp) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
-        this.date = date;
-        this.hashPreviousTransaction = hashPreviousTransaction;
+        this.timestamp = timestamp;
     }
 
     public Transaction() {}
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -58,48 +54,22 @@ public class Transaction implements Serializable {
         this.amount = amount;
     }
 
-    public String getDate() {
-        return date;
+    public OffsetDateTime getTimestamp() {
+        return timestamp;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public byte[] getHashPreviousTransaction() {
-        return hashPreviousTransaction;
-    }
-
-    public void setHashPreviousTransaction(byte[] hashPreviousTransaction) {
-        this.hashPreviousTransaction = hashPreviousTransaction;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Transaction that = (Transaction) o;
-        return id == that.id && Double.compare(that.amount, amount) == 0 && Arrays.equals(sender, that.sender) && Arrays.equals(recipient, that.recipient) && date.equals(that.date) && Arrays.equals(hashPreviousTransaction, that.hashPreviousTransaction);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(id, amount, date);
-        result = 31 * result + Arrays.hashCode(sender);
-        result = 31 * result + Arrays.hashCode(recipient);
-        result = 31 * result + Arrays.hashCode(hashPreviousTransaction);
-        return result;
+    public void setTimestamp(OffsetDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override
     public String toString() {
         return "Transaction{" +
-                "id=" + id +
-                ", sender=" + bytesToString(sender) +
-                ", recipient=" + bytesToString(recipient) +
+                "id='" + id + '\'' +
+                ", sender=" + Arrays.toString(sender) +
+                ", recipient=" + Arrays.toString(recipient) +
                 ", amount=" + amount +
-                ", date=" + date +
-                ", hashPreviousTransaction=" + bytesToString(hashPreviousTransaction) +
+                ", timestamp=" + timestamp +
                 '}';
     }
 }

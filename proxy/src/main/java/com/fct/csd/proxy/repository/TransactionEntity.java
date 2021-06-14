@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
@@ -13,13 +14,12 @@ import static com.fct.csd.common.util.Serialization.bytesToString;
 @Entity
 public class TransactionEntity implements Serializable {
 
-    private @Id Long id;
+    private @Id
+    String id;
     private String sender;
     private String recipient;
     private double amount;
-    private String date;
-    @Column(length = 2000)
-    private String hashPreviousTransaction;
+    private OffsetDateTime date;
 
     public TransactionEntity() {}
 
@@ -28,15 +28,14 @@ public class TransactionEntity implements Serializable {
         this.sender = bytesToString(transaction.getSender());
         this.recipient = bytesToString(transaction.getRecipient());
         this.amount = transaction.getAmount();
-        this.date = transaction.getDate().toString();
-        this.hashPreviousTransaction = bytesToString(transaction.getHashPreviousTransaction());
+        this.date = transaction.getTimestamp();
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -64,44 +63,22 @@ public class TransactionEntity implements Serializable {
         this.amount = amount;
     }
 
-    public String getDate() {
+    public OffsetDateTime getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(OffsetDateTime date) {
         this.date = date;
-    }
-
-    public String getHashPreviousTransaction() {
-        return hashPreviousTransaction;
-    }
-
-    public void setHashPreviousTransaction(String hashPreviousTransaction) {
-        this.hashPreviousTransaction = hashPreviousTransaction;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TransactionEntity that = (TransactionEntity) o;
-        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient) && date.equals(that.date) && hashPreviousTransaction.equals(that.hashPreviousTransaction);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, sender, recipient, amount, date, hashPreviousTransaction);
     }
 
     @Override
     public String toString() {
         return "TransactionEntity{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", sender='" + sender + '\'' +
                 ", recipient='" + recipient + '\'' +
                 ", amount=" + amount +
-                ", date='" + date + '\'' +
-                ", hashPreviousTransaction='" + hashPreviousTransaction + '\'' +
+                ", date=" + date +
                 '}';
     }
 }

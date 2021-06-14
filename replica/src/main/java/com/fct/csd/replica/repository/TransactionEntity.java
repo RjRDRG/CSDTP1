@@ -1,36 +1,31 @@
 package com.fct.csd.replica.repository;
 
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Transaction;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
-import java.util.Objects;
+import java.time.OffsetDateTime;
 
 import static com.fct.csd.common.util.Serialization.*;
 
 @Entity
 public class TransactionEntity implements Serializable {
 
-    private @Id Long id;
+    private @Id String id;
     private String sender;
     private String recipient;
     private double amount;
-    private String date;
-    @Column(length = 2000)
-    private String hashPreviousTransaction;
+    private OffsetDateTime timestamp;
 
     public TransactionEntity() {}
 
-    public TransactionEntity(Long id, String sender, String recipient, double amount, String date, String hashPreviousTransaction) {
+    public TransactionEntity(String id, String sender, String recipient, double amount, OffsetDateTime timestamp) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
-        this.date = date;
-        this.hashPreviousTransaction = hashPreviousTransaction;
+        this.timestamp = timestamp;
     }
 
     public Transaction toItem() {
@@ -39,16 +34,15 @@ public class TransactionEntity implements Serializable {
             stringToBytes(sender),
             stringToBytes(recipient),
             amount,
-            date,
-            stringToBytes(hashPreviousTransaction)
+            timestamp
         );
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -76,44 +70,22 @@ public class TransactionEntity implements Serializable {
         this.amount = amount;
     }
 
-    public String getDate() {
-        return date;
+    public OffsetDateTime getTimestamp() {
+        return timestamp;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public String getHashPreviousTransaction() {
-        return hashPreviousTransaction;
-    }
-
-    public void setHashPreviousTransaction(String hashPreviousTransaction) {
-        this.hashPreviousTransaction = hashPreviousTransaction;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TransactionEntity that = (TransactionEntity) o;
-        return Double.compare(that.amount, amount) == 0 && id.equals(that.id) && sender.equals(that.sender) && recipient.equals(that.recipient) && date.equals(that.date) && hashPreviousTransaction.equals(that.hashPreviousTransaction);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, sender, recipient, amount, date, hashPreviousTransaction);
+    public void setTimestamp(OffsetDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override
     public String toString() {
         return "TransactionEntity{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", sender='" + sender + '\'' +
                 ", recipient='" + recipient + '\'' +
                 ", amount=" + amount +
-                ", date=" + date +
-                ", hashPreviousTransaction='" + hashPreviousTransaction + '\'' +
+                ", timestamp=" + timestamp +
                 '}';
     }
 }

@@ -11,32 +11,25 @@ import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.request.*;
-import com.fct.csd.common.traits.Result;
 import com.fct.csd.proxy.exceptions.BadRequestException;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
 import com.fct.csd.proxy.exceptions.NotFoundException;
 import com.fct.csd.proxy.exceptions.ServerErrorException;
+import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
 import com.fct.csd.proxy.repository.TransactionEntity;
 import com.fct.csd.proxy.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static com.fct.csd.common.util.Serialization.dataToBytes;
-import static com.fct.csd.proxy.exceptions.ExceptionMapper.throwPossibleException;
-import static org.springframework.util.SerializationUtils.*;
 
 @RestController
 class LedgerController {
-
-    @Autowired
-    private ObjectMapper mapper;
 
     public static final String CONFIG_PATH = "security.conf";
 
@@ -61,7 +54,7 @@ class LedgerController {
     }
 
     @PostMapping("/obtain")
-    public Transaction obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
+    public String obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
 
         boolean valid;
         try {
@@ -72,30 +65,26 @@ class LedgerController {
 
         if(!valid) throw new ForbiddenException("Invalid Signature");
 
+        String requestId = UUID.randomUUID().toString();
+
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
+                requestId,
                 LedgerOperation.OBTAIN,
                 dataToBytes(request),
-                getLastTransactionId()
+                getLastBlockId()
         );
 
-        ReplicaReply replicaReply;
         try{
-            replicaReply = ledgerProxy.invokeOrdered(replicatedRequest);
-            if(!replicaReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
-            }
+            ledgerProxy.invokeAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<Transaction> result = replicaReply.extractReply();
-        throwPossibleException(result);
-
-        return result.value();
+        return requestId;
     }
 
     @PostMapping("/transfer")
-    public Transaction transferValueTokens(@RequestBody AuthenticatedRequest<TransferRequestBody> request) {
+    public String transferValueTokens(@RequestBody AuthenticatedRequest<TransferRequestBody> request) {
 
         boolean valid;
         try {
@@ -108,26 +97,22 @@ class LedgerController {
 
         if(request.getRequestBody().getData().getAmount()<0) throw new BadRequestException("Amount must be positive");
 
+        String requestId = UUID.randomUUID().toString();
+
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
+                requestId,
                 LedgerOperation.TRANSFER,
                 dataToBytes(request),
-                getLastTransactionId()
+                getLastBlockId()
         );
 
-        ReplicaReply replicaReply;
         try{
-            replicaReply = ledgerProxy.invokeOrdered(replicatedRequest);
-            if(!replicaReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
-            }
+            ledgerProxy.invokeAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
 
-        Result<Transaction> result = replicaReply.extractReply();
-        throwPossibleException(result);
-
-        return result.value();
+        return requestId;
     }
 
     @PostMapping("/balance")
@@ -142,82 +127,25 @@ class LedgerController {
 
         if(!valid) throw new ForbiddenException("Invalid Signature");
 
-        ReplicatedRequest replicatedRequest = new ReplicatedRequest(
-                LedgerOperation.BALANCE,
-                dataToBytes(request),
-                getLastTransactionId()
-        );
 
-        ReplicaReply replicaReply;
-        try{
-            replicaReply = ledgerProxy.invokeUnordered(replicatedRequest);
-            if(!replicaReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
-            }
-        } catch (Exception e) {
-            throw new ServerErrorException(e.getMessage());
-        }
 
-        Result<Double> result = replicaReply.extractReply();
-        throwPossibleException(result);
-
-        return result.value();
+        return null;
     }
 
     @PostMapping("/transactions")
     public Transaction[] allTransactions(@RequestBody AllTransactionsRequestBody request) {
-
-        ReplicatedRequest replicatedRequest = new ReplicatedRequest(
-                LedgerOperation.ALL_TRANSACTIONS,
-                dataToBytes(request),
-                getLastTransactionId()
-        );
-
-        ReplicaReply replicaReply;
-        try{
-            replicaReply = ledgerProxy.invokeUnordered(replicatedRequest);
-            if(!replicaReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
-            }
-        } catch (Exception e) {
-            throw new ServerErrorException(e.getMessage());
-        }
-
-        Result<Transaction[]> result = replicaReply.extractReply();
-        throwPossibleException(result);
-
-        return result.value();
+        return null;
     }
 
     @PostMapping("/transactions/client")
     public Transaction[] clientTransactions(@RequestBody ClientTransactionsRequestBody request) {
-
-        ReplicatedRequest replicatedRequest = new ReplicatedRequest(
-                LedgerOperation.CLIENT_TRANSACTIONS,
-                dataToBytes(request),
-                getLastTransactionId()
-        );
-
-        ReplicaReply replicaReply;
-        try{
-            replicaReply = ledgerProxy.invokeUnordered(replicatedRequest);
-            if(!replicaReply.getMissingEntries().isEmpty()) {
-                ledger.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
-            }
-        } catch (Exception e) {
-            throw new ServerErrorException(e.getMessage());
-        }
-
-        Result<Transaction[]> result = replicaReply.extractReply();
-        throwPossibleException(result);
-
-        return result.value();
+        return null;
     }
 
     @GetMapping("/testimonies/{requestId}")
     public Testimony[] consultTestimonies(@PathVariable long requestId) {
         try {
-            Testimony[] t = testimonies.findByRequestId(requestId).stream().map(te -> te.toItem(mapper)).toArray(Testimony[]::new);
+            Testimony[] t = testimonies.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).toArray(Testimony[]::new);
             if (t.length == 0)
                 throw new NotFoundException("Transaction Not Found");
             else
@@ -227,10 +155,81 @@ class LedgerController {
         }
     }
 
-    private long getLastTransactionId() {
-        long lastId = 0L;
+    private String getLastBlockId() {
+        String lastId = 0L;
         List<TransactionEntity> last = ledger.findTopByOrderByIdDesc();
         if(!last.isEmpty()) lastId = last.get(0).getId();
         return lastId;
     }
+
+    /*
+    public Result<Double> consultBalance(AuthenticatedRequest<ConsultBalanceRequestBody> request) {
+        try {
+            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
+
+            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+
+            String clientId = bytesToString(request.getClientId());
+            List<TransactionEntity> received = repository.findByRecipient(clientId);
+            List<TransactionEntity> sent = repository.findBySender(clientId);
+
+            if (received.isEmpty() && sent.isEmpty())
+                return Result.error(Result.Status.NOT_FOUND, "Client not found");
+
+            double balance = 0.0;
+            for (TransactionEntity t : received) {
+                balance += t.getAmount();
+            }
+
+            for (TransactionEntity t : sent) {
+                balance -= t.getAmount();
+            }
+
+            return Result.ok(balance);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    public Result<Transaction[]> allTransactions(AllTransactionsRequestBody request) {
+        try {
+            ZonedDateTime initDate = ZonedDateTime.parse(request.getInitDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            ZonedDateTime endDate = ZonedDateTime.parse(request.getEndDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            return Result.ok(repository.findAll().stream()
+                    .filter(te-> {
+                        ZonedDateTime date = ZonedDateTime.parse(te.getDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                        return date.isAfter(initDate) && date.isBefore(endDate);
+                    })
+                    .map(TransactionEntity::toItem).toArray(Transaction[]::new)
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    public Result<Transaction[]> clientTransactions(ClientTransactionsRequestBody request) {
+        try {
+            ZonedDateTime initDate = ZonedDateTime.parse(request.getInitDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            ZonedDateTime endDate = ZonedDateTime.parse(request.getEndDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+
+            List<TransactionEntity> transactions = repository.findBySenderOrRecipient(request.getClientId(),request.getClientId());
+
+            if (transactions.isEmpty())
+                return Result.error(Result.Status.NOT_FOUND, "Client not found");
+
+            return Result.ok(transactions.stream()
+                    .filter(te-> {
+                        ZonedDateTime date = ZonedDateTime.parse(te.getDate(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                        return date.isAfter(initDate) && date.isBefore(endDate);
+                    })
+                    .map(TransactionEntity::toItem).toArray(Transaction[]::new)
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+     */
 }
