@@ -1,19 +1,18 @@
 package com.fct.csd.common.item;
 
-import com.fct.csd.common.traits.Signed;
-
 import java.io.Serializable;
-import java.util.Objects;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
 
 public class Testimony implements Serializable {
 
-    private long requestId;
+    private String requestId;
     private int matchedReplies;
-    private String timestamp;
+    private OffsetDateTime timestamp;
     private String data;
-    private String signature;
+    private byte[] signature;
 
-    public Testimony(long requestId, int matchedReplies, String timestamp, String data, String signature) {
+    public Testimony(String requestId, int matchedReplies, OffsetDateTime timestamp, String data, byte[] signature) {
         this.requestId = requestId;
         this.matchedReplies = matchedReplies;
         this.timestamp = timestamp;
@@ -24,11 +23,11 @@ public class Testimony implements Serializable {
     public Testimony() {
     }
 
-    public long getRequestId() {
+    public String getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(long requestId) {
+    public void setRequestId(String requestId) {
         this.requestId = requestId;
     }
 
@@ -40,11 +39,11 @@ public class Testimony implements Serializable {
         this.matchedReplies = matchedReplies;
     }
 
-    public String getTimestamp() {
+    public OffsetDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(OffsetDateTime timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -56,35 +55,22 @@ public class Testimony implements Serializable {
         this.data = data;
     }
 
-    public String getSignature() {
+    public byte[] getSignature() {
         return signature;
     }
 
-    public void setSignature(String signature) {
+    public void setSignature(byte[] signature) {
         this.signature = signature;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Testimony testimony = (Testimony) o;
-        return requestId == testimony.requestId && matchedReplies == testimony.matchedReplies && timestamp.equals(testimony.timestamp) && data.equals(testimony.data) && signature.equals(testimony.signature);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(requestId, matchedReplies, timestamp, data, signature);
     }
 
     @Override
     public String toString() {
         return "Testimony{" +
-                "requestId=" + requestId +
+                "requestId='" + requestId + '\'' +
                 ", matchedReplies=" + matchedReplies +
-                ", timestamp='" + timestamp + '\'' +
+                ", timestamp=" + timestamp +
                 ", data='" + data + '\'' +
-                ", signature='" + signature + '\'' +
+                ", signature=" + Arrays.toString(signature) +
                 '}';
     }
 }

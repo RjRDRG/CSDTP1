@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 import static com.fct.csd.common.util.Serialization.*;
@@ -22,7 +23,7 @@ public class TestimonyEntity implements Serializable {
 
     private int matchedReplies;
 
-    private String timestamp;
+    private OffsetDateTime timestamp;
 
     @Column(length = 5000)
     private String data;
@@ -33,13 +34,13 @@ public class TestimonyEntity implements Serializable {
     public TestimonyEntity(ReplicaReply reply, int matchedReplies) {
         this.requestId = reply.getRequestId();
         this.matchedReplies = matchedReplies;
-        this.timestamp = Timestamp.now().toString();
-        this.data = new String(reply.getTestimony().getData());
+        this.timestamp = OffsetDateTime.now();
+        this.data = reply.getTestimony().getData();
         this.signature = bytesToString(reply.getTestimony().getSignature());
     }
 
     public Testimony toItem() {
-        return new Testimony(requestId, matchedReplies, timestamp, data, signature);
+        return new Testimony(requestId, matchedReplies, timestamp, data, stringToBytes(signature));
     }
 
     public TestimonyEntity() {
@@ -69,11 +70,11 @@ public class TestimonyEntity implements Serializable {
         this.matchedReplies = matchedReplies;
     }
 
-    public String getTimestamp() {
+    public OffsetDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(OffsetDateTime timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -81,8 +82,8 @@ public class TestimonyEntity implements Serializable {
         return data;
     }
 
-    public void setData(String request) {
-        this.data = request;
+    public void setData(String data) {
+        this.data = data;
     }
 
     public String getSignature() {
@@ -94,25 +95,12 @@ public class TestimonyEntity implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TestimonyEntity that = (TestimonyEntity) o;
-        return requestId == that.requestId && matchedReplies == that.matchedReplies && id.equals(that.id) && timestamp.equals(that.timestamp) && data.equals(that.data) && signature.equals(that.signature);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, requestId, matchedReplies, timestamp, data, signature);
-    }
-
-    @Override
     public String toString() {
         return "TestimonyEntity{" +
                 "id=" + id +
-                ", requestId=" + requestId +
+                ", requestId='" + requestId + '\'' +
                 ", matchedReplies=" + matchedReplies +
-                ", timestamp='" + timestamp + '\'' +
+                ", timestamp=" + timestamp +
                 ", data='" + data + '\'' +
                 ", signature='" + signature + '\'' +
                 '}';

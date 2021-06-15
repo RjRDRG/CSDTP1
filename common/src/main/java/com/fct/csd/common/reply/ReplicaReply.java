@@ -13,9 +13,9 @@ public class ReplicaReply implements Serializable {
 
     private String requestId;
     private Signed<String> testimony;
-    private List<Block> missingBlocks;
+    private List<Signed<Block>> missingBlocks;
 
-    public ReplicaReply(String requestId, Signed<String> testimony, List<Block> missingBlocks) {
+    public ReplicaReply(String requestId, Signed<String> testimony, List<Signed<Block>> missingBlocks) {
         this.requestId = requestId;
         this.testimony = testimony;
         this.missingBlocks = missingBlocks;
@@ -40,11 +40,11 @@ public class ReplicaReply implements Serializable {
         this.testimony = testimony;
     }
 
-    public List<Block> getMissingBlocks() {
+    public List<Signed<Block>> getMissingBlocks() {
         return missingBlocks;
     }
 
-    public void setMissingBlocks(List<Block> missingBlocks) {
+    public void setMissingBlocks(List<Signed<Block>> missingBlocks) {
         this.missingBlocks = missingBlocks;
     }
 

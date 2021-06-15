@@ -1,42 +1,18 @@
 package com.fct.csd.replica.repository;
 
-import com.fct.csd.common.item.Transaction;
-
-import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-import static com.fct.csd.common.util.Serialization.*;
+@MappedSuperclass
+public abstract class TransactionEntity implements Serializable {
 
-@Entity
-public class TransactionEntity implements Serializable {
-
-    private @Id String id;
-    private String sender;
-    private String recipient;
-    private double amount;
-    private OffsetDateTime timestamp;
-
-    public TransactionEntity() {}
-
-    public TransactionEntity(String id, String sender, String recipient, double amount, OffsetDateTime timestamp) {
-        this.id = id;
-        this.sender = sender;
-        this.recipient = recipient;
-        this.amount = amount;
-        this.timestamp = timestamp;
-    }
-
-    public Transaction toItem() {
-        return new Transaction(
-            id,
-            stringToBytes(sender),
-            stringToBytes(recipient),
-            amount,
-            timestamp
-        );
-    }
+    protected @Id String id;
+    protected String sender;
+    protected String recipient;
+    protected double amount;
+    protected OffsetDateTime timestamp;
 
     public String getId() {
         return id;

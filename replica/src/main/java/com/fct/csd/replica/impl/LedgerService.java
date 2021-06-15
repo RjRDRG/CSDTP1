@@ -68,8 +68,16 @@ public class LedgerService {
 
     @PostConstruct
     private void genesisBlock() {
-        BlockEntity genesis = new BlockEntity(blockCounter++, 0, 0, null, "GENESIS", 0, null, new ArrayList<>(0));
-        log.info("Genesis " + blockRepository.save(genesis));
+        try {
+            Signed<Block> genesis = new Signed<>(
+                    new Block(blockCounter++, 0, 0, OffsetDateTime.now(), null, "GENESIS", 0, null, new ArrayList<>(0)),
+                    blockChainDigestSuite
+            );
+            log.info("Genesis " + blockRepository.save(new BlockEntity(genesis)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private String hashPreviousBlock() throws Exception {
@@ -94,7 +102,7 @@ public class LedgerService {
             String recipientId = bytesToString(request.getClientId());
             ObtainRequestBody requestBody = request.getRequestBody().getData();
 
-            TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), timestamp);
+            OpenTransactionEntity t = new OpenTransactionEntity(requestId, "", recipientId, requestBody.getAmount(), timestamp);
             return Result.ok(openTransactionsRepository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,7 +120,7 @@ public class LedgerService {
             String senderId = bytesToString(request.getClientId());
             String recipientId = bytesToString(requestBody.getRecipientId());
 
-            TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), timestamp);
+            OpenTransactionEntity t = new OpenTransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), timestamp);
             return Result.ok(openTransactionsRepository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();

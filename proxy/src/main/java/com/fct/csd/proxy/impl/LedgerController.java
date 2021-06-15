@@ -1,6 +1,5 @@
 package com.fct.csd.proxy.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -9,21 +8,20 @@ import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.fct.csd.common.item.Block;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
+import com.fct.csd.common.traits.Signed;
 import com.fct.csd.proxy.exceptions.BadRequestException;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
 import com.fct.csd.proxy.exceptions.NotFoundException;
 import com.fct.csd.proxy.exceptions.ServerErrorException;
 import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
-import com.fct.csd.proxy.repository.TransactionEntity;
 import com.fct.csd.proxy.repository.TransactionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.fct.csd.common.util.Serialization.dataToBytes;
@@ -34,16 +32,16 @@ class LedgerController {
     public static final String CONFIG_PATH = "security.conf";
 
     private final LedgerProxy ledgerProxy;
-    private final TransactionRepository ledger;
+    private final TransactionRepository transactions;
     private final TestimonyRepository testimonies;
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
 
-    LedgerController(LedgerProxy ledgerProxy, TransactionRepository ledger, TestimonyRepository testimonies) throws Exception {
+    LedgerController(LedgerProxy ledgerProxy, TransactionRepository transactions, TestimonyRepository testimonies) throws Exception {
         this.ledgerProxy = ledgerProxy;
         this.testimonies = testimonies;
-        this.ledger = ledger;
+        this.transactions = transactions;
         ISuiteConfiguration suiteConfiguration =
                 new SuiteConfiguration(
                         new IniSpecification("client_id_digest_suite", CONFIG_PATH),
@@ -71,7 +69,7 @@ class LedgerController {
                 requestId,
                 LedgerOperation.OBTAIN,
                 dataToBytes(request),
-                getLastBlockId()
+                ledgerProxy.getLastBlock().getData().getId()
         );
 
         try{
@@ -103,7 +101,7 @@ class LedgerController {
                 requestId,
                 LedgerOperation.TRANSFER,
                 dataToBytes(request),
-                getLastBlockId()
+                ledgerProxy.getLastBlock().getData().getId()
         );
 
         try{
@@ -153,13 +151,6 @@ class LedgerController {
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
-    }
-
-    private String getLastBlockId() {
-        String lastId = 0L;
-        List<TransactionEntity> last = ledger.findTopByOrderByIdDesc();
-        if(!last.isEmpty()) lastId = last.get(0).getId();
-        return lastId;
     }
 
     /*

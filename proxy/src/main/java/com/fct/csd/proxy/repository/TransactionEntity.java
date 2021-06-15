@@ -2,12 +2,10 @@ package com.fct.csd.proxy.repository;
 
 import com.fct.csd.common.item.Transaction;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
 

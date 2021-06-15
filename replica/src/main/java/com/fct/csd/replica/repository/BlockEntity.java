@@ -24,12 +24,12 @@ public class BlockEntity implements Serializable {
     private String typePoF;
     private int difficulty;
     private String proof;
-    @OneToMany(targetEntity = TransactionEntity.class, fetch = FetchType.EAGER)
-    private List<TransactionEntity> transactions;
+    @OneToMany(targetEntity = ClosedTransactionEntity.class, fetch = FetchType.EAGER)
+    private List<ClosedTransactionEntity> transactions;
 
     public BlockEntity() {}
 
-    public BlockEntity(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, String blockHash, String typePoF, int difficulty, String proof, List<TransactionEntity> transactions) {
+    public BlockEntity(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, String blockHash, String typePoF, int difficulty, String proof, List<ClosedTransactionEntity> transactions) {
         this.id = id;
         this.version = version;
         this.numberOfTransactions = numberOfTransactions;
@@ -52,6 +52,7 @@ public class BlockEntity implements Serializable {
         this.typePoF = block.getData().getTypePoF();
         this.difficulty = block.getData().getDifficulty();
         this.proof = block.getData().getProof();
+        this.transactions = block.getData().getTransactions().stream().map(ClosedTransactionEntity::new).collect(Collectors.toList());
     }
 
     public Signed<Block> toItem() {
@@ -65,7 +66,7 @@ public class BlockEntity implements Serializable {
                 typePoF,
                 difficulty,
                 proof,
-                transactions.stream().map(TransactionEntity::toItem).collect(Collectors.toList())
+                transactions.stream().map(ClosedTransactionEntity::toItem).collect(Collectors.toList())
             ),
             stringToBytes(blockHash)
         );
@@ -143,11 +144,11 @@ public class BlockEntity implements Serializable {
         this.proof = proof;
     }
 
-    public List<TransactionEntity> getTransactions() {
+    public List<ClosedTransactionEntity> getTransactions() {
         return transactions;
     }
 
-    public void setTransactions(List<TransactionEntity> transactions) {
+    public void setTransactions(List<ClosedTransactionEntity> transactions) {
         this.transactions = transactions;
     }
 
