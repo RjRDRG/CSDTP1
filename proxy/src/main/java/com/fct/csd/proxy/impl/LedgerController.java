@@ -11,6 +11,7 @@ import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Block;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.item.TransactionInfo;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Signed;
 import com.fct.csd.proxy.exceptions.BadRequestException;
@@ -52,7 +53,7 @@ class LedgerController {
     }
 
     @PostMapping("/obtain")
-    public String obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
+    public TransactionInfo obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
 
         boolean valid;
         try {
@@ -69,7 +70,7 @@ class LedgerController {
                 requestId,
                 LedgerOperation.OBTAIN,
                 dataToBytes(request),
-                ledgerProxy.getLastBlock().getData().getId()
+                ledgerProxy.getLastBlockId()
         );
 
         try{
@@ -78,11 +79,11 @@ class LedgerController {
             throw new ServerErrorException(e.getMessage());
         }
 
-        return requestId;
+        return new TransactionInfo(requestId, replicatedRequest.getTimestamp());
     }
 
     @PostMapping("/transfer")
-    public String transferValueTokens(@RequestBody AuthenticatedRequest<TransferRequestBody> request) {
+    public TransactionInfo transferValueTokens(@RequestBody AuthenticatedRequest<TransferRequestBody> request) {
 
         boolean valid;
         try {
@@ -101,7 +102,7 @@ class LedgerController {
                 requestId,
                 LedgerOperation.TRANSFER,
                 dataToBytes(request),
-                ledgerProxy.getLastBlock().getData().getId()
+                ledgerProxy.getLastBlockId()
         );
 
         try{
@@ -110,7 +111,7 @@ class LedgerController {
             throw new ServerErrorException(e.getMessage());
         }
 
-        return requestId;
+        return new TransactionInfo(requestId, replicatedRequest.getTimestamp());
     }
 
     @PostMapping("/balance")

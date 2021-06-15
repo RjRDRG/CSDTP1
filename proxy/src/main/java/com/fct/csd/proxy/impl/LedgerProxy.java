@@ -34,12 +34,10 @@ public class LedgerProxy extends AsynchServiceProxy {
     private final TestimonyRepository testimonyRepository;
     private Signed<Block> lastBlock;
 
-    public LedgerProxy(ObjectMapper mapper,
-                       Environment environment,
+    public LedgerProxy(Environment environment,
                        TransactionRepository transactionRepository,
                        TestimonyRepository testimonyRepository) {
         super(environment.getProperty("proxy.id", Integer.class));
-        Serialization.init(mapper);
         this.transactionRepository = transactionRepository;
         this.testimonyRepository = testimonyRepository;
     }
@@ -87,5 +85,12 @@ public class LedgerProxy extends AsynchServiceProxy {
 
     public Signed<Block> getLastBlock() {
         return lastBlock;
+    }
+
+    public long getLastBlockId() {
+        if(lastBlock!=null)
+            return lastBlock.getData().getId();
+        else
+            return -1L;
     }
 }

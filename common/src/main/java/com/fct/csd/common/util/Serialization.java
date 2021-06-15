@@ -7,6 +7,8 @@ import java.nio.ByteOrder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.lang3.SerializationUtils;
 import java.util.Base64;
 
@@ -38,7 +40,17 @@ public class Serialization {
 		return bytes;
 	}
 
-	private static ObjectMapper jsonMapper;
+	public final static ObjectMapper jsonMapper = createObjectMapper();
+
+	private static ObjectMapper createObjectMapper() {
+		ObjectMapper om = new ObjectMapper();
+		om.registerModule(new JavaTimeModule());
+		SimpleModule module = new SimpleModule();
+		module.addSerializer(byte[].class, new ByteSerializer());
+		module.addDeserializer(byte[].class, new ByteDeserializer());
+		om.registerModule(module);
+		return om;
+	}
 
 	public static <T extends Serializable> String dataToJson(T data) throws JsonProcessingException {
 		return jsonMapper.writeValueAsString(data);
@@ -46,9 +58,5 @@ public class Serialization {
 
 	public static <T extends Serializable> T jsonToData(byte[] bytes, Class<T> type) throws IOException {
 		return jsonMapper.readValue(bytes, type);
-	}
-
-	public static void init(ObjectMapper jsonMapper) {
-		Serialization.jsonMapper = jsonMapper;
 	}
 }

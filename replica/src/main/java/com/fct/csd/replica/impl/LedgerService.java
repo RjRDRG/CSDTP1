@@ -45,11 +45,9 @@ public class LedgerService {
     private final SignatureSuite clientSignatureSuite;
     private final IDigestSuite blockChainDigestSuite;
 
-    public LedgerService(ObjectMapper mapper,
-                         OpenTransactionRepository openTransactionsRepository,
+    public LedgerService(OpenTransactionRepository openTransactionsRepository,
                          ClosedTransactionRepository closedTransactionsRepository,
                          BlockRepository blockRepository) throws Exception {
-        Serialization.init(mapper);
         this.openTransactionsRepository = openTransactionsRepository;
         this.closedTransactionsRepository = closedTransactionsRepository;
         this.blockRepository = blockRepository;

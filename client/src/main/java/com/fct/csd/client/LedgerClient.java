@@ -13,6 +13,7 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
+import com.fct.csd.common.item.TransactionInfo;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Signed;
 import com.fct.csd.common.util.Serialization;
@@ -167,9 +168,9 @@ public class LedgerClient {
             Signed<ObtainRequestBody> requestBody = new Signed<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<String> transactionId = restTemplate().postForEntity(uri, request, String.class);
+            ResponseEntity<TransactionInfo> transactionInfo = restTemplate().postForEntity(uri, request, TransactionInfo.class);
 
-            System.out.println(transactionId.getBody());
+            System.out.println(transactionInfo.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -185,9 +186,9 @@ public class LedgerClient {
             Signed<TransferRequestBody> requestBody = new Signed<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<String> transactionId = restTemplate().postForEntity(uri, request, String.class);
+            ResponseEntity<TransactionInfo> transactionInfo = restTemplate().postForEntity(uri, request, TransactionInfo.class);
 
-            System.out.println(transactionId.getBody());
+            System.out.println(transactionInfo.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -256,16 +257,11 @@ public class LedgerClient {
 
     static MappingJackson2HttpMessageConverter createMappingJacksonHttpMessageConverter() {
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        ObjectMapper om = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(byte[].class, new ByteSerializer());
-        module.addDeserializer(byte[].class, new ByteDeserializer());
-        om.registerModule(module);
-        converter.setObjectMapper(om);
+        converter.setObjectMapper(Serialization.jsonMapper);
         return converter;
     }
 
-    static RestTemplate restTemplate() throws Exception {
+    static RestTemplate restTemplate() {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
