@@ -1,5 +1,6 @@
 package com.fct.csd.replica.impl;
 
+import com.fct.csd.replica.repository.BlockEntity;
 import com.fct.csd.replica.repository.TransactionEntity;
 
 import java.io.Serializable;
@@ -7,51 +8,49 @@ import java.util.List;
 import java.util.Objects;
 
 public class Snapshot implements Serializable {
-    private List<TransactionEntity> entityList;
-    private long requestCounter;
+    private List<TransactionEntity> openTransactions;
+    private List<TransactionEntity> closedTransactions;
+    private List<BlockEntity> blocks;
 
-    public Snapshot(List<TransactionEntity> entityList, long requestCounter) {
-        this.entityList = entityList;
-        this.requestCounter = requestCounter;
+    public Snapshot(List<TransactionEntity> openTransactions, List<TransactionEntity> closedTransactions, List<BlockEntity> blocks) {
+        this.openTransactions = openTransactions;
+        this.closedTransactions = closedTransactions;
+        this.blocks = blocks;
     }
 
     public Snapshot() {
     }
 
-    public List<TransactionEntity> getEntityList() {
-        return entityList;
+    public List<TransactionEntity> getOpenTransactions() {
+        return openTransactions;
     }
 
-    public void setEntityList(List<TransactionEntity> entityList) {
-        this.entityList = entityList;
+    public void setOpenTransactions(List<TransactionEntity> openTransactions) {
+        this.openTransactions = openTransactions;
     }
 
-    public long getRequestCounter() {
-        return requestCounter;
+    public List<TransactionEntity> getClosedTransactions() {
+        return closedTransactions;
     }
 
-    public void setRequestCounter(long requestCounter) {
-        this.requestCounter = requestCounter;
+    public void setClosedTransactions(List<TransactionEntity> closedTransactions) {
+        this.closedTransactions = closedTransactions;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Snapshot snapshot = (Snapshot) o;
-        return requestCounter == snapshot.requestCounter && entityList.equals(snapshot.entityList);
+    public List<BlockEntity> getBlocks() {
+        return blocks;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(entityList, requestCounter);
+    public void setBlocks(List<BlockEntity> blocks) {
+        this.blocks = blocks;
     }
 
     @Override
     public String toString() {
         return "Snapshot{" +
-                "entityList=" + entityList +
-                ", requestCounter=" + requestCounter +
+                "openTransactions=" + openTransactions +
+                ", closedTransactions=" + closedTransactions +
+                ", blocks=" + blocks +
                 '}';
     }
 }

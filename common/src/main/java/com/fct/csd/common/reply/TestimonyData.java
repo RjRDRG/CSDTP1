@@ -45,19 +45,6 @@ public class TestimonyData<T,E> implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TestimonyData<?, ?> that = (TestimonyData<?, ?>) o;
-        return operation == that.operation && request.equals(that.request) && reply.equals(that.reply);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(operation, request, reply);
-    }
-
-    @Override
     public String toString() {
         return "TestimonyData{" +
                 "operation=" + operation +

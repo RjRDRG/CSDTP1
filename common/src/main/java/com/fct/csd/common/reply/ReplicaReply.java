@@ -1,5 +1,6 @@
 package com.fct.csd.common.reply;
 
+import com.fct.csd.common.item.Block;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.util.Serialization;
 import com.fct.csd.common.traits.Result;
@@ -7,37 +8,27 @@ import com.fct.csd.common.traits.Signed;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Objects;
 
 public class ReplicaReply implements Serializable {
 
-    private long requestId;
+    private String requestId;
     private Signed<String> testimony;
-    private Result<byte[]> encodedResult;
-    private List<Transaction> missingEntries;
+    private List<Block> missingBlocks;
 
-    public <T extends Serializable> Result<T> extractReply() {
-        if(encodedResult.isOK())
-            return Result.ok((T)Serialization.bytesToData(encodedResult.value()));
-        else
-            return Result.error(encodedResult.error());
-    }
-
-    public ReplicaReply(long requestId, Signed<String> testimony, Result<byte[]> encodedResult, List<Transaction> missingEntries) {
+    public ReplicaReply(String requestId, Signed<String> testimony, List<Block> missingBlocks) {
         this.requestId = requestId;
         this.testimony = testimony;
-        this.encodedResult = encodedResult;
-        this.missingEntries = missingEntries;
+        this.missingBlocks = missingBlocks;
     }
 
     public ReplicaReply() {
     }
 
-    public long getRequestId() {
+    public String getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(long requestId) {
+    public void setRequestId(String requestId) {
         this.requestId = requestId;
     }
 
@@ -49,42 +40,20 @@ public class ReplicaReply implements Serializable {
         this.testimony = testimony;
     }
 
-    public Result<byte[]> getEncodedResult() {
-        return encodedResult;
+    public List<Block> getMissingBlocks() {
+        return missingBlocks;
     }
 
-    public void setEncodedResult(Result<byte[]> encodedResult) {
-        this.encodedResult = encodedResult;
-    }
-
-    public List<Transaction> getMissingEntries() {
-        return missingEntries;
-    }
-
-    public void setMissingEntries(List<Transaction> missingEntries) {
-        this.missingEntries = missingEntries;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ReplicaReply reply = (ReplicaReply) o;
-        return requestId == reply.requestId && testimony.equals(reply.testimony) && encodedResult.equals(reply.encodedResult) && missingEntries.equals(reply.missingEntries);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(requestId, testimony, encodedResult, missingEntries);
+    public void setMissingBlocks(List<Block> missingBlocks) {
+        this.missingBlocks = missingBlocks;
     }
 
     @Override
     public String toString() {
         return "ReplicaReply{" +
-                "requestId=" + requestId +
+                "requestId='" + requestId + '\'' +
                 ", testimony=" + testimony +
-                ", encodedResult=" + encodedResult +
-                ", missingEntries=" + missingEntries +
+                ", missingBlocks=" + missingBlocks +
                 '}';
     }
 }

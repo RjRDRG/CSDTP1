@@ -3,8 +3,7 @@ package com.fct.csd.common.traits;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Objects;
+import java.nio.charset.StandardCharsets;
 
 import static com.fct.csd.common.util.Serialization.*;
 
@@ -15,7 +14,7 @@ public class Signed<T extends Serializable> implements Serializable {
 
 	public Signed(T data, IDigestSuite suite) throws Exception {
 		this.data = data;
-		this.signature = suite.digest(dataToBytes(data));
+		this.signature = suite.digest(dataToJson(data).getBytes(StandardCharsets.UTF_8));
 	}
 
 	public Signed(T data, byte[] signature) {
@@ -24,7 +23,7 @@ public class Signed<T extends Serializable> implements Serializable {
 	}
 
 	public boolean verify(IDigestSuite suite) throws Exception {
-		return suite.verify(dataToBytes(data), signature);
+		return suite.verify(dataToJson(data).getBytes(StandardCharsets.UTF_8), signature);
 	}
 
 	public Signed() {
@@ -47,24 +46,9 @@ public class Signed<T extends Serializable> implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		Signed<?> signed = (Signed<?>) o;
-		return data.equals(signed.data) && Arrays.equals(signature, signed.signature);
-	}
-
-	@Override
-	public int hashCode() {
-		int result = Objects.hash(data);
-		result = 31 * result + Arrays.hashCode(signature);
-		return result;
-	}
-
-	@Override
 	public String toString() {
 		return "Signed{" +
-				"data=" + data +
+				"data=" + data.toString() +
 				", signature=" + bytesToString(signature) +
 				'}';
 	}

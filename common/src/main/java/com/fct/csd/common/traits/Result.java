@@ -45,12 +45,8 @@ public interface Result<T extends Serializable> extends Serializable {
 	 */
 	String message();
 
-	Result<byte[]> encode();
-
 	@Override
 	String toString();
-
-	String arrayToString();
 
 	/**
 	 * Convenience method for returning non error results of the given type
@@ -116,21 +112,9 @@ class OkResult<T extends Serializable> implements Result<T> {
 	}
 
 	@Override
-	public Result<byte[]> encode() {
-		return Result.ok(dataToBytes(result));
-	}
-
-	@Override
 	public String toString() {
 		return "OkResult{" +
 				"result=" + result +
-				'}';
-	}
-
-	@Override
-	public String arrayToString() {
-		return "OkResult{" +
-				"result=" + Arrays.deepToString((Object[]) result) +
 				'}';
 	}
 }
@@ -166,20 +150,10 @@ class ErrorResult<T extends Serializable> implements Result<T> {
 	}
 
 	@Override
-	public Result<byte[]> encode() {
-		return Result.error(error,message);
-	}
-
-	@Override
 	public String toString() {
 		return "ErrorResult{" +
 				"error=" + error +
 				", message='" + message + '\'' +
 				'}';
-	}
-
-	@Override
-	public String arrayToString() {
-		return toString();
 	}
 }

@@ -1,58 +1,53 @@
 
 package com.fct.csd.replica.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
 import com.fct.csd.common.cryptography.config.SuiteConfiguration;
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.fct.csd.common.item.Block;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
+import com.fct.csd.common.traits.Signed;
 import com.fct.csd.replica.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.fct.csd.common.util.Serialization.*;
 
 @Service
 public class LedgerService {
 
-    public static final String CONFIG_PATH = "security.conf";
-
     private static final Logger log = LoggerFactory.getLogger(LedgerService.class);
+    private static final String CONFIG_PATH = "security.conf";
 
-    @Autowired
-    private ObjectMapper mapper;
-    private final Environment environment;
-
-    public final OpenTransactionRepository openTransactionRepository;
-    public final TransactionRepository transactionRepository;
-    public final BlockRepository blockRepository;
+    private final OpenTransactionRepository openTransactionsRepository;
+    private final ClosedTransactionRepository closedTransactionsRepository;
+    private final BlockRepository blockRepository;
+    private long blockCounter;
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
-
     private final IDigestSuite blockChainDigestSuite;
 
-    public LedgerService(OpenTransactionRepository openTransactionRepository, TransactionRepository transactionRepository, BlockRepository blockRepository, Environment environment) throws Exception {
-        this.openTransactionRepository = openTransactionRepository;
-        this.transactionRepository = transactionRepository;
+    public LedgerService(OpenTransactionRepository openTransactionsRepository, ClosedTransactionRepository closedTransactionsRepository, BlockRepository blockRepository) throws Exception {
+        this.openTransactionsRepository = openTransactionsRepository;
+        this.closedTransactionsRepository = closedTransactionsRepository;
         this.blockRepository = blockRepository;
-        this.environment = environment;
+        this.blockCounter = 0;
 
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
@@ -73,19 +68,24 @@ public class LedgerService {
 
     @PostConstruct
     private void genesisBlock() {
-        BlockEntity genesis = new BlockEntity(0, 0, null, "GENESIS", 0, null, new ArrayList<>(0));
+        BlockEntity genesis = new BlockEntity(blockCounter++, 0, 0, null, "GENESIS", 0, null, new ArrayList<>(0));
         log.info("Genesis " + blockRepository.save(genesis));
     }
 
     private String hashPreviousBlock() throws Exception {
         BlockEntity previous = blockRepository.findTopByOrderByIdDesc();
 
-        byte[] hashPreviousTransaction = blockChainDigestSuite.digest(mapper.writeValueAsString(previous).getBytes(StandardCharsets.UTF_8));
+        byte[] hashPreviousTransaction = blockChainDigestSuite.digest(dataToJson(previous).getBytes(StandardCharsets.UTF_8));
 
         return bytesToString(hashPreviousTransaction);
     }
 
-    public Result<Transaction> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, String requestId, Timestamp date) {
+    public List<Signed<Block>> getBlocksAfter(long blockId) {
+        return blockRepository.findByIdGreaterThan(blockId)
+                .stream().map(BlockEntity::toItem).collect(Collectors.toList());
+    }
+
+    public Result<Transaction> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, String requestId, OffsetDateTime timestamp) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -94,15 +94,15 @@ public class LedgerService {
             String recipientId = bytesToString(request.getClientId());
             ObtainRequestBody requestBody = request.getRequestBody().getData();
 
-            TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), date.toString(), hashPreviousTransaction());
-            return Result.ok(transactionRepository.save(t).toItem());
+            TransactionEntity t = new TransactionEntity(requestId, "", recipientId, requestBody.getAmount(), timestamp);
+            return Result.ok(openTransactionsRepository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
         }
     }
 
-    public Result<Transaction> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, String requestId, Timestamp date) {
+    public Result<Transaction> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, String requestId, OffsetDateTime timestamp) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -112,11 +112,30 @@ public class LedgerService {
             String senderId = bytesToString(request.getClientId());
             String recipientId = bytesToString(requestBody.getRecipientId());
 
-            TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), date.toString(), hashPreviousTransaction());
-            return Result.ok(transactionRepository.save(t).toItem());
+            TransactionEntity t = new TransactionEntity(requestId, senderId, recipientId, requestBody.getAmount(), timestamp);
+            return Result.ok(openTransactionsRepository.save(t).toItem());
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
         }
+    }
+
+    public void installSnapshot(Snapshot snapshot) {
+        openTransactionsRepository.deleteAll();
+        openTransactionsRepository.saveAll(snapshot.getOpenTransactions());
+        closedTransactionsRepository.deleteAll();
+        closedTransactionsRepository.saveAll(snapshot.getClosedTransactions());
+        blockRepository.deleteAll();
+        blockRepository.saveAll(snapshot.getBlocks());
+        blockCounter = snapshot.getBlocks().size();
+    }
+
+    public Snapshot getSnapshot() {
+        return new Snapshot(
+                openTransactionsRepository.findAll(),
+                closedTransactionsRepository.findAll(),
+                blockRepository.findAll()
+        );
+
     }
 }

@@ -1,75 +1,35 @@
-package com.fct.csd.replica.repository;
+package com.fct.csd.common.item;
 
-import com.fct.csd.common.item.Block;
-import com.fct.csd.common.traits.Signed;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
-import static com.fct.csd.common.util.Serialization.bytesToString;
-import static com.fct.csd.common.util.Serialization.stringToBytes;
+public class Block implements Serializable {
 
-@Entity
-public class BlockEntity implements Serializable {
-
-    private @Id long id;
+    private long id;
     private int version;
     private int numberOfTransactions;
     private OffsetDateTime timestamp;
     private String previousBlockHash;
-    private String blockHash;
     private String typePoF;
     private int difficulty;
     private String proof;
-    @OneToMany(targetEntity = TransactionEntity.class, fetch = FetchType.EAGER)
-    private List<TransactionEntity> transactions;
+    private List<Transaction> transactions;
 
-    public BlockEntity() {}
-
-    public BlockEntity(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, String blockHash, String typePoF, int difficulty, String proof, List<TransactionEntity> transactions) {
+    public Block(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, String typePoF, int difficulty, String proof, List<Transaction> transactions) {
         this.id = id;
         this.version = version;
         this.numberOfTransactions = numberOfTransactions;
         this.timestamp = timestamp;
         this.previousBlockHash = previousBlockHash;
-        this.blockHash = blockHash;
         this.typePoF = typePoF;
         this.difficulty = difficulty;
         this.proof = proof;
         this.transactions = transactions;
     }
 
-    public BlockEntity(Signed<Block> block) {
-        this.id = block.getData().getId();
-        this.version = block.getData().getVersion();
-        this.numberOfTransactions = block.getData().getNumberOfTransactions();
-        this.timestamp = block.getData().getTimestamp();
-        this.previousBlockHash = block.getData().getPreviousBlockHash();
-        this.blockHash = bytesToString(block.getSignature());
-        this.typePoF = block.getData().getTypePoF();
-        this.difficulty = block.getData().getDifficulty();
-        this.proof = block.getData().getProof();
-    }
-
-    public Signed<Block> toItem() {
-        return new Signed<>(
-            new Block(
-                id,
-                version,
-                numberOfTransactions,
-                timestamp,
-                previousBlockHash,
-                typePoF,
-                difficulty,
-                proof,
-                transactions.stream().map(TransactionEntity::toItem).collect(Collectors.toList())
-            ),
-            stringToBytes(blockHash)
-        );
-    }
+    public Block() {}
 
     public long getId() {
         return id;
@@ -111,14 +71,6 @@ public class BlockEntity implements Serializable {
         this.previousBlockHash = previousBlockHash;
     }
 
-    public String getBlockHash() {
-        return blockHash;
-    }
-
-    public void setBlockHash(String blockHash) {
-        this.blockHash = blockHash;
-    }
-
     public String getTypePoF() {
         return typePoF;
     }
@@ -143,23 +95,22 @@ public class BlockEntity implements Serializable {
         this.proof = proof;
     }
 
-    public List<TransactionEntity> getTransactions() {
+    public List<Transaction> getTransactions() {
         return transactions;
     }
 
-    public void setTransactions(List<TransactionEntity> transactions) {
+    public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
     }
 
     @Override
     public String toString() {
-        return "BlockEntity{" +
+        return "Block{" +
                 "id=" + id +
                 ", version=" + version +
                 ", numberOfTransactions=" + numberOfTransactions +
                 ", timestamp=" + timestamp +
                 ", previousBlockHash='" + previousBlockHash + '\'' +
-                ", blockHash='" + blockHash + '\'' +
                 ", typePoF='" + typePoF + '\'' +
                 ", difficulty=" + difficulty +
                 ", proof='" + proof + '\'' +

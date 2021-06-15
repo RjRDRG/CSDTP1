@@ -1,11 +1,8 @@
 package com.fct.csd.proxy.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.reply.ReplicaReply;
-import com.fct.csd.common.reply.TestimonyData;
-import com.fct.csd.common.traits.Signed;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,7 +18,7 @@ public class TestimonyEntity implements Serializable {
 
     private @Id @GeneratedValue Long id;
 
-    private long requestId;
+    private String requestId;
 
     private int matchedReplies;
 
@@ -56,11 +53,11 @@ public class TestimonyEntity implements Serializable {
         this.id = id;
     }
 
-    public long getRequestId() {
+    public String getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(long requestId) {
+    public void setRequestId(String requestId) {
         this.requestId = requestId;
     }
 

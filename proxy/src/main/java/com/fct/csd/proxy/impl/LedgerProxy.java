@@ -5,8 +5,6 @@ import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.RequestContext;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
-import bftsmart.tom.util.Extractor;
-import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
@@ -17,9 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.fct.csd.common.util.Serialization.*;
@@ -59,7 +55,7 @@ public class LedgerProxy extends AsynchServiceProxy {
                         ReplicaReply replicaReply = bytesToData(reply.getContent());
                         testimonyRepository.save(new TestimonyEntity(replicaReply, replies.size()));
                         if(!missingBlocksSaved) {
-                            transactionRepository.saveAll(replicaReply.getMissingEntries().stream().map(TransactionEntity::new).collect(Collectors.toList()));
+                            transactionRepository.saveAll(replicaReply.getMissingBlocks().stream().map(TransactionEntity::new).collect(Collectors.toList()));
                             missingBlocksSaved = true;
                         }
                     }
