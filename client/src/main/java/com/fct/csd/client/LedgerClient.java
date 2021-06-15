@@ -165,9 +165,9 @@ public class LedgerClient {
             Signed<ObtainRequestBody> requestBody = new Signed<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<Transaction> transaction = restTemplate().postForEntity(uri, request, Transaction.class);
+            ResponseEntity<String> transactionId = restTemplate().postForEntity(uri, request, String.class);
 
-            System.out.println(transaction.getBody());
+            System.out.println(transactionId.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -183,9 +183,9 @@ public class LedgerClient {
             Signed<TransferRequestBody> requestBody = new Signed<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<Transaction> transaction = restTemplate().postForEntity(uri, request, Transaction.class);
+            ResponseEntity<String> transactionId = restTemplate().postForEntity(uri, request, String.class);
 
-            System.out.println(transaction.getBody());
+            System.out.println(transactionId.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
