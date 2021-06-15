@@ -1,23 +1,20 @@
 package com.fct.csd.common.item;
 
+import com.fct.csd.common.traits.Seal;
+
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 
 public class Testimony implements Serializable {
 
     private String requestId;
-    private int matchedReplies;
     private OffsetDateTime timestamp;
-    private String data;
-    private byte[] signature;
+    private Seal<String> data;
 
-    public Testimony(String requestId, int matchedReplies, OffsetDateTime timestamp, String data, byte[] signature) {
+    public Testimony(String requestId, OffsetDateTime timestamp, Seal<String> data) {
         this.requestId = requestId;
-        this.matchedReplies = matchedReplies;
         this.timestamp = timestamp;
         this.data = data;
-        this.signature = signature;
     }
 
     public Testimony() {
@@ -31,14 +28,6 @@ public class Testimony implements Serializable {
         this.requestId = requestId;
     }
 
-    public int getMatchedReplies() {
-        return matchedReplies;
-    }
-
-    public void setMatchedReplies(int matchedReplies) {
-        this.matchedReplies = matchedReplies;
-    }
-
     public OffsetDateTime getTimestamp() {
         return timestamp;
     }
@@ -47,30 +36,20 @@ public class Testimony implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public String getData() {
+    public Seal<String> getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(Seal<String> data) {
         this.data = data;
-    }
-
-    public byte[] getSignature() {
-        return signature;
-    }
-
-    public void setSignature(byte[] signature) {
-        this.signature = signature;
     }
 
     @Override
     public String toString() {
         return "Testimony{" +
                 "requestId='" + requestId + '\'' +
-                ", matchedReplies=" + matchedReplies +
                 ", timestamp=" + timestamp +
-                ", data='" + data + '\'' +
-                ", signature=" + Arrays.toString(signature) +
+                ", data=" + data +
                 '}';
     }
 }

@@ -10,43 +10,36 @@ import static com.fct.csd.common.util.Serialization.stringToBytes;
 
 @Entity
 public class ClosedTransactionEntity extends TransactionEntity{
+    private byte[] previousTransactionHash;
+
     public ClosedTransactionEntity() {
     }
 
-    public ClosedTransactionEntity(String id, String sender, String recipient, double amount, OffsetDateTime timestamp) {
+    public ClosedTransactionEntity(String id, String owner, double amount, OffsetDateTime timestamp, byte[] previousTransactionHash) {
         this.id = id;
-        this.sender = sender;
-        this.recipient = recipient;
+        this.owner = owner;
         this.amount = amount;
         this.timestamp = timestamp;
+        this.previousTransactionHash = previousTransactionHash;
     }
 
     public ClosedTransactionEntity(Transaction transaction) {
         this.id = transaction.getId();
-        this.sender = bytesToString(transaction.getSender());
-        this.recipient = bytesToString(transaction.getRecipient());
+        this.owner = bytesToString(transaction.getOwner());
         this.amount = transaction.getAmount();
         this.timestamp = transaction.getTimestamp();
+        this.previousTransactionHash = transaction.getPreviousTransactionHash();
     }
 
     public Transaction toItem() {
         return new Transaction(
                 id,
-                stringToBytes(sender),
-                stringToBytes(recipient),
+                stringToBytes(owner),
                 amount,
-                timestamp
+                timestamp,
+                previousTransactionHash
         );
     }
 
-    @Override
-    public String toString() {
-        return "ClosedTransactionEntity{" +
-                "id='" + id + '\'' +
-                ", sender='" + sender + '\'' +
-                ", recipient='" + recipient + '\'' +
-                ", amount=" + amount +
-                ", timestamp=" + timestamp +
-                '}';
-    }
+
 }

@@ -1,7 +1,7 @@
 package com.fct.csd.replica.repository;
 
 import com.fct.csd.common.item.Block;
-import com.fct.csd.common.traits.Signed;
+import com.fct.csd.common.traits.Seal;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -42,7 +42,7 @@ public class BlockEntity implements Serializable {
         this.transactions = transactions;
     }
 
-    public BlockEntity(Signed<Block> block) {
+    public BlockEntity(Seal<Block> block) {
         this.id = block.getData().getId();
         this.version = block.getData().getVersion();
         this.numberOfTransactions = block.getData().getNumberOfTransactions();
@@ -55,8 +55,8 @@ public class BlockEntity implements Serializable {
         this.transactions = block.getData().getTransactions().stream().map(ClosedTransactionEntity::new).collect(Collectors.toList());
     }
 
-    public Signed<Block> toItem() {
-        return new Signed<>(
+    public Seal<Block> toItem() {
+        return new Seal<>(
             new Block(
                 id,
                 version,

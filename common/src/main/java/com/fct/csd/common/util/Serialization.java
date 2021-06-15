@@ -52,11 +52,21 @@ public class Serialization {
 		return om;
 	}
 
-	public static <T extends Serializable> String dataToJson(T data) throws JsonProcessingException {
-		return jsonMapper.writeValueAsString(data);
+	public static <T> String dataToJson(T data) {
+		try {
+			return jsonMapper.writeValueAsString(data);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 
-	public static <T extends Serializable> T jsonToData(byte[] bytes, Class<T> type) throws IOException {
-		return jsonMapper.readValue(bytes, type);
+	public static <T> T jsonToData(byte[] bytes, Class<T> type) {
+		try {
+			return jsonMapper.readValue(bytes, type);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 }

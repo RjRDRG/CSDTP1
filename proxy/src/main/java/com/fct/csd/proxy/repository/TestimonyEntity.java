@@ -1,8 +1,8 @@
 package com.fct.csd.proxy.repository;
 
-import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.reply.ReplicaReply;
+import com.fct.csd.common.traits.Seal;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,7 +10,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 import static com.fct.csd.common.util.Serialization.*;
 
@@ -21,8 +20,6 @@ public class TestimonyEntity implements Serializable {
 
     private String requestId;
 
-    private int matchedReplies;
-
     private OffsetDateTime timestamp;
 
     @Column(length = 5000)
@@ -31,16 +28,15 @@ public class TestimonyEntity implements Serializable {
     @Column(length = 2000)
     private String signature;
 
-    public TestimonyEntity(ReplicaReply reply, int matchedReplies) {
+    public TestimonyEntity(ReplicaReply reply) {
         this.requestId = reply.getRequestId();
-        this.matchedReplies = matchedReplies;
         this.timestamp = OffsetDateTime.now();
         this.data = reply.getTestimony().getData();
         this.signature = bytesToString(reply.getTestimony().getSignature());
     }
 
     public Testimony toItem() {
-        return new Testimony(requestId, matchedReplies, timestamp, data, stringToBytes(signature));
+        return new Testimony(requestId, timestamp, new Seal<>(data,stringToBytes(signature)));
     }
 
     public TestimonyEntity() {
@@ -60,14 +56,6 @@ public class TestimonyEntity implements Serializable {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
-    }
-
-    public int getMatchedReplies() {
-        return matchedReplies;
-    }
-
-    public void setMatchedReplies(int matchedReplies) {
-        this.matchedReplies = matchedReplies;
     }
 
     public OffsetDateTime getTimestamp() {
@@ -99,7 +87,6 @@ public class TestimonyEntity implements Serializable {
         return "TestimonyEntity{" +
                 "id=" + id +
                 ", requestId='" + requestId + '\'' +
-                ", matchedReplies=" + matchedReplies +
                 ", timestamp=" + timestamp +
                 ", data='" + data + '\'' +
                 ", signature='" + signature + '\'' +

@@ -12,21 +12,20 @@ import static com.fct.csd.common.util.Serialization.bytesToString;
 @Entity
 public class TransactionEntity implements Serializable {
 
-    private @Id
-    String id;
-    private String sender;
-    private String recipient;
+    private @Id String id;
+    private String owner;
     private double amount;
     private OffsetDateTime date;
+    private String previousTransactionHash;
 
     public TransactionEntity() {}
 
     public TransactionEntity(Transaction transaction) {
         this.id = transaction.getId();
-        this.sender = bytesToString(transaction.getSender());
-        this.recipient = bytesToString(transaction.getRecipient());
+        this.owner = bytesToString(transaction.getOwner());
         this.amount = transaction.getAmount();
         this.date = transaction.getTimestamp();
+        this.previousTransactionHash = bytesToString(transaction.getPreviousTransactionHash());
     }
 
     public String getId() {
@@ -37,20 +36,12 @@ public class TransactionEntity implements Serializable {
         this.id = id;
     }
 
-    public String getSender() {
-        return sender;
+    public String getOwner() {
+        return owner;
     }
 
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getRecipient() {
-        return recipient;
-    }
-
-    public void setRecipient(String recipient) {
-        this.recipient = recipient;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public double getAmount() {
@@ -69,14 +60,22 @@ public class TransactionEntity implements Serializable {
         this.date = date;
     }
 
+    public String getPreviousTransactionHash() {
+        return previousTransactionHash;
+    }
+
+    public void setPreviousTransactionHash(String previousTransactionHash) {
+        this.previousTransactionHash = previousTransactionHash;
+    }
+
     @Override
     public String toString() {
         return "TransactionEntity{" +
                 "id='" + id + '\'' +
-                ", sender='" + sender + '\'' +
-                ", recipient='" + recipient + '\'' +
+                ", owner='" + owner + '\'' +
                 ", amount=" + amount +
                 ", date=" + date +
+                ", previousTransactionHash='" + previousTransactionHash + '\'' +
                 '}';
     }
 }

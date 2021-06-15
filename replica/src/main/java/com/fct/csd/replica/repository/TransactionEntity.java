@@ -9,8 +9,7 @@ import java.time.OffsetDateTime;
 public abstract class TransactionEntity implements Serializable {
 
     protected @Id String id;
-    protected String sender;
-    protected String recipient;
+    protected String owner;
     protected double amount;
     protected OffsetDateTime timestamp;
 
@@ -22,20 +21,12 @@ public abstract class TransactionEntity implements Serializable {
         this.id = id;
     }
 
-    public String getSender() {
-        return sender;
+    public String getOwner() {
+        return owner;
     }
 
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getRecipient() {
-        return recipient;
-    }
-
-    public void setRecipient(String recipient) {
-        this.recipient = recipient;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public double getAmount() {
@@ -52,16 +43,5 @@ public abstract class TransactionEntity implements Serializable {
 
     public void setTimestamp(OffsetDateTime timestamp) {
         this.timestamp = timestamp;
-    }
-
-    @Override
-    public String toString() {
-        return "TransactionEntity{" +
-                "id='" + id + '\'' +
-                ", sender='" + sender + '\'' +
-                ", recipient='" + recipient + '\'' +
-                ", amount=" + amount +
-                ", timestamp=" + timestamp +
-                '}';
     }
 }

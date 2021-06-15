@@ -14,7 +14,7 @@ import static com.fct.csd.common.util.Serialization.dataToBytes;
  *
  * @param <T> type of the result value associated with success
  */
-public interface Result<T extends Serializable> extends Serializable {
+public interface Result<T> extends Serializable {
 
 	enum Status{ OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_ERROR, NOT_IMPLEMENTED, NOT_AVAILABLE };
 
@@ -53,7 +53,7 @@ public interface Result<T extends Serializable> extends Serializable {
 	 * @param result of value of the result
 	 * @return the value of the result
 	 */
-	static <T extends Serializable> Result<T> ok(T result) {
+	static <T> Result<T> ok(T result) {
 		return new OkResult<>(result);
 	}
 
@@ -61,7 +61,7 @@ public interface Result<T extends Serializable> extends Serializable {
 	 * Convenience method for returning non error results without a value
 	 * @return non-error result
 	 */
-	static <T extends Serializable> OkResult<T> ok() {
+	static <T> OkResult<T> ok() {
 		return new OkResult<>(null);	
 	}
 	
@@ -69,7 +69,7 @@ public interface Result<T extends Serializable> extends Serializable {
 	 * Convenience method used to return an error 
 	 * @return
 	 */
-	static <T extends Serializable> ErrorResult<T> error(Status error, String message) {
+	static <T> ErrorResult<T> error(Status error, String message) {
 		return new ErrorResult<>(error,message);		
 	}
 	
@@ -77,13 +77,13 @@ public interface Result<T extends Serializable> extends Serializable {
 	 * Convenience method used to return an error 
 	 * @return
 	 */
-	static <T extends Serializable> ErrorResult<T> error(Status error) {
+	static <T> ErrorResult<T> error(Status error) {
 		return new ErrorResult<>(error,"");		
 	}
 	
 }
 
-class OkResult<T extends Serializable> implements Result<T> {
+class OkResult<T> implements Result<T> {
 
 	final T result;
 
@@ -119,7 +119,7 @@ class OkResult<T extends Serializable> implements Result<T> {
 	}
 }
 
-class ErrorResult<T extends Serializable> implements Result<T> {
+class ErrorResult<T> implements Result<T> {
 
 	final Status error;
 	final String message;

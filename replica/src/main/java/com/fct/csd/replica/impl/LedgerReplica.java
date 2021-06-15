@@ -3,8 +3,6 @@ package com.fct.csd.replica.impl;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -13,22 +11,14 @@ import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
-import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
-import com.fct.csd.common.reply.TestimonyData;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
-import com.fct.csd.common.traits.Signed;
-import com.fct.csd.replica.repository.TransactionEntity;
+import com.fct.csd.common.traits.Seal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.fct.csd.common.util.Serialization.*;
 
@@ -90,29 +80,29 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 }
                 case OBTAIN: {
                     AuthenticatedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
-                    Result<Transaction> result = ledgerService.obtainValueTokens(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
+                    Result<Void> result = ledgerService.obtainValueTokens(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
 
-                    String data = new TestimonyData<>(
+                    String data = testimony(
                             LedgerOperation.OBTAIN,
                             request,
                             result
-                    ).toString();
+                    );
 
-                    Signed<String> testimony = new Signed<>(data,replyDigestSuite);
+                    Seal<String> testimony = new Seal<>(data,replyDigestSuite);
 
                     return new ReplicaReply(replicatedRequest.getRequestId(), testimony, ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()));
                 }
                 case TRANSFER: {
                     AuthenticatedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
-                    Result<Transaction> result = ledgerService.transferValueTokens(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
+                    Result<Void> result = ledgerService.transferValueTokens(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
 
-                    String data = new TestimonyData<>(
+                    String data = testimony(
                             LedgerOperation.TRANSFER,
                             request,
                             result
-                    ).toString();
+                    );
 
-                    Signed<String> testimony = new Signed<>(data,replyDigestSuite);
+                    Seal<String> testimony = new Seal<>(data,replyDigestSuite);
 
                     return new ReplicaReply(replicatedRequest.getRequestId(), testimony, ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()));
                 }
@@ -122,18 +112,26 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         }
 
         try {
-            Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
-            String data = dataToJson(new TestimonyData<>(
+            Result<Void> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
+            String data = testimony(
                     replicatedRequest.getOperation(),
                     replicatedRequest.getRequestId(),
                     result
-            ));
-            Signed<String> testimony = new Signed<>(data,replyDigestSuite);
+            );
+            Seal<String> testimony = new Seal<>(data,replyDigestSuite);
             return new ReplicaReply(replicatedRequest.getRequestId(), testimony, ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public <T,E> String testimony(LedgerOperation operation, T request, E result) {
+        return "Testimony{" +
+                "operation=" + operation +
+                ", request=" + request +
+                ", result=" + result +
+                '}';
     }
 
 }

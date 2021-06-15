@@ -10,9 +10,14 @@ public class SuiteConfiguration implements ISuiteConfiguration {
 	private final ISuiteSpecification spec;
 	private final ISuiteSecrets secrets;
 
-	public SuiteConfiguration(ISuiteSpecification spec, ISuiteSecrets secrets) throws Exception {
+	public SuiteConfiguration(ISuiteSpecification spec, ISuiteSecrets secrets) {
 		this.spec = spec;
 		this.secrets = secrets;
+	}
+
+	public SuiteConfiguration(ISuiteSpecification spec) {
+		this.spec = spec;
+		this.secrets = null;
 	}
 
 	@Override

@@ -4,20 +4,22 @@ import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static com.fct.csd.common.util.Serialization.*;
 
-public class Signed<T extends Serializable> implements Serializable {
+public class Seal<T extends Serializable> implements Serializable {
 
 	T data;
 	byte[] signature;
 
-	public Signed(T data, IDigestSuite suite) throws Exception {
+	public Seal(T data, IDigestSuite suite) throws Exception {
 		this.data = data;
 		this.signature = suite.digest(dataToJson(data).getBytes(StandardCharsets.UTF_8));
 	}
 
-	public Signed(T data, byte[] signature) {
+	public Seal(T data, byte[] signature) {
 		this.data = data;
 		this.signature = signature;
 	}
@@ -26,7 +28,7 @@ public class Signed<T extends Serializable> implements Serializable {
 		return suite.verify(dataToJson(data).getBytes(StandardCharsets.UTF_8), signature);
 	}
 
-	public Signed() {
+	public Seal() {
 	}
 
 	public T getData() {
@@ -47,7 +49,7 @@ public class Signed<T extends Serializable> implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Signed{" +
+		return "Seal{" +
 				"data=" + data.toString() +
 				", signature=" + bytesToString(signature) +
 				'}';

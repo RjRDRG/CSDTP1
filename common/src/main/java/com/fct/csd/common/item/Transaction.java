@@ -7,17 +7,17 @@ import java.util.Arrays;
 public class Transaction implements Serializable {
 
     private String id;
-    private byte[] sender;
-    private byte[] recipient;
+    private byte[] owner;
     private double amount;
     private OffsetDateTime timestamp;
+    private byte[] previousTransactionHash;
 
-    public Transaction(String id, byte[] sender, byte[] recipient, double amount, OffsetDateTime timestamp) {
+    public Transaction(String id, byte[] owner, double amount, OffsetDateTime timestamp, byte[] previousTransactionHash) {
         this.id = id;
-        this.sender = sender;
-        this.recipient = recipient;
+        this.owner = owner;
         this.amount = amount;
         this.timestamp = timestamp;
+        this.previousTransactionHash = previousTransactionHash;
     }
 
     public Transaction() {}
@@ -30,20 +30,12 @@ public class Transaction implements Serializable {
         this.id = id;
     }
 
-    public byte[] getSender() {
-        return sender;
+    public byte[] getOwner() {
+        return owner;
     }
 
-    public void setSender(byte[] sender) {
-        this.sender = sender;
-    }
-
-    public byte[] getRecipient() {
-        return recipient;
-    }
-
-    public void setRecipient(byte[] recipient) {
-        this.recipient = recipient;
+    public void setOwner(byte[] owner) {
+        this.owner = owner;
     }
 
     public double getAmount() {
@@ -62,14 +54,22 @@ public class Transaction implements Serializable {
         this.timestamp = timestamp;
     }
 
+    public byte[] getPreviousTransactionHash() {
+        return previousTransactionHash;
+    }
+
+    public void setPreviousTransactionHash(byte[] previousTransactionHash) {
+        this.previousTransactionHash = previousTransactionHash;
+    }
+
     @Override
     public String toString() {
         return "Transaction{" +
                 "id='" + id + '\'' +
-                ", sender=" + Arrays.toString(sender) +
-                ", recipient=" + Arrays.toString(recipient) +
+                ", owner=" + Arrays.toString(owner) +
                 ", amount=" + amount +
                 ", timestamp=" + timestamp +
+                ", previousTransactionHash=" + Arrays.toString(previousTransactionHash) +
                 '}';
     }
 }

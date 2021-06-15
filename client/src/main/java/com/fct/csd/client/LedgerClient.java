@@ -1,7 +1,5 @@
 package com.fct.csd.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -15,7 +13,7 @@ import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.item.TransactionInfo;
 import com.fct.csd.common.request.*;
-import com.fct.csd.common.traits.Signed;
+import com.fct.csd.common.traits.Seal;
 import com.fct.csd.common.util.Serialization;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -25,7 +23,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -165,7 +162,7 @@ public class LedgerClient {
         try {
             ClientCredentials clientCredentials = credentialsMap.get(walletId);
 
-            Signed<ObtainRequestBody> requestBody = new Signed<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
+            Seal<ObtainRequestBody> requestBody = new Seal<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
             ResponseEntity<TransactionInfo> transactionInfo = restTemplate().postForEntity(uri, request, TransactionInfo.class);
@@ -183,7 +180,7 @@ public class LedgerClient {
             ClientCredentials clientCredentials = credentialsMap.get(walletId);
             ClientCredentials recipientCredentials = credentialsMap.get(recipient);
 
-            Signed<TransferRequestBody> requestBody = new Signed<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
+            Seal<TransferRequestBody> requestBody = new Seal<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
             ResponseEntity<TransactionInfo> transactionInfo = restTemplate().postForEntity(uri, request, TransactionInfo.class);
@@ -200,7 +197,7 @@ public class LedgerClient {
         try {
             ClientCredentials clientCredentials = credentialsMap.get(walletId);
 
-            Signed<ConsultBalanceRequestBody> requestBody = new Signed<>(new ConsultBalanceRequestBody(Timestamp.now().toString()), clientCredentials.signatureSuite);
+            Seal<ConsultBalanceRequestBody> requestBody = new Seal<>(new ConsultBalanceRequestBody(Timestamp.now().toString()), clientCredentials.signatureSuite);
             AuthenticatedRequest<ConsultBalanceRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
             ResponseEntity<Double> balance = restTemplate().postForEntity(uri, request, Double.class);

@@ -2,6 +2,7 @@ package com.fct.csd.common.cryptography.suites.digest;
 
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
@@ -21,6 +22,10 @@ public class HashSuite implements IDigestSuite{
 	@Override
 	public byte[] digest(byte[] input) {
 		return suite.digest(input);
+	}
+
+	public String digest(String input) {
+		return new String(digest(input.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
 	}
 
 	@Override

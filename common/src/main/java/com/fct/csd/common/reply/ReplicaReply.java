@@ -1,21 +1,19 @@
 package com.fct.csd.common.reply;
 
 import com.fct.csd.common.item.Block;
-import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.util.Serialization;
-import com.fct.csd.common.traits.Result;
-import com.fct.csd.common.traits.Signed;
+import com.fct.csd.common.traits.Seal;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 public class ReplicaReply implements Serializable {
 
     private String requestId;
-    private Signed<String> testimony;
-    private List<Signed<Block>> missingBlocks;
+    private Seal<String> testimony;
+    private List<Seal<Block>> missingBlocks;
 
-    public ReplicaReply(String requestId, Signed<String> testimony, List<Signed<Block>> missingBlocks) {
+    public ReplicaReply(String requestId, Seal<String> testimony, List<Seal<Block>> missingBlocks) {
         this.requestId = requestId;
         this.testimony = testimony;
         this.missingBlocks = missingBlocks;
@@ -32,19 +30,19 @@ public class ReplicaReply implements Serializable {
         this.requestId = requestId;
     }
 
-    public Signed<String> getTestimony() {
+    public Seal<String> getTestimony() {
         return testimony;
     }
 
-    public void setTestimony(Signed<String> testimony) {
+    public void setTestimony(Seal<String> testimony) {
         this.testimony = testimony;
     }
 
-    public List<Signed<Block>> getMissingBlocks() {
+    public List<Seal<Block>> getMissingBlocks() {
         return missingBlocks;
     }
 
-    public void setMissingBlocks(List<Signed<Block>> missingBlocks) {
+    public void setMissingBlocks(List<Seal<Block>> missingBlocks) {
         this.missingBlocks = missingBlocks;
     }
 
