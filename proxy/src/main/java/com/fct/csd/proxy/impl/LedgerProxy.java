@@ -14,6 +14,7 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.HashSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Block;
+import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.request.ReplicatedRequest;
 import com.fct.csd.common.traits.Seal;
@@ -25,6 +26,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +44,9 @@ public class LedgerProxy extends AsynchServiceProxy {
 
     private final TransactionRepository transactionRepository;
     private final TestimonyRepository testimonyRepository;
+
     private Seal<Block> lastBlock;
+    private List<Transaction> openTransactions;
 
     public LedgerProxy(Environment environment,
                        TransactionRepository transactionRepository,
@@ -97,6 +102,10 @@ public class LedgerProxy extends AsynchServiceProxy {
                     lastBlock = reply.getMissingBlocks().stream()
                             .reduce(null, (b0, b1) -> b0==null || b1.getData().getId() > b0.getData().getId() ? b1 : b0);
 
+                    synchronized (this) {
+                        openTransactions = reply.getBatchOpenTransactions();
+                    }
+
                     LedgerProxy.super.cleanAsynchRequest(context.getOperationId());
                 }
             }
@@ -112,5 +121,9 @@ public class LedgerProxy extends AsynchServiceProxy {
             return lastBlock.getData().getId();
         else
             return -1L;
+    }
+
+    public synchronized List<Transaction> getOpenTransactions(int number) {
+        return openTransactions.subList(0,number);
     }
 }

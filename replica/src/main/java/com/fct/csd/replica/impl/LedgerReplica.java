@@ -75,8 +75,13 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     private ReplicaReply execute(ReplicatedRequest replicatedRequest) {
         try {
             switch (replicatedRequest.getOperation()) {
-                case FETCH: {
-                    return new ReplicaReply(replicatedRequest.getRequestId(), null, ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()));
+                case PULL: {
+                    return new ReplicaReply(
+                            replicatedRequest.getRequestId(),
+                            null,
+                            ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()),
+                            ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
+                    );
                 }
                 case OBTAIN: {
                     AuthenticatedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
@@ -90,7 +95,12 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     Seal<String> testimony = new Seal<>(data,replyDigestSuite);
 
-                    return new ReplicaReply(replicatedRequest.getRequestId(), testimony, ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()));
+                    return new ReplicaReply(
+                            replicatedRequest.getRequestId(),
+                            testimony,
+                            ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()),
+                            ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
+                    );
                 }
                 case TRANSFER: {
                     AuthenticatedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
@@ -104,7 +114,12 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
                     Seal<String> testimony = new Seal<>(data,replyDigestSuite);
 
-                    return new ReplicaReply(replicatedRequest.getRequestId(), testimony, ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()));
+                    return new ReplicaReply(
+                            replicatedRequest.getRequestId(),
+                            testimony,
+                            ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()),
+                            ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
+                    );
                 }
             }
         } catch (Exception exception) {
@@ -119,7 +134,12 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     result
             );
             Seal<String> testimony = new Seal<>(data,replyDigestSuite);
-            return new ReplicaReply(replicatedRequest.getRequestId(), testimony, ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()));
+            return new ReplicaReply(
+                    replicatedRequest.getRequestId(),
+                    testimony,
+                    ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()),
+                    ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
+            );
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -29,6 +29,7 @@ import static com.fct.csd.common.util.Serialization.dataToBytes;
 class LedgerController {
 
     public static final String CONFIG_PATH = "security.conf";
+    public static final int MIN_POOL_SIZE_OPEN_TRANSACTIONS = 20;
 
     private final LedgerProxy ledgerProxy;
     private final TransactionRepository transactions;
@@ -50,6 +51,10 @@ class LedgerController {
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
     }
 
+    private int getPoolSizeOpenTransactions() {
+        return MIN_POOL_SIZE_OPEN_TRANSACTIONS;
+    }
+
     @PostMapping("/obtain")
     public TransactionInfo obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
 
@@ -68,7 +73,8 @@ class LedgerController {
                 requestId,
                 LedgerOperation.OBTAIN,
                 dataToBytes(request),
-                ledgerProxy.getLastBlockId()
+                ledgerProxy.getLastBlockId(),
+                getPoolSizeOpenTransactions()
         );
 
         try{
@@ -100,7 +106,8 @@ class LedgerController {
                 requestId,
                 LedgerOperation.TRANSFER,
                 dataToBytes(request),
-                ledgerProxy.getLastBlockId()
+                ledgerProxy.getLastBlockId(),
+                getPoolSizeOpenTransactions()
         );
 
         try{

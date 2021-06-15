@@ -10,19 +10,23 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Block;
+import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.common.traits.Seal;
 import com.fct.csd.replica.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.fct.csd.common.util.Serialization.*;
@@ -41,6 +45,7 @@ public class LedgerService {
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
     private final IDigestSuite blockChainDigestSuite;
+    private final IDigestSuite transactionDigestSuite;
 
     public LedgerService(OpenTransactionRepository openTransactionsRepository,
                          ClosedTransactionRepository closedTransactionsRepository,
@@ -59,12 +64,19 @@ public class LedgerService {
 
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
 
-        ISuiteConfiguration transactionChainSuiteConfiguration =
+        ISuiteConfiguration blockChainSuiteConfiguration =
                 new SuiteConfiguration(
                         new IniSpecification("block_chain_digest_suite", CONFIG_PATH),
                         new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
-        this.blockChainDigestSuite = new FlexibleDigestSuite(transactionChainSuiteConfiguration, SignatureSuite.Mode.Digest);
+        this.blockChainDigestSuite = new FlexibleDigestSuite(blockChainSuiteConfiguration, SignatureSuite.Mode.Digest);
+
+        ISuiteConfiguration transactionSuiteConfiguration =
+                new SuiteConfiguration(
+                        new IniSpecification("transaction_digest_suite", CONFIG_PATH),
+                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
+                );
+        this.transactionDigestSuite = new FlexibleDigestSuite(transactionSuiteConfiguration, SignatureSuite.Mode.Digest);
     }
 
     @PostConstruct
@@ -87,11 +99,6 @@ public class LedgerService {
         byte[] hashPreviousTransaction = blockChainDigestSuite.digest(dataToJson(previous).getBytes(StandardCharsets.UTF_8));
 
         return bytesToString(hashPreviousTransaction);
-    }
-
-    public List<Seal<Block>> getBlocksAfter(long blockId) {
-        return blockRepository.findByIdGreaterThan(blockId)
-                .stream().map(BlockEntity::toItem).collect(Collectors.toList());
     }
 
     public Result<Void> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, String requestId, OffsetDateTime timestamp) {
@@ -123,7 +130,7 @@ public class LedgerService {
             String recipientId = bytesToString(requestBody.getRecipientId());
 
             OpenTransactionEntity sender = new OpenTransactionEntity(requestId, senderId, -requestBody.getAmount(), timestamp);
-            OpenTransactionEntity recipient = new OpenTransactionEntity(requestId, recipientId, requestBody.getAmount(), timestamp);
+            OpenTransactionEntity recipient = new OpenTransactionEntity(UUID.randomUUID().toString(), recipientId, requestBody.getAmount(), timestamp);
 
             openTransactionsRepository.save(sender);
             openTransactionsRepository.save(recipient);
@@ -132,6 +139,45 @@ public class LedgerService {
             e.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
         }
+    }
+
+    public List<Seal<Block>> getBlocksAfter(long blockId) {
+        return blockRepository.findByIdGreaterThan(blockId)
+                .stream().map(BlockEntity::toItem).collect(Collectors.toList());
+    }
+
+
+    public List<Transaction> getOpenTransactions(int batchSize) {
+        List<TransactionEntity> entities = openTransactionsRepository.findTopByOrderByTimestampAscIdDesc(PageRequest.of(0, batchSize));
+        List<Transaction> transactions = new ArrayList<>(entities.size());
+        for (int i=0; i<entities.size(); i++) {
+            TransactionEntity entity = entities.get(i);
+
+            byte[] previousHash;
+            if (i==0)
+                previousHash = new byte[0];
+            else {
+                try {
+                    previousHash = transactionDigestSuite.digest(
+                            dataToJson(transactions.get(i-1)).getBytes(StandardCharsets.UTF_8)
+                    );
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                    throw new RuntimeException(exception);
+                }
+            }
+
+            transactions.add(
+                    new Transaction(
+                            entity.getId(),
+                            stringToBytes(entity.getOwner()),
+                            entity.getAmount(),
+                            entity.getTimestamp(),
+                            previousHash
+                    )
+            );
+        }
+        return transactions;
     }
 
     public void installSnapshot(Snapshot snapshot) {

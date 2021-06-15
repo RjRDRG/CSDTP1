@@ -59,24 +59,9 @@ public class AuthenticatedRequest<T extends Serializable> implements Serializabl
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AuthenticatedRequest<?> that = (AuthenticatedRequest<?>) o;
-        return Arrays.equals(clientId, that.clientId) && clientPublicKey.equals(that.clientPublicKey) && requestBody.equals(that.requestBody);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(clientPublicKey, requestBody);
-        result = 31 * result + Arrays.hashCode(clientId);
-        return result;
-    }
-
-    @Override
     public String toString() {
-        return "OrderedRequest{" +
-                "clientId=" + bytesToString(clientId) +
+        return "AuthenticatedRequest{" +
+                "clientId=" + Arrays.toString(clientId) +
                 ", clientPublicKey=" + clientPublicKey +
                 ", requestBody=" + requestBody +
                 '}';

@@ -10,14 +10,17 @@ public class ReplicatedRequest implements Serializable {
     private OffsetDateTime timestamp;
     private LedgerOperation operation;
     private byte[] request;
-    private long lastBlockId;
 
-    public ReplicatedRequest(String requestId, LedgerOperation operation, byte[] request, long lastBlockId) {
+    private long lastBlockId;
+    private int poolSizeOpenTransaction;
+
+    public ReplicatedRequest(String requestId, LedgerOperation operation, byte[] request, long lastBlockId, int poolSizeOpenTransaction) {
         this.requestId = requestId;
         this.timestamp = OffsetDateTime.now();
         this.operation = operation;
         this.request = request;
         this.lastBlockId = lastBlockId;
+        this.poolSizeOpenTransaction = poolSizeOpenTransaction;
     }
 
     ReplicatedRequest() {
@@ -63,6 +66,14 @@ public class ReplicatedRequest implements Serializable {
         this.lastBlockId = lastBlockId;
     }
 
+    public int getPoolSizeOpenTransaction() {
+        return poolSizeOpenTransaction;
+    }
+
+    public void setPoolSizeOpenTransaction(int poolSizeOpenTransaction) {
+        this.poolSizeOpenTransaction = poolSizeOpenTransaction;
+    }
+
     @Override
     public String toString() {
         return "ReplicatedRequest{" +
@@ -71,6 +82,7 @@ public class ReplicatedRequest implements Serializable {
                 ", operation=" + operation +
                 ", request=" + Arrays.toString(request) +
                 ", lastBlockId=" + lastBlockId +
+                ", poolSizeOpenTransaction='" + poolSizeOpenTransaction + '\'' +
                 '}';
     }
 }
