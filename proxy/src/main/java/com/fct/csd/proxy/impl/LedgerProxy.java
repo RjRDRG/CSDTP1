@@ -5,10 +5,12 @@ import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.RequestContext;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.item.Block;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.traits.Signed;
+import com.fct.csd.common.util.Serialization;
 import com.fct.csd.proxy.repository.TestimonyEntity;
 import com.fct.csd.proxy.repository.TestimonyRepository;
 import com.fct.csd.proxy.repository.TransactionEntity;
@@ -32,8 +34,12 @@ public class LedgerProxy extends AsynchServiceProxy {
     private final TestimonyRepository testimonyRepository;
     private Signed<Block> lastBlock;
 
-    public LedgerProxy(TransactionRepository transactionRepository, TestimonyRepository testimonyRepository, Environment environment) {
+    public LedgerProxy(ObjectMapper mapper,
+                       Environment environment,
+                       TransactionRepository transactionRepository,
+                       TestimonyRepository testimonyRepository) {
         super(environment.getProperty("proxy.id", Integer.class));
+        Serialization.init(mapper);
         this.transactionRepository = transactionRepository;
         this.testimonyRepository = testimonyRepository;
     }

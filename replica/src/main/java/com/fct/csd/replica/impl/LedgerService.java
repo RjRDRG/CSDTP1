@@ -1,6 +1,7 @@
 
 package com.fct.csd.replica.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -14,6 +15,7 @@ import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.common.traits.Signed;
+import com.fct.csd.common.util.Serialization;
 import com.fct.csd.replica.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,11 @@ public class LedgerService {
     private final SignatureSuite clientSignatureSuite;
     private final IDigestSuite blockChainDigestSuite;
 
-    public LedgerService(OpenTransactionRepository openTransactionsRepository, ClosedTransactionRepository closedTransactionsRepository, BlockRepository blockRepository) throws Exception {
+    public LedgerService(ObjectMapper mapper,
+                         OpenTransactionRepository openTransactionsRepository,
+                         ClosedTransactionRepository closedTransactionsRepository,
+                         BlockRepository blockRepository) throws Exception {
+        Serialization.init(mapper);
         this.openTransactionsRepository = openTransactionsRepository;
         this.closedTransactionsRepository = closedTransactionsRepository;
         this.blockRepository = blockRepository;

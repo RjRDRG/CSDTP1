@@ -17,5 +17,3 @@ public class ProxyApplication {
     }
 
 }
-
-//TODO: https with mutual authentication or a login system

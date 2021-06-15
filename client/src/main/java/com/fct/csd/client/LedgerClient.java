@@ -15,6 +15,7 @@ import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Signed;
+import com.fct.csd.common.util.Serialization;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
@@ -23,6 +24,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -98,7 +100,7 @@ public class LedgerClient {
 
     static Map<String,ClientCredentials> credentialsMap = new HashMap<>();
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
@@ -241,7 +243,7 @@ public class LedgerClient {
         }
     }
 
-    static void transactionsEvents(String transactionId){ //TODO: fix serialization bug
+    static void transactionsEvents(String transactionId){
         String uri = proxyUrl + ":" + proxyPort + "/testimonies/";
 
         try {
