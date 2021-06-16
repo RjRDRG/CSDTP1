@@ -14,6 +14,8 @@ import static com.fct.csd.common.util.Serialization.dataToJson;
 
 public class ProofOfWork {
 
+    public static final int MAX_PROOF_LENGTH = 255;
+
     public static Block mine(MiningAttemptData data, IDigestSuite digestSuite) {
         Block last = data.getLastMinedBlock().getData();
         Block block = new Block(
@@ -31,14 +33,14 @@ public class ProofOfWork {
 
         String challenge = StringUtils.repeat('0', last.getDifficulty());
         String hex;
-        double length = 5;
+        double length = 4;
         do {
             try {
                 String proof = RandomStringUtils.random((int) length, true, true);
                 block.setProof(proof);
                 byte[] blockHash = digestSuite.digest(dataToJson(block).getBytes(StandardCharsets.UTF_8));
                 hex = bytesToHex(blockHash);
-                length *= 1.1;
+                length = Math.min(MAX_PROOF_LENGTH,length*1.001);
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }

@@ -1,6 +1,7 @@
 package com.fct.csd.common.reply;
 
 import com.fct.csd.common.item.Block;
+import com.fct.csd.common.item.TestimonyData;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.traits.Seal;
 
@@ -8,14 +9,16 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+import static com.fct.csd.common.util.Serialization.dataToJson;
+
 public class ReplicaReply implements Serializable {
 
     private String requestId;
-    private Seal<String> testimony;
+    private Seal<TestimonyData> testimony;
     private List<Seal<Block>> missingBlocks;
     private List<Transaction> batchOpenTransactions;
 
-    public ReplicaReply(String requestId, Seal<String> testimony, List<Seal<Block>> missingBlocks, List<Transaction> batchOpenTransactions) {
+    public ReplicaReply(String requestId, Seal<TestimonyData> testimony, List<Seal<Block>> missingBlocks, List<Transaction> batchOpenTransactions) {
         this.requestId = requestId;
         this.testimony = testimony;
         this.missingBlocks = missingBlocks;
@@ -33,11 +36,11 @@ public class ReplicaReply implements Serializable {
         this.requestId = requestId;
     }
 
-    public Seal<String> getTestimony() {
+    public Seal<TestimonyData> getTestimony() {
         return testimony;
     }
 
-    public void setTestimony(Seal<String> testimony) {
+    public void setTestimony(Seal<TestimonyData> testimony) {
         this.testimony = testimony;
     }
 
@@ -59,11 +62,6 @@ public class ReplicaReply implements Serializable {
 
     @Override
     public String toString() {
-        return "ReplicaReply{" +
-                "requestId='" + requestId + '\'' +
-                ", testimony=" + testimony +
-                ", missingBlocks=" + missingBlocks +
-                ", batchOpenTransactions=" + batchOpenTransactions +
-                '}';
+        return "\nReplicaReply " + dataToJson(this);
     }
 }

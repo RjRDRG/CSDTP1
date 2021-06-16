@@ -61,7 +61,7 @@ public class AuthenticatedRequest<T extends Serializable> implements Serializabl
     @Override
     public String toString() {
         return "AuthenticatedRequest{" +
-                "clientId=" + Arrays.toString(clientId) +
+                "clientId=" + bytesToString(clientId) +
                 ", clientPublicKey=" + clientPublicKey +
                 ", requestBody=" + requestBody +
                 '}';

@@ -75,7 +75,7 @@ public class LedgerService {
     private void genesisBlock() {
         try {
             Seal<Block> genesis = new Seal<>(
-                    new Block(0, 0, 0, OffsetDateTime.now(), "", POW, 1, "", new ArrayList<>(0)),
+                    new Block(0, 0, 0, OffsetDateTime.parse("2021-06-15T10:15:30+00:00"), "", POW, 1, "GENESIS", new ArrayList<>(0)),
                     blockChainDigestSuite
             );
             log.info("Genesis " + blockRepository.save(new BlockEntity(genesis)));
@@ -93,7 +93,7 @@ public class LedgerService {
         return bytesToString(hashPreviousTransaction);
     }
 
-    public Result<Void> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, String requestId, OffsetDateTime timestamp) {
+    public Result<Void> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, OffsetDateTime timestamp) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -102,7 +102,7 @@ public class LedgerService {
             String recipientId = bytesToString(request.getClientId());
             ObtainRequestBody requestBody = request.getRequestBody().getData();
 
-            OpenTransactionEntity t = new OpenTransactionEntity(requestId, recipientId, requestBody.getAmount(), timestamp);
+            OpenTransactionEntity t = new OpenTransactionEntity(recipientId, requestBody.getAmount(), timestamp);
             openTransactionsRepository.save(t);
             return Result.ok();
         } catch (Exception e) {
@@ -111,7 +111,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Void> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, String requestId, OffsetDateTime timestamp) {
+    public Result<Void> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, OffsetDateTime timestamp) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -121,8 +121,8 @@ public class LedgerService {
             String senderId = bytesToString(request.getClientId());
             String recipientId = bytesToString(requestBody.getRecipientId());
 
-            OpenTransactionEntity sender = new OpenTransactionEntity(requestId, senderId, -requestBody.getAmount(), timestamp);
-            OpenTransactionEntity recipient = new OpenTransactionEntity(UUID.randomUUID().toString(), recipientId, requestBody.getAmount(), timestamp);
+            OpenTransactionEntity sender = new OpenTransactionEntity(senderId, -requestBody.getAmount(), timestamp);
+            OpenTransactionEntity recipient = new OpenTransactionEntity(recipientId, requestBody.getAmount(), timestamp);
 
             openTransactionsRepository.save(sender);
             openTransactionsRepository.save(recipient);
@@ -133,7 +133,7 @@ public class LedgerService {
         }
     }
 
-    public synchronized Result<Boolean> submitBlock(AuthenticatedRequest<MineRequestBody> request, String requestId, OffsetDateTime timestamp) {
+    public synchronized Result<Boolean> submitBlock(AuthenticatedRequest<MineRequestBody> request, OffsetDateTime timestamp) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -141,7 +141,13 @@ public class LedgerService {
 
             Block block = request.getRequestBody().getData().getBlock();
 
-            boolean validBlock = validateBlock(block);
+            boolean validBlock;
+            try {
+                validBlock = validateBlock(block);
+            }catch (Exception e) {
+                e.printStackTrace();
+                validBlock = false;
+            }
 
             double amount;
             if (!validBlock) {
@@ -151,16 +157,19 @@ public class LedgerService {
                 amount= MINING_REWARD;
                 try {
                     BlockEntity blockEntity = new BlockEntity(new Seal<>(block, blockChainDigestSuite));
-                    blockRepository.save(blockEntity);
+
                     for (Transaction transaction : block.getTransactions())
                         openTransactionsRepository.deleteById(transaction.getId());
+
+                    blockRepository.save(blockEntity);
                 } catch (Exception exception) {
+                    exception.printStackTrace();
                     return Result.error(Result.Status.INTERNAL_ERROR);
                 }
             }
 
-            OpenTransactionEntity miner = new OpenTransactionEntity(requestId, bytesToString(request.getClientId()), amount, timestamp);
-            OpenTransactionEntity escrow = new OpenTransactionEntity(UUID.randomUUID().toString(), ESCROW_ID, -amount, timestamp);
+            OpenTransactionEntity miner = new OpenTransactionEntity(bytesToString(request.getClientId()), amount, timestamp);
+            OpenTransactionEntity escrow = new OpenTransactionEntity(ESCROW_ID, -amount, timestamp);
 
             openTransactionsRepository.save(miner);
             openTransactionsRepository.save(escrow);
@@ -172,42 +181,40 @@ public class LedgerService {
         }
     }
 
-    public boolean validateBlock(Block block) {
+    public boolean validateBlock(Block block) throws Exception {
         BlockEntity last = blockRepository.findTopByOrderByIdDesc();
+
         if(block.getId()!=last.getId()+1)
-            return false;
+            throw new Exception("Invalid ID");
 
         if (block.getVersion()!=last.getVersion())
-            return false;
+            throw new Exception("Invalid Version");
 
         if(!block.getTypePoF().equals(last.getTypePoF()))
-            return false;
+            throw new Exception("Invalid PoF");
 
         if(block.getDifficulty()!=last.getDifficulty())
-            return false;
+            throw new Exception("Invalid Difficulty");
 
         if (!block.getPreviousBlockHash().equals(last.getBlockHash()))
-            return false;
+            throw new Exception("Invalid Previous Hash");
 
-        try {
-            byte[] h0 = transactionDigestSuite.digest(
-                    dataToJson(getOpenTransactions(block.getNumberOfTransactions())).getBytes(StandardCharsets.UTF_8)
-            );
-            byte[] h1 = transactionDigestSuite.digest(
-                    dataToJson(block.getTransactions()).getBytes(StandardCharsets.UTF_8)
-            );
-            if(Arrays.equals(h0,h1))
-                return false;
-        } catch (Exception exception) {
-            return false;
-        }
+
+        byte[] h0 = transactionDigestSuite.digest(
+                dataToJson(getOpenTransactions(block.getNumberOfTransactions())).getBytes(StandardCharsets.UTF_8)
+        );
+        byte[] h1 = transactionDigestSuite.digest(
+                dataToJson(block.getTransactions()).getBytes(StandardCharsets.UTF_8)
+        );
+        if(!Arrays.equals(h0,h1))
+            throw new Exception("Invalid Transactions:");
 
 
         switch (block.getTypePoF()) {
-            case POW: return ProofOfWork.validate(block, blockChainDigestSuite);
+            case POW: if(!ProofOfWork.validate(block, blockChainDigestSuite)) throw new Exception("Invalid Proof");
         }
 
-        return false;
+        return true;
     }
 
     public List<Seal<Block>> getBlocksAfter(long blockId) {
@@ -217,10 +224,10 @@ public class LedgerService {
 
 
     public List<Transaction> getOpenTransactions(int batchSize) {
-        List<TransactionEntity> entities = openTransactionsRepository.findTopByOrderByTimestampAscIdDesc(PageRequest.of(0, batchSize));
+        List<OpenTransactionEntity> entities = openTransactionsRepository.findByOrderByTimestampAscIdDesc(PageRequest.of(0, batchSize));
         List<Transaction> transactions = new ArrayList<>(entities.size());
         for (int i=0; i<entities.size(); i++) {
-            TransactionEntity entity = entities.get(i);
+            OpenTransactionEntity entity = entities.get(i);
 
             byte[] previousHash;
             if (i==0)

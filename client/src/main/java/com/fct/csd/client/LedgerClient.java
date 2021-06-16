@@ -95,6 +95,7 @@ public class LedgerClient {
                 "e - Consult all transactions of a certain client;     Eg: e {wallet_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "E - Consult all transactions of a certain client;     Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "f - Consult all events of transaction;                Eg: f {transaction_id}\n" +
+                "g - Start mining;                                     Eg: g {client_id}\n" +
                 "z - Exit                                              Eg: z";
     }
 
@@ -149,7 +150,7 @@ public class LedgerClient {
                         transactionsEvents(command[1]);
                         break;
                     case 'g':
-                        mine(command[1], Integer.parseInt(command[2]));
+                        mine(command[1]);
                         break;
                     case 'z':
                         return;
@@ -257,13 +258,15 @@ public class LedgerClient {
         }
     }
 
-    static void mine(String walletId, int size) {
+    static void mine(String walletId) {
         String uri = proxyUrl + ":" + proxyPort + "/block";
 
         try {
             ClientCredentials clientCredentials = credentialsMap.get(walletId);
 
-            ResponseEntity<MiningAttemptData> result = restTemplate().exchange(uri + "/" + size, HttpMethod.GET, null, MiningAttemptData.class);
+            int blockSize = 3;
+
+            ResponseEntity<MiningAttemptData> result = restTemplate().exchange(uri + "/" + blockSize, HttpMethod.GET, null, MiningAttemptData.class);
             MiningAttemptData data = result.getBody();
 
             Block block = null;
@@ -271,7 +274,9 @@ public class LedgerClient {
                 case POW: block = ProofOfWork.mine(data, blockChainDigestSuite);
             }
 
-            if (block==null) throw new Exception("Failed to Mine: " + data.toString());
+            if (block==null) throw new Exception("Failed to Mine: " + data);
+
+            System.out.println(block);
 
             Seal<MineRequestBody> requestBody = new Seal<>(new MineRequestBody(block), clientCredentials.signatureSuite);
             AuthenticatedRequest<MineRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);

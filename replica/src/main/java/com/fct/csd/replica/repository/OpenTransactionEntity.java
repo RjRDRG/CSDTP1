@@ -1,35 +1,36 @@
 package com.fct.csd.replica.repository;
 
-import com.fct.csd.common.item.Transaction;
-
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.time.OffsetDateTime;
 
-import static com.fct.csd.common.util.Serialization.bytesToString;
-
 @Entity
-public class OpenTransactionEntity extends TransactionEntity{
+public class OpenTransactionEntity extends TransactionEntity {
+
+    private @Id @GeneratedValue long id;
+
     public OpenTransactionEntity() {
     }
 
-    public OpenTransactionEntity(String id, String owner, double amount, OffsetDateTime timestamp) {
-        this.id = id;
+    public OpenTransactionEntity(String owner, double amount, OffsetDateTime timestamp) {
         this.owner = owner;
         this.amount = amount;
         this.timestamp = timestamp;
     }
 
-    public OpenTransactionEntity(Transaction transaction) {
-        this.id = transaction.getId();
-        this.owner = bytesToString(transaction.getOwner());
-        this.amount = transaction.getAmount();
-        this.timestamp = transaction.getTimestamp();
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     @Override
     public String toString() {
         return "OpenTransactionEntity{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", owner='" + owner + '\'' +
                 ", amount=" + amount +
                 ", timestamp=" + timestamp +

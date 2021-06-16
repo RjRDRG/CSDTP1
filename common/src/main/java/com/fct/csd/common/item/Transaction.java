@@ -6,13 +6,13 @@ import java.util.Arrays;
 
 public class Transaction implements Serializable {
 
-    private String id;
+    private long id;
     private byte[] owner;
     private double amount;
     private OffsetDateTime timestamp;
     private byte[] previousTransactionHash;
 
-    public Transaction(String id, byte[] owner, double amount, OffsetDateTime timestamp, byte[] previousTransactionHash) {
+    public Transaction(long id, byte[] owner, double amount, OffsetDateTime timestamp, byte[] previousTransactionHash) {
         this.id = id;
         this.owner = owner;
         this.amount = amount;
@@ -22,11 +22,11 @@ public class Transaction implements Serializable {
 
     public Transaction() {}
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 

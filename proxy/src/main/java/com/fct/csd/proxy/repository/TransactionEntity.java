@@ -13,7 +13,8 @@ import static com.fct.csd.common.util.Serialization.stringToBytes;
 @Entity
 public class TransactionEntity implements Serializable {
 
-    private @Id String id;
+    private @Id
+    long id;
     private String owner;
     private double amount;
     private OffsetDateTime timestamp;
@@ -39,11 +40,11 @@ public class TransactionEntity implements Serializable {
         );
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 

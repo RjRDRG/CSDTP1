@@ -24,7 +24,7 @@ public class BlockEntity implements Serializable {
     private TypePoF typePoF;
     private int difficulty;
     private String proof;
-    @OneToMany(targetEntity = ClosedTransactionEntity.class, fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = ClosedTransactionEntity.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<ClosedTransactionEntity> transactions;
 
     public BlockEntity() {}
@@ -46,7 +46,7 @@ public class BlockEntity implements Serializable {
         this.id = block.getData().getId();
         this.version = block.getData().getVersion();
         this.numberOfTransactions = block.getData().getNumberOfTransactions();
-        this.timestamp = OffsetDateTime.now();
+        this.timestamp = block.getData().getTimestamp();
         this.previousBlockHash = block.getData().getPreviousBlockHash();
         this.blockHash = bytesToHex(block.getSignature());
         this.typePoF = block.getData().getTypePoF();
@@ -68,7 +68,7 @@ public class BlockEntity implements Serializable {
                 proof,
                 transactions.stream().map(ClosedTransactionEntity::toItem).collect(Collectors.toList())
             ),
-            stringToBytes(blockHash)
+            hexToBytes(blockHash)
         );
     }
 

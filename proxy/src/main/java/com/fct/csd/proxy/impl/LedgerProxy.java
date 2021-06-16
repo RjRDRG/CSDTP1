@@ -79,24 +79,30 @@ public class LedgerProxy extends AsynchServiceProxy {
                     if(!reply.getRequestId().equals(request.getRequestId()))
                         return;
                 }catch (Exception e) {
+                    e.printStackTrace();
                     return;
                 }
 
-                testimonyRepository.save(new TestimonyEntity(reply));
+                System.out.println(reply);
+
+                if (reply.getTestimony()!=null)
+                    testimonyRepository.save(new TestimonyEntity(reply));
 
                 String branchHash = branchHashSuite.digest(dataToJson(reply.getMissingBlocks()));
                 int branchEndorsements = branches.merge(branchHash, 1, Integer::sum);
 
                 if (branchEndorsements >= q) {
-                    List<TransactionEntity> transactions = reply.getMissingBlocks().stream()
-                                    .flatMap(b-> b.getData().getTransactions().stream())
-                                    .map(TransactionEntity::new)
-                                    .collect(Collectors.toList());
+                    if(!reply.getMissingBlocks().isEmpty()) {
+                        List<TransactionEntity> transactions = reply.getMissingBlocks().stream()
+                                .flatMap(b -> b.getData().getTransactions().stream())
+                                .map(TransactionEntity::new)
+                                .collect(Collectors.toList());
 
-                    transactionRepository.saveAll(transactions);
+                        transactionRepository.saveAll(transactions);
 
-                    lastBlock = reply.getMissingBlocks().stream()
-                            .reduce(null, (b0, b1) -> b0==null || b1.getData().getId() > b0.getData().getId() ? b1 : b0);
+                        lastBlock = reply.getMissingBlocks().stream()
+                                .reduce(null, (b0, b1) -> b0 == null || b1.getData().getId() > b0.getData().getId() ? b1 : b0);
+                    }
 
                     synchronized (this) {
                         openTransactions = reply.getBatchOpenTransactions();
@@ -120,6 +126,7 @@ public class LedgerProxy extends AsynchServiceProxy {
     }
 
     public synchronized List<Transaction> getOpenTransactions(int number) {
+        number = Math.min(number,openTransactions.size());
         return openTransactions.subList(0,number);
     }
 }
