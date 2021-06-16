@@ -94,7 +94,7 @@ public class LedgerClient {
                 "d - Consult all transactions;                         Eg: d {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "e - Consult all transactions of a certain client;     Eg: e {wallet_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "E - Consult all transactions of a certain client;     Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
-                "f - Consult all events of transaction;                Eg: f {transaction_id}\n" +
+                "f - Consult all events of request;                    Eg: f {request_id}\n" +
                 "g - Start mining;                                     Eg: g {client_id}\n" +
                 "z - Exit                                              Eg: z";
     }
