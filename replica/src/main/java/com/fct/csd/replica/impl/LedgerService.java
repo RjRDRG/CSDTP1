@@ -141,9 +141,10 @@ public class LedgerService {
 
             Block block = request.getRequestBody().getData().getBlock();
 
-            boolean validBlock;
+            boolean validBlock = true;
+            List<Long> blockTransactionIds = new ArrayList<>(0);
             try {
-                validBlock = validateBlock(block);
+                blockTransactionIds = validateBlock(block);
             }catch (Exception e) {
                 e.printStackTrace();
                 validBlock = false;
@@ -158,8 +159,8 @@ public class LedgerService {
                 try {
                     BlockEntity blockEntity = new BlockEntity(new Seal<>(block, blockChainDigestSuite));
 
-                    for (Transaction transaction : block.getTransactions())
-                        openTransactionsRepository.deleteById(transaction.getId());
+                    for (Long transactionId : blockTransactionIds)
+                        openTransactionsRepository.deleteById(transactionId);
 
                     blockRepository.save(blockEntity);
                 } catch (Exception exception) {
@@ -181,7 +182,7 @@ public class LedgerService {
         }
     }
 
-    public boolean validateBlock(Block block) throws Exception {
+    public List<Long> validateBlock(Block block) throws Exception {
         BlockEntity last = blockRepository.findTopByOrderByIdDesc();
 
         if(block.getId()!=last.getId()+1)
@@ -199,9 +200,10 @@ public class LedgerService {
         if (!block.getPreviousBlockHash().equals(last.getBlockHash()))
             throw new Exception("Invalid Previous Hash");
 
+        List<OpenTransactionEntity> entities = openTransactionsRepository.findByOrderByTimestampAscAmountAscOwnerAsc(PageRequest.of(0, block.getNumberOfTransactions()));
 
         byte[] h0 = transactionDigestSuite.digest(
-                dataToJson(getOpenTransactions(block.getNumberOfTransactions())).getBytes(StandardCharsets.UTF_8)
+                dataToJson(getTransactions(entities)).getBytes(StandardCharsets.UTF_8)
         );
         byte[] h1 = transactionDigestSuite.digest(
                 dataToJson(block.getTransactions()).getBytes(StandardCharsets.UTF_8)
@@ -214,7 +216,7 @@ public class LedgerService {
             case POW: if(!ProofOfWork.validate(block, blockChainDigestSuite)) throw new Exception("Invalid Proof");
         }
 
-        return true;
+        return entities.stream().map(OpenTransactionEntity::getId).collect(Collectors.toList());
     }
 
     public List<Seal<Block>> getBlocksAfter(long blockId) {
@@ -222,10 +224,22 @@ public class LedgerService {
                 .stream().map(BlockEntity::toItem).collect(Collectors.toList());
     }
 
+    public long getLastClosedTransactionId() {
+        ClosedTransactionEntity entity = closedTransactionsRepository.findTopByOrderByIdDesc();
+        if (entity==null)
+            return 0;
+        else
+            return entity.getId();
+    }
 
     public List<Transaction> getOpenTransactions(int batchSize) {
-        List<OpenTransactionEntity> entities = openTransactionsRepository.findByOrderByTimestampAscIdDesc(PageRequest.of(0, batchSize));
+        List<OpenTransactionEntity> entities = openTransactionsRepository.findByOrderByTimestampAscAmountAscOwnerAsc(PageRequest.of(0, batchSize));
+        return getTransactions(entities);
+    }
+
+    public List<Transaction> getTransactions(List<OpenTransactionEntity> entities) {
         List<Transaction> transactions = new ArrayList<>(entities.size());
+        long id = getLastClosedTransactionId();
         for (int i=0; i<entities.size(); i++) {
             OpenTransactionEntity entity = entities.get(i);
 
@@ -245,7 +259,7 @@ public class LedgerService {
 
             transactions.add(
                     new Transaction(
-                            entity.getId(),
+                            ++id,
                             stringToBytes(entity.getOwner()),
                             entity.getAmount(),
                             entity.getTimestamp(),
@@ -259,16 +273,14 @@ public class LedgerService {
     public void installSnapshot(Snapshot snapshot) {
         openTransactionsRepository.deleteAll();
         openTransactionsRepository.saveAll(snapshot.getOpenTransactions());
-        closedTransactionsRepository.deleteAll();
-        closedTransactionsRepository.saveAll(snapshot.getClosedTransactions());
         blockRepository.deleteAll();
+        closedTransactionsRepository.deleteAll();
         blockRepository.saveAll(snapshot.getBlocks());
     }
 
     public Snapshot getSnapshot() {
         return new Snapshot(
                 openTransactionsRepository.findAll(),
-                closedTransactionsRepository.findAll(),
                 blockRepository.findAll()
         );
     }

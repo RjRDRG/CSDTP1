@@ -11,12 +11,10 @@ import java.util.Objects;
 
 public class Snapshot implements Serializable {
     private List<OpenTransactionEntity> openTransactions;
-    private List<ClosedTransactionEntity> closedTransactions;
     private List<BlockEntity> blocks;
 
-    public Snapshot(List<OpenTransactionEntity> openTransactions, List<ClosedTransactionEntity> closedTransactions, List<BlockEntity> blocks) {
+    public Snapshot(List<OpenTransactionEntity> openTransactions, List<BlockEntity> blocks) {
         this.openTransactions = openTransactions;
-        this.closedTransactions = closedTransactions;
         this.blocks = blocks;
     }
 
@@ -31,28 +29,11 @@ public class Snapshot implements Serializable {
         this.openTransactions = openTransactions;
     }
 
-    public List<ClosedTransactionEntity> getClosedTransactions() {
-        return closedTransactions;
-    }
-
-    public void setClosedTransactions(List<ClosedTransactionEntity> closedTransactions) {
-        this.closedTransactions = closedTransactions;
-    }
-
     public List<BlockEntity> getBlocks() {
         return blocks;
     }
 
     public void setBlocks(List<BlockEntity> blocks) {
         this.blocks = blocks;
-    }
-
-    @Override
-    public String toString() {
-        return "Snapshot{" +
-                "openTransactions=" + openTransactions +
-                ", closedTransactions=" + closedTransactions +
-                ", blocks=" + blocks +
-                '}';
     }
 }

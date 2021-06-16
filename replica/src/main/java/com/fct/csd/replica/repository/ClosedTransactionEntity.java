@@ -5,6 +5,7 @@ import com.fct.csd.common.item.Transaction;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
 import static com.fct.csd.common.util.Serialization.stringToBytes;
@@ -44,5 +45,30 @@ public class ClosedTransactionEntity extends TransactionEntity{
         );
     }
 
+    public long getId() {
+        return id;
+    }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public byte[] getPreviousTransactionHash() {
+        return previousTransactionHash;
+    }
+
+    public void setPreviousTransactionHash(byte[] previousTransactionHash) {
+        this.previousTransactionHash = previousTransactionHash;
+    }
+
+    @Override
+    public String toString() {
+        return "ClosedTransactionEntity{" +
+                "id=" + id +
+                ", previousTransactionHash=" + Arrays.toString(previousTransactionHash) +
+                ", owner='" + owner + '\'' +
+                ", amount=" + amount +
+                ", timestamp=" + timestamp +
+                '}';
+    }
 }

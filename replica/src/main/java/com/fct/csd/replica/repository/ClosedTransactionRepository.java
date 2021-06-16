@@ -6,4 +6,5 @@ import javax.persistence.Table;
 import java.util.List;
 
 public interface ClosedTransactionRepository extends JpaRepository<ClosedTransactionEntity, String> {
+    ClosedTransactionEntity findTopByOrderByIdDesc();
 }

@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface OpenTransactionRepository extends JpaRepository<OpenTransactionEntity, String> {
-    List<OpenTransactionEntity> findByOrderByTimestampAscIdDesc(Pageable pageable);
+public interface OpenTransactionRepository extends JpaRepository<OpenTransactionEntity, Long> {
+    List<OpenTransactionEntity> findByOrderByTimestampAscAmountAscOwnerAsc(Pageable pageable);
 }
