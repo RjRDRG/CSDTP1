@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+
 import static com.fct.csd.common.util.Serialization.*;
 
 @Component
@@ -85,7 +87,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 }
                 case MINE: {
                     AuthenticatedRequest<MineRequestBody> request = bytesToData(replicatedRequest.getRequest());
-                    Result<Void> result = ledgerService.submitBlock(request);
+                    Result<Boolean> result = ledgerService.submitBlock(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
 
                     String data = testimony(
                             replicatedRequest.getRequestId(),
@@ -172,6 +174,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     public <T,E> String testimony(String requestId, LedgerOperation operation, T request, E result) {
         return "Testimony{" +
                 "requestId=" + requestId +
+                ", timestamp=" + OffsetDateTime.now() +
                 ", operation=" + operation +
                 ", request=" + request +
                 ", result=" + result +

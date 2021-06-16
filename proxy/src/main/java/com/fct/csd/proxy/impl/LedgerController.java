@@ -22,6 +22,7 @@ import com.fct.csd.proxy.repository.TransactionEntity;
 import com.fct.csd.proxy.repository.TransactionRepository;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,6 +58,25 @@ class LedgerController {
 
     private int getPoolSizeOpenTransactions() {
         return MIN_POOL_SIZE_OPEN_TRANSACTIONS;
+    }
+
+    @PostConstruct
+    private void pullBlockChain() {
+        String requestId = UUID.randomUUID().toString();
+
+        ReplicatedRequest replicatedRequest = new ReplicatedRequest(
+                requestId,
+                LedgerOperation.PULL,
+                new byte[0],
+                ledgerProxy.getLastBlockId(),
+                getPoolSizeOpenTransactions()
+        );
+
+        try{
+            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+        } catch (Exception e) {
+            throw new ServerErrorException(e.getMessage());
+        }
     }
 
     @PostMapping("/obtain")

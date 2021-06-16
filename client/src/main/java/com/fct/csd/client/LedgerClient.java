@@ -7,11 +7,12 @@ import com.fct.csd.common.cryptography.config.SuiteConfiguration;
 import com.fct.csd.common.cryptography.generators.timestamp.Timestamp;
 import com.fct.csd.common.cryptography.key.EncodedPublicKey;
 import com.fct.csd.common.cryptography.key.KeyStoresInfo;
+import com.fct.csd.common.cryptography.pof.ProofOfWork;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
+import com.fct.csd.common.cryptography.suites.digest.HashSuite;
+import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
-import com.fct.csd.common.item.Testimony;
-import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.item.RequestInfo;
+import com.fct.csd.common.item.*;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Seal;
 import com.fct.csd.common.util.Serialization;
@@ -35,8 +36,6 @@ import java.io.*;
 import java.security.KeyStore;
 import java.security.Security;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,10 +50,12 @@ public class LedgerClient {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
 
-    static final String CONFIG_PATH = "security.conf";
+    static final String SECURITY_CONF = "security.conf";
 
     static String proxyUrl = "https://localhost";
     static String proxyPort = "8080";
+
+    static IDigestSuite blockChainDigestSuite;
 
     static class ClientCredentials {
         public final byte[] clientId;
@@ -64,13 +65,13 @@ public class LedgerClient {
         public ClientCredentials() throws Exception {
             ISuiteConfiguration clientIdSuiteConfiguration =
                     new SuiteConfiguration(
-                            new IniSpecification("client_id_digest_suite", CONFIG_PATH),
-                            new StoredSecrets(new KeyStoresInfo("stores", CONFIG_PATH))
+                            new IniSpecification("client_id_digest_suite", SECURITY_CONF),
+                            new StoredSecrets(new KeyStoresInfo("stores", SECURITY_CONF))
                     );
             FlexibleDigestSuite clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Digest);
             this.signatureSuite = new SignatureSuite(
-                    new IniSpecification("client_signature_suite", CONFIG_PATH),
-                    new IniSpecification("client_signature_keygen_suite", CONFIG_PATH)
+                    new IniSpecification("client_signature_suite", SECURITY_CONF),
+                    new IniSpecification("client_signature_keygen_suite", SECURITY_CONF)
                 );
             this.clientPublicKey = signatureSuite.getPublicKey();
             this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEncoded());
@@ -99,7 +100,9 @@ public class LedgerClient {
 
     static Map<String,ClientCredentials> credentialsMap = new HashMap<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+
+        blockChainDigestSuite = new HashSuite(new IniSpecification("block_chain_digest_suite", SECURITY_CONF));
 
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
@@ -145,6 +148,9 @@ public class LedgerClient {
                     case 'f':
                         transactionsEvents(command[1]);
                         break;
+                    case 'g':
+                        mine(command[1], Integer.parseInt(command[2]));
+                        break;
                     case 'z':
                         return;
                     default:
@@ -166,9 +172,9 @@ public class LedgerClient {
             Seal<ObtainRequestBody> requestBody = new Seal<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<RequestInfo> transactionInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
+            ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
-            System.out.println(transactionInfo.getBody());
+            System.out.println(requestInfo.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -184,9 +190,9 @@ public class LedgerClient {
             Seal<TransferRequestBody> requestBody = new Seal<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<RequestInfo> transactionInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
+            ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
-            System.out.println(transactionInfo.getBody());
+            System.out.println(requestInfo.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -213,9 +219,8 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/transactions";
 
         try {
-            OffsetDateTime initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
-            OffsetDateTime endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
-            AllTransactionsRequestBody request = new AllTransactionsRequestBody(initDate,endDate);
+            OffsetDateTime now = OffsetDateTime.now();
+            AllTransactionsRequestBody request = new AllTransactionsRequestBody(now.minusSeconds(initSeconds),now.minusSeconds(endSeconds));
 
             ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
 
@@ -230,9 +235,8 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/transactions/client";
 
         try {
-            OffsetDateTime initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
-            OffsetDateTime endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
-            ClientTransactionsRequestBody request = new ClientTransactionsRequestBody(clientId,initDate,endDate);
+            OffsetDateTime now = OffsetDateTime.now();
+            ClientTransactionsRequestBody request = new ClientTransactionsRequestBody(clientId,now.minusSeconds(initSeconds),now.minusSeconds(endSeconds));
 
             ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
 
@@ -242,12 +246,39 @@ public class LedgerClient {
         }
     }
 
-    static void transactionsEvents(String transactionId){
+    static void transactionsEvents(String requestId){
         String uri = proxyUrl + ":" + proxyPort + "/testimonies/";
 
         try {
-            ResponseEntity<Testimony[]> result = restTemplate().exchange(uri + transactionId, HttpMethod.GET, null, Testimony[].class);
+            ResponseEntity<Testimony[]> result = restTemplate().exchange(uri + requestId, HttpMethod.GET, null, Testimony[].class);
             System.out.println(Arrays.deepToString(result.getBody()));
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    static void mine(String walletId, int size) {
+        String uri = proxyUrl + ":" + proxyPort + "/block";
+
+        try {
+            ClientCredentials clientCredentials = credentialsMap.get(walletId);
+
+            ResponseEntity<MiningAttemptData> result = restTemplate().exchange(uri + "/" + size, HttpMethod.GET, null, MiningAttemptData.class);
+            MiningAttemptData data = result.getBody();
+
+            Block block = null;
+            switch (data.getLastMinedBlock().getData().getTypePoF()) {
+                case POW: block = ProofOfWork.mine(data, blockChainDigestSuite);
+            }
+
+            if (block==null) throw new Exception("Failed to Mine: " + data.toString());
+
+            Seal<MineRequestBody> requestBody = new Seal<>(new MineRequestBody(block), clientCredentials.signatureSuite);
+            AuthenticatedRequest<MineRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+
+            ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
+
+            System.out.println(requestInfo.getBody());
         }catch(Exception ex){
             ex.printStackTrace();
         }

@@ -10,8 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.fct.csd.common.util.Serialization.bytesToString;
-import static com.fct.csd.common.util.Serialization.stringToBytes;
+import static com.fct.csd.common.util.Serialization.*;
 
 @Entity
 public class BlockEntity implements Serializable {
@@ -47,9 +46,9 @@ public class BlockEntity implements Serializable {
         this.id = block.getData().getId();
         this.version = block.getData().getVersion();
         this.numberOfTransactions = block.getData().getNumberOfTransactions();
-        this.timestamp = block.getData().getTimestamp();
+        this.timestamp = OffsetDateTime.now();
         this.previousBlockHash = block.getData().getPreviousBlockHash();
-        this.blockHash = bytesToString(block.getSignature());
+        this.blockHash = bytesToHex(block.getSignature());
         this.typePoF = block.getData().getTypePoF();
         this.difficulty = block.getData().getDifficulty();
         this.proof = block.getData().getProof();

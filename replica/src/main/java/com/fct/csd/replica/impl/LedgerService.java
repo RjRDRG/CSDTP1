@@ -40,10 +40,13 @@ public class LedgerService {
     private static final Logger log = LoggerFactory.getLogger(LedgerService.class);
     private static final String CONFIG_PATH = "security.conf";
 
+    public static final double MINING_BET = 0.1;
+    public static final double MINING_REWARD = 10;
+    public static final String ESCROW_ID = "ESCROW";
+
     private final OpenTransactionRepository openTransactionsRepository;
     private final ClosedTransactionRepository closedTransactionsRepository;
     private final BlockRepository blockRepository;
-    private long blockCounter;
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
@@ -56,7 +59,6 @@ public class LedgerService {
         this.openTransactionsRepository = openTransactionsRepository;
         this.closedTransactionsRepository = closedTransactionsRepository;
         this.blockRepository = blockRepository;
-        this.blockCounter = 0;
 
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
@@ -73,7 +75,7 @@ public class LedgerService {
     private void genesisBlock() {
         try {
             Seal<Block> genesis = new Seal<>(
-                    new Block(blockCounter++, 0, 0, OffsetDateTime.now(), null, POW, 0, null, new ArrayList<>(0)),
+                    new Block(0, 0, 0, OffsetDateTime.now(), "", POW, 1, "", new ArrayList<>(0)),
                     blockChainDigestSuite
             );
             log.info("Genesis " + blockRepository.save(new BlockEntity(genesis)));
@@ -131,7 +133,7 @@ public class LedgerService {
         }
     }
 
-    public synchronized Result<Void> submitBlock(AuthenticatedRequest<MineRequestBody> request) {
+    public synchronized Result<Boolean> submitBlock(AuthenticatedRequest<MineRequestBody> request, String requestId, OffsetDateTime timestamp) {
         try {
             boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
 
@@ -139,19 +141,31 @@ public class LedgerService {
 
             Block block = request.getRequestBody().getData().getBlock();
 
-            if (!validateBlock(block))
-                return Result.error(Result.Status.BAD_REQUEST);
+            boolean validBlock = validateBlock(block);
 
-            try {
-                BlockEntity blockEntity = new BlockEntity(new Seal<>(block, blockChainDigestSuite));
-                blockRepository.save(blockEntity);
-                for (Transaction transaction : block.getTransactions())
-                    openTransactionsRepository.deleteById(transaction.getId());
-            } catch (Exception exception) {
-                return Result.error(Result.Status.INTERNAL_ERROR);
+            double amount;
+            if (!validBlock) {
+                amount = -MINING_BET;
+            }
+            else {
+                amount= MINING_REWARD;
+                try {
+                    BlockEntity blockEntity = new BlockEntity(new Seal<>(block, blockChainDigestSuite));
+                    blockRepository.save(blockEntity);
+                    for (Transaction transaction : block.getTransactions())
+                        openTransactionsRepository.deleteById(transaction.getId());
+                } catch (Exception exception) {
+                    return Result.error(Result.Status.INTERNAL_ERROR);
+                }
             }
 
-            return Result.ok();
+            OpenTransactionEntity miner = new OpenTransactionEntity(requestId, bytesToString(request.getClientId()), amount, timestamp);
+            OpenTransactionEntity escrow = new OpenTransactionEntity(UUID.randomUUID().toString(), ESCROW_ID, -amount, timestamp);
+
+            openTransactionsRepository.save(miner);
+            openTransactionsRepository.save(escrow);
+
+            return Result.ok(validBlock);
         } catch (Exception exception) {
             exception.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage());
@@ -242,7 +256,6 @@ public class LedgerService {
         closedTransactionsRepository.saveAll(snapshot.getClosedTransactions());
         blockRepository.deleteAll();
         blockRepository.saveAll(snapshot.getBlocks());
-        blockCounter = snapshot.getBlocks().size();
     }
 
     public Snapshot getSnapshot() {
