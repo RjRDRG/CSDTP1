@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
+import static com.fct.csd.common.util.Serialization.stringToBytes;
 
 @Entity
 public class TransactionEntity implements Serializable {
@@ -15,7 +16,7 @@ public class TransactionEntity implements Serializable {
     private @Id String id;
     private String owner;
     private double amount;
-    private OffsetDateTime date;
+    private OffsetDateTime timestamp;
     private String previousTransactionHash;
 
     public TransactionEntity() {}
@@ -24,8 +25,18 @@ public class TransactionEntity implements Serializable {
         this.id = transaction.getId();
         this.owner = bytesToString(transaction.getOwner());
         this.amount = transaction.getAmount();
-        this.date = transaction.getTimestamp();
+        this.timestamp = transaction.getTimestamp();
         this.previousTransactionHash = bytesToString(transaction.getPreviousTransactionHash());
+    }
+
+    public Transaction toItem() {
+        return new Transaction(
+                id,
+                stringToBytes(owner),
+                amount,
+                timestamp,
+                stringToBytes(previousTransactionHash)
+        );
     }
 
     public String getId() {
@@ -52,12 +63,12 @@ public class TransactionEntity implements Serializable {
         this.amount = amount;
     }
 
-    public OffsetDateTime getDate() {
-        return date;
+    public OffsetDateTime getTimestamp() {
+        return timestamp;
     }
 
-    public void setDate(OffsetDateTime date) {
-        this.date = date;
+    public void setTimestamp(OffsetDateTime date) {
+        this.timestamp = date;
     }
 
     public String getPreviousTransactionHash() {
@@ -74,7 +85,7 @@ public class TransactionEntity implements Serializable {
                 "id='" + id + '\'' +
                 ", owner='" + owner + '\'' +
                 ", amount=" + amount +
-                ", date=" + date +
+                ", timestamp=" + timestamp +
                 ", previousTransactionHash='" + previousTransactionHash + '\'' +
                 '}';
     }

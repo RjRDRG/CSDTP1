@@ -1,15 +1,15 @@
 package com.fct.csd.common.request;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.time.OffsetDateTime;
 
 public class ClientTransactionsRequestBody implements Serializable {
-    private String clientId;
-    private String initDate;
-    private String endDate;
+    private String owner;
+    private OffsetDateTime initDate;
+    private OffsetDateTime endDate;
 
-    public ClientTransactionsRequestBody(String clientId, String initDate, String endDate) {
-        this.clientId = clientId;
+    public ClientTransactionsRequestBody(String owner, OffsetDateTime initDate, OffsetDateTime endDate) {
+        this.owner = owner;
         this.initDate = initDate;
         this.endDate = endDate;
     }
@@ -17,47 +17,34 @@ public class ClientTransactionsRequestBody implements Serializable {
     public ClientTransactionsRequestBody() {
     }
 
-    public String getClientId() {
-        return clientId;
+    public String getOwner() {
+        return owner;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
-    public String getInitDate() {
+    public OffsetDateTime getInitDate() {
         return initDate;
     }
 
-    public void setInitDate(String initDate) {
+    public void setInitDate(OffsetDateTime initDate) {
         this.initDate = initDate;
     }
 
-    public String getEndDate() {
+    public OffsetDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(String endDate) {
+    public void setEndDate(OffsetDateTime endDate) {
         this.endDate = endDate;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ClientTransactionsRequestBody that = (ClientTransactionsRequestBody) o;
-        return clientId.equals(that.clientId) && initDate.equals(that.initDate) && endDate.equals(that.endDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(clientId, initDate, endDate);
     }
 
     @Override
     public String toString() {
         return "ClientTransactionsRequestBody{" +
-                "clientId='" + clientId + '\'' +
+                "clientId='" + owner + '\'' +
                 ", initDate='" + initDate + '\'' +
                 ", endDate='" + endDate + '\'' +
                 '}';

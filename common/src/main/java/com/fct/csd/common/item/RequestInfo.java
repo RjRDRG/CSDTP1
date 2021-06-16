@@ -3,16 +3,16 @@ package com.fct.csd.common.item;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-public class TransactionInfo implements Serializable {
+public class RequestInfo implements Serializable {
     private String id;
     private OffsetDateTime timestamp;
 
-    public TransactionInfo(String id, OffsetDateTime timestamp) {
+    public RequestInfo(String id, OffsetDateTime timestamp) {
         this.id = id;
         this.timestamp = timestamp;
     }
 
-    public TransactionInfo() {
+    public RequestInfo() {
     }
 
     public String getId() {
@@ -33,7 +33,7 @@ public class TransactionInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "TransactionInfo{" +
+        return "RequestInfo{" +
                 "id='" + id + '\'' +
                 ", timestamp=" + timestamp +
                 '}';

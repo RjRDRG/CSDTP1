@@ -11,7 +11,7 @@ import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.Transaction;
-import com.fct.csd.common.item.TransactionInfo;
+import com.fct.csd.common.item.RequestInfo;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Seal;
 import com.fct.csd.common.util.Serialization;
@@ -34,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.security.KeyStore;
 import java.security.Security;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -165,7 +166,7 @@ public class LedgerClient {
             Seal<ObtainRequestBody> requestBody = new Seal<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<TransactionInfo> transactionInfo = restTemplate().postForEntity(uri, request, TransactionInfo.class);
+            ResponseEntity<RequestInfo> transactionInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
             System.out.println(transactionInfo.getBody());
         }catch(Exception ex){
@@ -183,7 +184,7 @@ public class LedgerClient {
             Seal<TransferRequestBody> requestBody = new Seal<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
             AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
 
-            ResponseEntity<TransactionInfo> transactionInfo = restTemplate().postForEntity(uri, request, TransactionInfo.class);
+            ResponseEntity<RequestInfo> transactionInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
             System.out.println(transactionInfo.getBody());
         }catch(Exception ex){
@@ -212,8 +213,8 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/transactions";
 
         try {
-            String initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
-            String endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            OffsetDateTime initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            OffsetDateTime endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
             AllTransactionsRequestBody request = new AllTransactionsRequestBody(initDate,endDate);
 
             ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
@@ -229,8 +230,8 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/transactions/client";
 
         try {
-            String initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
-            String endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            OffsetDateTime initDate = ZonedDateTime.now().minusSeconds(initSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
+            OffsetDateTime endDate = ZonedDateTime.now().minusSeconds(endSeconds).format(DateTimeFormatter.ISO_ZONED_DATE_TIME);;
             ClientTransactionsRequestBody request = new ClientTransactionsRequestBody(clientId,initDate,endDate);
 
             ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
