@@ -15,11 +15,6 @@ public class SuiteConfiguration implements ISuiteConfiguration {
 		this.secrets = secrets;
 	}
 
-	public SuiteConfiguration(ISuiteSpecification spec) {
-		this.spec = spec;
-		this.secrets = null;
-	}
-
 	@Override
 	public ISuiteConfiguration getSubConfiguration(String id) throws Exception {
 		return new SuiteConfiguration(getSubSpec(id), secrets);

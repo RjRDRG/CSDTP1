@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.lang3.SerializationUtils;
+import org.bouncycastle.util.encoders.Hex;
+
 import java.util.Base64;
 
 public class Serialization {
@@ -38,6 +40,14 @@ public class Serialization {
 		byte[] bytes = new byte[Integer.BYTES];
 		ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putLong(value);
 		return bytes;
+	}
+
+	public static String bytesToHex(byte[] bytes) {
+		return Hex.toHexString(bytes);
+	}
+
+	public static byte[] hexToBytes(String hex) {
+		return Hex.decode(hex);
 	}
 
 	public final static ObjectMapper jsonMapper = createObjectMapper();

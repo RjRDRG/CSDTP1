@@ -1,5 +1,6 @@
 package com.fct.csd.replica.repository;
 
+import com.fct.csd.common.cryptography.pof.TypePoF;
 import com.fct.csd.common.item.Block;
 import com.fct.csd.common.traits.Seal;
 
@@ -21,7 +22,7 @@ public class BlockEntity implements Serializable {
     private OffsetDateTime timestamp;
     private String previousBlockHash;
     private String blockHash;
-    private String typePoF;
+    private TypePoF typePoF;
     private int difficulty;
     private String proof;
     @OneToMany(targetEntity = ClosedTransactionEntity.class, fetch = FetchType.EAGER)
@@ -29,7 +30,7 @@ public class BlockEntity implements Serializable {
 
     public BlockEntity() {}
 
-    public BlockEntity(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, String blockHash, String typePoF, int difficulty, String proof, List<ClosedTransactionEntity> transactions) {
+    public BlockEntity(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, String blockHash, TypePoF typePoF, int difficulty, String proof, List<ClosedTransactionEntity> transactions) {
         this.id = id;
         this.version = version;
         this.numberOfTransactions = numberOfTransactions;
@@ -120,11 +121,11 @@ public class BlockEntity implements Serializable {
         this.blockHash = blockHash;
     }
 
-    public String getTypePoF() {
+    public TypePoF getTypePoF() {
         return typePoF;
     }
 
-    public void setTypePoF(String typePoF) {
+    public void setTypePoF(TypePoF typePoF) {
         this.typePoF = typePoF;
     }
 

@@ -1,6 +1,7 @@
 package com.fct.csd.common.cryptography.suites.digest;
 
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
+import com.fct.csd.common.cryptography.config.ISuiteSpecification;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -13,6 +14,15 @@ public class HashSuite implements IDigestSuite{
 	public HashSuite(ISuiteConfiguration config) throws Exception {
 		String alg = config.getString("alg");
 		String provider = config.getString("provider");
+		if(provider != null)
+			this.suite = MessageDigest.getInstance(alg, provider);
+		else
+			this.suite = MessageDigest.getInstance(alg);
+	}
+
+	public HashSuite(ISuiteSpecification spec) throws Exception {
+		String alg = spec.getString("alg");
+		String provider = spec.getString("provider");
 		if(provider != null)
 			this.suite = MessageDigest.getInstance(alg, provider);
 		else

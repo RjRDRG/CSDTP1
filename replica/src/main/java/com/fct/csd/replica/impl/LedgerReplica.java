@@ -83,11 +83,32 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
                     );
                 }
+                case MINE: {
+                    AuthenticatedRequest<MineRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    Result<Void> result = ledgerService.submitBlock(request);
+
+                    String data = testimony(
+                            replicatedRequest.getRequestId(),
+                            LedgerOperation.MINE,
+                            request,
+                            result
+                    );
+
+                    Seal<String> testimony = new Seal<>(data,replyDigestSuite);
+
+                    return new ReplicaReply(
+                            replicatedRequest.getRequestId(),
+                            testimony,
+                            ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()),
+                            ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
+                    );
+                }
                 case OBTAIN: {
                     AuthenticatedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Void> result = ledgerService.obtainValueTokens(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
 
                     String data = testimony(
+                            replicatedRequest.getRequestId(),
                             LedgerOperation.OBTAIN,
                             request,
                             result
@@ -107,6 +128,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     Result<Void> result = ledgerService.transferValueTokens(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
 
                     String data = testimony(
+                            replicatedRequest.getRequestId(),
                             LedgerOperation.TRANSFER,
                             request,
                             result
@@ -129,6 +151,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         try {
             Result<Void> result = Result.error(Result.Status.NOT_IMPLEMENTED, replicatedRequest.getOperation().name());
             String data = testimony(
+                    replicatedRequest.getRequestId(),
                     replicatedRequest.getOperation(),
                     replicatedRequest.getRequestId(),
                     result
@@ -146,9 +169,10 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
     }
 
-    public <T,E> String testimony(LedgerOperation operation, T request, E result) {
+    public <T,E> String testimony(String requestId, LedgerOperation operation, T request, E result) {
         return "Testimony{" +
-                "operation=" + operation +
+                "requestId=" + requestId +
+                ", operation=" + operation +
                 ", request=" + request +
                 ", result=" + result +
                 '}';

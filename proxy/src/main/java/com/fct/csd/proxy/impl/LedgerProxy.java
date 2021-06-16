@@ -54,11 +54,7 @@ public class LedgerProxy extends AsynchServiceProxy {
         super(environment.getProperty("proxy.id", Integer.class));
         this.transactionRepository = transactionRepository;
         this.testimonyRepository = testimonyRepository;
-
-        ISuiteConfiguration transactionChainSuiteConfiguration = new SuiteConfiguration(
-            new IniSpecification("chain_branch_digest_suite", SECURITY_CONFIG_PATH)
-        );
-        this.branchHashSuite = new HashSuite(transactionChainSuiteConfiguration);
+        this.branchHashSuite = new HashSuite(new IniSpecification("chain_branch_digest_suite", SECURITY_CONFIG_PATH));
     }
 
     public void invokeAsyncRequest(ReplicatedRequest request) {

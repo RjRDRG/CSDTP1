@@ -1,9 +1,10 @@
 package com.fct.csd.common.item;
 
+import com.fct.csd.common.cryptography.pof.TypePoF;
+
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Objects;
 
 public class Block implements Serializable {
 
@@ -12,12 +13,12 @@ public class Block implements Serializable {
     private int numberOfTransactions;
     private OffsetDateTime timestamp;
     private String previousBlockHash;
-    private String typePoF;
+    private TypePoF typePoF;
     private int difficulty;
     private String proof;
     private List<Transaction> transactions;
 
-    public Block(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, String typePoF, int difficulty, String proof, List<Transaction> transactions) {
+    public Block(long id, int version, int numberOfTransactions, OffsetDateTime timestamp, String previousBlockHash, TypePoF typePoF, int difficulty, String proof, List<Transaction> transactions) {
         this.id = id;
         this.version = version;
         this.numberOfTransactions = numberOfTransactions;
@@ -71,11 +72,11 @@ public class Block implements Serializable {
         this.previousBlockHash = previousBlockHash;
     }
 
-    public String getTypePoF() {
+    public TypePoF getTypePoF() {
         return typePoF;
     }
 
-    public void setTypePoF(String typePoF) {
+    public void setTypePoF(TypePoF typePoF) {
         this.typePoF = typePoF;
     }
 

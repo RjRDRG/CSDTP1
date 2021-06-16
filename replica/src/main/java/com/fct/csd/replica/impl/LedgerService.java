@@ -6,7 +6,9 @@ import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
 import com.fct.csd.common.cryptography.config.SuiteConfiguration;
 import com.fct.csd.common.cryptography.key.KeyStoresInfo;
+import com.fct.csd.common.cryptography.pof.ProofOfWork;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
+import com.fct.csd.common.cryptography.suites.digest.HashSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Block;
@@ -24,11 +26,12 @@ import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.fct.csd.common.cryptography.pof.TypePoF.POW;
 import static com.fct.csd.common.util.Serialization.*;
 
 @Service
@@ -61,29 +64,16 @@ public class LedgerService {
                         new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Verify);
-
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
-
-        ISuiteConfiguration blockChainSuiteConfiguration =
-                new SuiteConfiguration(
-                        new IniSpecification("block_chain_digest_suite", CONFIG_PATH),
-                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
-                );
-        this.blockChainDigestSuite = new FlexibleDigestSuite(blockChainSuiteConfiguration, SignatureSuite.Mode.Digest);
-
-        ISuiteConfiguration transactionSuiteConfiguration =
-                new SuiteConfiguration(
-                        new IniSpecification("transaction_digest_suite", CONFIG_PATH),
-                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
-                );
-        this.transactionDigestSuite = new FlexibleDigestSuite(transactionSuiteConfiguration, SignatureSuite.Mode.Digest);
+        this.blockChainDigestSuite = new HashSuite(new IniSpecification("block_chain_digest_suite", CONFIG_PATH));
+        this.transactionDigestSuite = new HashSuite(new IniSpecification("transaction_digest_suite", CONFIG_PATH));
     }
 
     @PostConstruct
     private void genesisBlock() {
         try {
             Seal<Block> genesis = new Seal<>(
-                    new Block(blockCounter++, 0, 0, OffsetDateTime.now(), null, "GENESIS", 0, null, new ArrayList<>(0)),
+                    new Block(blockCounter++, 0, 0, OffsetDateTime.now(), null, POW, 0, null, new ArrayList<>(0)),
                     blockChainDigestSuite
             );
             log.info("Genesis " + blockRepository.save(new BlockEntity(genesis)));
@@ -141,6 +131,71 @@ public class LedgerService {
         }
     }
 
+    public synchronized Result<Void> submitBlock(AuthenticatedRequest<MineRequestBody> request) {
+        try {
+            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
+
+            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+
+            Block block = request.getRequestBody().getData().getBlock();
+
+            if (!validateBlock(block))
+                return Result.error(Result.Status.BAD_REQUEST);
+
+            try {
+                BlockEntity blockEntity = new BlockEntity(new Seal<>(block, blockChainDigestSuite));
+                blockRepository.save(blockEntity);
+                for (Transaction transaction : block.getTransactions())
+                    openTransactionsRepository.deleteById(transaction.getId());
+            } catch (Exception exception) {
+                return Result.error(Result.Status.INTERNAL_ERROR);
+            }
+
+            return Result.ok();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage());
+        }
+    }
+
+    public boolean validateBlock(Block block) {
+        BlockEntity last = blockRepository.findTopByOrderByIdDesc();
+        if(block.getId()!=last.getId()+1)
+            return false;
+
+        if (block.getVersion()!=last.getVersion())
+            return false;
+
+        if(!block.getTypePoF().equals(last.getTypePoF()))
+            return false;
+
+        if(block.getDifficulty()!=last.getDifficulty())
+            return false;
+
+        if (!block.getPreviousBlockHash().equals(last.getBlockHash()))
+            return false;
+
+        try {
+            byte[] h0 = transactionDigestSuite.digest(
+                    dataToJson(getOpenTransactions(block.getNumberOfTransactions())).getBytes(StandardCharsets.UTF_8)
+            );
+            byte[] h1 = transactionDigestSuite.digest(
+                    dataToJson(block.getTransactions()).getBytes(StandardCharsets.UTF_8)
+            );
+            if(Arrays.equals(h0,h1))
+                return false;
+        } catch (Exception exception) {
+            return false;
+        }
+
+
+        switch (block.getTypePoF()) {
+            case POW: return ProofOfWork.validate(block, blockChainDigestSuite);
+        }
+
+        return false;
+    }
+
     public List<Seal<Block>> getBlocksAfter(long blockId) {
         return blockRepository.findByIdGreaterThan(blockId)
                 .stream().map(BlockEntity::toItem).collect(Collectors.toList());
@@ -196,6 +251,5 @@ public class LedgerService {
                 closedTransactionsRepository.findAll(),
                 blockRepository.findAll()
         );
-
     }
 }

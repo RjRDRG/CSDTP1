@@ -5,7 +5,9 @@ import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
 import com.fct.csd.common.cryptography.config.SuiteConfiguration;
 import com.fct.csd.common.cryptography.key.KeyStoresInfo;
+import com.fct.csd.common.cryptography.pof.ProofOfWork;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
+import com.fct.csd.common.cryptography.suites.digest.HashSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.*;
@@ -23,15 +25,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fct.csd.common.util.Serialization.bytesToString;
-import static com.fct.csd.common.util.Serialization.dataToBytes;
+import static com.fct.csd.common.util.Serialization.*;
 
 @RestController
 class LedgerController {
 
     public static final String CONFIG_PATH = "security.conf";
     public static final int MIN_POOL_SIZE_OPEN_TRANSACTIONS = 20;
-    public static final int MINING_BET = 1;
 
     private final LedgerProxy ledgerProxy;
     private final TransactionRepository transactionRepository;
@@ -39,6 +39,7 @@ class LedgerController {
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
+    private final IDigestSuite blockChainDigestSuite;
 
     LedgerController(LedgerProxy ledgerProxy, TransactionRepository transactionRepository, TestimonyRepository testimonyRepository) throws Exception {
         this.ledgerProxy = ledgerProxy;
@@ -51,6 +52,7 @@ class LedgerController {
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(suiteConfiguration, SignatureSuite.Mode.Verify);
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
+        this.blockChainDigestSuite = new HashSuite(new IniSpecification("block_chain_digest_suite", CONFIG_PATH));
     }
 
     private int getPoolSizeOpenTransactions() {
@@ -178,6 +180,9 @@ class LedgerController {
 
         if(!valid) throw new ForbiddenException("Invalid Signature");
 
+        if(!validateBlock(request.getRequestBody().getData().getBlock()))
+            throw new BadRequestException("Invalid Block");
+
         String requestId = UUID.randomUUID().toString();
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
@@ -203,5 +208,26 @@ class LedgerController {
                 ledgerProxy.getLastBlock(),
                 ledgerProxy.getOpenTransactions(size)
         );
+    }
+
+    public boolean validateBlock(Block block) {
+        Block last = ledgerProxy.getLastBlock().getData();
+        if(block.getId()<last.getId())
+            return false;
+
+        if (block.getVersion()!=last.getVersion())
+            return false;
+
+        if(!block.getTypePoF().equals(last.getTypePoF()))
+            return false;
+
+        if(block.getDifficulty()!=last.getDifficulty())
+            return false;
+
+        switch (block.getTypePoF()) {
+            case POW: return ProofOfWork.validate(block, blockChainDigestSuite);
+        }
+
+        return false;
     }
 }
