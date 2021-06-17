@@ -1,5 +1,8 @@
+com/fct/csd/replica/repository/SmartContractRepository.class
+com/fct/csd/replica/repository/SmartContractEntity.class
 com/fct/csd/replica/impl/Snapshot.class
 com/fct/csd/replica/ReplicaApplication.class
+com/fct/csd/replica/client/ContractorClient.class
 com/fct/csd/replica/JacksonConfig$BytesJsonSerializer.class
 com/fct/csd/replica/JacksonConfig$BytesJsonDeserializer.class
 com/fct/csd/replica/repository/BlockRepository.class

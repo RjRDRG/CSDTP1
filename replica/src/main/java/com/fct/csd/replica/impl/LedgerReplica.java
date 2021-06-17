@@ -14,6 +14,8 @@ import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.TestimonyData;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.request.*;
+import com.fct.csd.common.request.wrapper.ProtectedRequest;
+import com.fct.csd.common.request.wrapper.ReplicatedRequest;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.common.traits.Seal;
 import org.slf4j.Logger;
@@ -85,10 +87,10 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     );
                 }
                 case MINE: {
-                    AuthenticatedRequest<MineRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    ProtectedRequest<MineRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Boolean> result = ledgerService.submitBlock(request, replicatedRequest.getTimestamp());
 
-                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), LedgerOperation.MINE, result.toString()),replyDigestSuite);
+                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), ReplicatedRequest.LedgerOperation.MINE, result.toString()),replyDigestSuite);
 
                     return new ReplicaReply(
                             replicatedRequest.getRequestId(),
@@ -98,10 +100,10 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     );
                 }
                 case INSTALL: {
-                    AuthenticatedRequest<InstallContractRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    ProtectedRequest<InstallContractRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Void> result = ledgerService.installSmartContract(request, replicatedRequest.getRequestId(), replicatedRequest.getTimestamp());
 
-                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), LedgerOperation.INSTALL, result.toString()),replyDigestSuite);
+                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), ReplicatedRequest.LedgerOperation.INSTALL, result.toString()),replyDigestSuite);
 
                     return new ReplicaReply(
                             replicatedRequest.getRequestId(),
@@ -111,10 +113,10 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     );
                 }
                 case CONTRACT: {
-                    AuthenticatedRequest<SmartTransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    ProtectedRequest<SmartTransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Void> result = ledgerService.runSmartContract(request, replicatedRequest.getTimestamp());
 
-                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), LedgerOperation.CONTRACT, result.toString()),replyDigestSuite);
+                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), ReplicatedRequest.LedgerOperation.CONTRACT, result.toString()),replyDigestSuite);
 
                     return new ReplicaReply(
                             replicatedRequest.getRequestId(),
@@ -124,10 +126,10 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     );
                 }
                 case OBTAIN: {
-                    AuthenticatedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    ProtectedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Void> result = ledgerService.obtainValueTokens(request,  replicatedRequest.getTimestamp());
 
-                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), LedgerOperation.OBTAIN, result.toString()),replyDigestSuite);
+                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), ReplicatedRequest.LedgerOperation.OBTAIN, result.toString()),replyDigestSuite);
 
                     return new ReplicaReply(
                             replicatedRequest.getRequestId(),
@@ -137,10 +139,10 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     );
                 }
                 case TRANSFER: {
-                    AuthenticatedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    ProtectedRequest<TransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Void> result = ledgerService.transferValueTokens(request, replicatedRequest.getTimestamp());
 
-                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), LedgerOperation.TRANSFER, result.toString()),replyDigestSuite);
+                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), ReplicatedRequest.LedgerOperation.TRANSFER, result.toString()),replyDigestSuite);
 
                     return new ReplicaReply(
                             replicatedRequest.getRequestId(),

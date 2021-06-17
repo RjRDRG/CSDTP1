@@ -1,4 +1,4 @@
-package com.fct.csd.common.request;
+package com.fct.csd.common.request.wrapper;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
@@ -84,5 +84,9 @@ public class ReplicatedRequest implements Serializable {
                 ", lastBlockId=" + lastBlockId +
                 ", poolSizeOpenTransaction='" + poolSizeOpenTransaction + '\'' +
                 '}';
+    }
+
+    public enum LedgerOperation implements Serializable {
+        PULL, MINE, INSTALL, CONTRACT, OBTAIN, TRANSFER;
     }
 }

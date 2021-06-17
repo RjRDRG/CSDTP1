@@ -12,6 +12,9 @@ import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.*;
 import com.fct.csd.common.request.*;
+import com.fct.csd.common.request.wrapper.AuthenticatedRequest;
+import com.fct.csd.common.request.wrapper.ProtectedRequest;
+import com.fct.csd.common.request.wrapper.ReplicatedRequest;
 import com.fct.csd.proxy.exceptions.BadRequestException;
 import com.fct.csd.proxy.exceptions.ForbiddenException;
 import com.fct.csd.proxy.exceptions.NotFoundException;
@@ -61,6 +64,17 @@ class LedgerController {
         return MIN_POOL_SIZE_OPEN_TRANSACTIONS;
     }
 
+    private <T extends Serializable> void validRequest(ProtectedRequest<T> request) {
+        boolean valid;
+        try {
+            valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
+        } catch (Exception e) {
+            throw new ForbiddenException(e.getMessage());
+        }
+
+        if(!valid) throw new ForbiddenException("Invalid Signature");
+    }
+
     private <T extends Serializable> void validRequest(AuthenticatedRequest<T> request) {
         boolean valid;
         try {
@@ -78,7 +92,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 requestId,
-                LedgerOperation.PULL,
+                ReplicatedRequest.LedgerOperation.PULL,
                 new byte[0],
                 ledgerProxy.getLastBlockId(),
                 getPoolSizeOpenTransactions()
@@ -92,7 +106,7 @@ class LedgerController {
     }
 
     @PostMapping("/obtain")
-    public RequestInfo obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
+    public RequestInfo obtainValueTokens(@RequestBody ProtectedRequest<ObtainRequestBody> request) {
 
         validRequest(request);
 
@@ -100,7 +114,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 requestId,
-                LedgerOperation.OBTAIN,
+                ReplicatedRequest.LedgerOperation.OBTAIN,
                 dataToBytes(request),
                 ledgerProxy.getLastBlockId(),
                 getPoolSizeOpenTransactions()
@@ -116,7 +130,7 @@ class LedgerController {
     }
 
     @PostMapping("/transfer")
-    public RequestInfo transferValueTokens(@RequestBody AuthenticatedRequest<TransferRequestBody> request) {
+    public RequestInfo transferValueTokens(@RequestBody ProtectedRequest<TransferRequestBody> request) {
 
         validRequest(request);
 
@@ -126,7 +140,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 requestId,
-                LedgerOperation.TRANSFER,
+                ReplicatedRequest.LedgerOperation.TRANSFER,
                 dataToBytes(request),
                 ledgerProxy.getLastBlockId(),
                 getPoolSizeOpenTransactions()
@@ -182,7 +196,7 @@ class LedgerController {
     }
 
     @PostMapping("/block")
-    public RequestInfo submitMiningAttempt(@RequestBody AuthenticatedRequest<MineRequestBody> request) {
+    public RequestInfo submitMiningAttempt(@RequestBody ProtectedRequest<MineRequestBody> request) {
 
         validRequest(request);
 
@@ -192,7 +206,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 requestId,
-                LedgerOperation.MINE,
+                ReplicatedRequest.LedgerOperation.MINE,
                 dataToBytes(request),
                 ledgerProxy.getLastBlockId(),
                 getPoolSizeOpenTransactions()
@@ -216,7 +230,7 @@ class LedgerController {
     }
 
     @PostMapping("/contract")
-    public RequestInfo installSmartContract(@RequestBody AuthenticatedRequest<InstallContractRequestBody> request) {
+    public RequestInfo installSmartContract(@RequestBody ProtectedRequest<InstallContractRequestBody> request) {
 
         validRequest(request);
 
@@ -224,7 +238,7 @@ class LedgerController {
 
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 requestId,
-                LedgerOperation.INSTALL,
+                ReplicatedRequest.LedgerOperation.INSTALL,
                 dataToBytes(request),
                 ledgerProxy.getLastBlockId(),
                 getPoolSizeOpenTransactions()

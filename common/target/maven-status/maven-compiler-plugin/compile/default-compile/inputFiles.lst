@@ -1,6 +1,8 @@
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/suites/digest/CMacSuite.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/traits/Result.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/InstallContractRequestBody.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/suites/digest/IDigestSuite.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/contract/BlockChainView.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/config/GeneratedSecrets.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/generators/key/AsymmetricKeyPairGenerator.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/util/ByteDeserializer.java
@@ -11,12 +13,14 @@
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/MineRequestBody.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/item/MiningAttemptData.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/pof/ProofOfWork.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/contract/SmartContract.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/util/ByteSerializer.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/config/SuiteConfiguration.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/ConsultBalanceRequestBody.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/key/EncodedPublicKey.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/suites/digest/HashSuite.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/item/Transaction.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/traits/UniqueSeal.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/LedgerOperation.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/ClientTransactionsRequestBody.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/generators/StringGenerator.java

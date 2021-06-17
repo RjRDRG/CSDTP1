@@ -14,6 +14,9 @@ import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.*;
 import com.fct.csd.common.request.*;
+import com.fct.csd.common.request.wrapper.ProtectedRequest;
+import com.fct.csd.common.request.wrapper.AuthenticatedRequest;
+import com.fct.csd.common.traits.Seal;
 import com.fct.csd.common.traits.UniqueSeal;
 import com.fct.csd.common.util.Serialization;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -84,7 +87,7 @@ public class LedgerClient {
         }
 
         long getBlockChainRequestCounter() {
-            return blockChainRequestCounter++;
+            return ++blockChainRequestCounter;
         }
     }
 
@@ -179,7 +182,7 @@ public class LedgerClient {
             UniqueSeal<ObtainRequestBody> requestBody = new UniqueSeal<>(
                     new ObtainRequestBody(amount), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
             );
-            AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
+            ProtectedRequest<ObtainRequestBody> request = new ProtectedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
@@ -199,7 +202,7 @@ public class LedgerClient {
             UniqueSeal<TransferRequestBody> requestBody = new UniqueSeal<>(
                     new TransferRequestBody(recipientCredentials.clientId, amount), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
             );
-            AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
+            ProtectedRequest<TransferRequestBody> request = new ProtectedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
@@ -215,8 +218,8 @@ public class LedgerClient {
         try {
             ClientDetails clientDetails = clients.get(walletId);
 
-            UniqueSeal<ConsultBalanceRequestBody> requestBody = new UniqueSeal<>(
-                    new ConsultBalanceRequestBody(Timestamp.now().toString()), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
+            Seal<ConsultBalanceRequestBody> requestBody = new Seal<>(
+                    new ConsultBalanceRequestBody(Timestamp.now().toString()), clientDetails.signatureSuite
             );
             AuthenticatedRequest<ConsultBalanceRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
@@ -293,7 +296,7 @@ public class LedgerClient {
             UniqueSeal<MineRequestBody> requestBody = new UniqueSeal<>(
                     new MineRequestBody(block), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
             );
-            AuthenticatedRequest<MineRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
+            ProtectedRequest<MineRequestBody> request = new ProtectedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 

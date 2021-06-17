@@ -1,4 +1,4 @@
-package com.fct.csd.common.request;
+package com.fct.csd.common.request.wrapper;
 
 import com.fct.csd.common.cryptography.key.EncodedPublicKey;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
@@ -12,12 +12,12 @@ import java.util.Objects;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
 
-public class AuthenticatedRequest<T extends Serializable> implements Serializable {
+public class ProtectedRequest<T extends Serializable> implements Serializable {
     private byte[] clientId;
     private EncodedPublicKey clientPublicKey;
     private UniqueSeal<T> requestBody;
 
-    public AuthenticatedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, UniqueSeal<T> requestBody) {
+    public ProtectedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, UniqueSeal<T> requestBody) {
         this.clientId = clientId;
         this.clientPublicKey = clientPublicKey;
         this.requestBody = requestBody;
@@ -32,7 +32,7 @@ public class AuthenticatedRequest<T extends Serializable> implements Serializabl
         return requestBody.verify(signatureSuite);
     }
 
-    public AuthenticatedRequest() {
+    public ProtectedRequest() {
     }
 
     public byte[] getClientId() {
@@ -61,7 +61,7 @@ public class AuthenticatedRequest<T extends Serializable> implements Serializabl
 
     @Override
     public String toString() {
-        return "AuthenticatedRequest{" +
+        return "ProtectedRequest{" +
                 "clientId=" + bytesToString(clientId) +
                 ", clientPublicKey=" + clientPublicKey +
                 ", requestBody=" + requestBody +

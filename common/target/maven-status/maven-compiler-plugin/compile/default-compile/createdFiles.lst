@@ -18,6 +18,7 @@ com/fct/csd/common/cryptography/generators/nonce/INonce.class
 com/fct/csd/common/request/SmartTransferRequestBody.class
 com/fct/csd/common/item/Testimony.class
 com/fct/csd/common/cryptography/config/IniSpecification.class
+com/fct/csd/common/contract/BlockChainView.class
 com/fct/csd/common/cryptography/suites/digest/HMacSuite.class
 com/fct/csd/common/request/ObtainRequestBody.class
 com/fct/csd/common/request/TransferRequestBody.class
@@ -33,11 +34,13 @@ com/fct/csd/common/util/Serialization.class
 com/fct/csd/common/cryptography/key/EncodedPublicKey.class
 com/fct/csd/common/request/AuthenticatedRequest.class
 com/fct/csd/common/request/PullRequestBody.class
+com/fct/csd/common/contract/SmartContract.class
 com/fct/csd/common/cryptography/config/ISuiteSecrets.class
 com/fct/csd/common/cryptography/suites/digest/CMacSuite.class
 com/fct/csd/common/traits/ErrorResult.class
 com/fct/csd/common/traits/Result.class
 com/fct/csd/common/cryptography/config/StoredSecrets.class
+com/fct/csd/common/request/InstallContractRequestBody.class
 com/fct/csd/common/cryptography/generators/key/AsymmetricKeyPairGenerator.class
 com/fct/csd/common/cryptography/key/KeyStoresInfo.class
 com/fct/csd/common/cryptography/config/ISuiteConfiguration.class
@@ -54,3 +57,4 @@ com/fct/csd/common/cryptography/suites/digest/FlexibleDigestSuite.class
 com/fct/csd/common/request/MineRequestBody.class
 com/fct/csd/common/cryptography/generators/nonce/Counter.class
 com/fct/csd/common/util/ByteSerializer.class
+com/fct/csd/common/traits/UniqueSeal.class

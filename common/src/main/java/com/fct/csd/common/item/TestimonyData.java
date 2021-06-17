@@ -1,17 +1,17 @@
 package com.fct.csd.common.item;
 
-import com.fct.csd.common.request.LedgerOperation;
+import com.fct.csd.common.request.wrapper.ReplicatedRequest;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
 public class TestimonyData implements Serializable {
     private String requestId;
-    private LedgerOperation operation;
+    private ReplicatedRequest.LedgerOperation operation;
     private String result;
     private OffsetDateTime timestamp;
 
-    public TestimonyData(String requestId, LedgerOperation operation, String result) {
+    public TestimonyData(String requestId, ReplicatedRequest.LedgerOperation operation, String result) {
         this.requestId = requestId;
         this.operation = operation;
         this.result = result;
@@ -29,11 +29,11 @@ public class TestimonyData implements Serializable {
         this.requestId = requestId;
     }
 
-    public LedgerOperation getOperation() {
+    public ReplicatedRequest.LedgerOperation getOperation() {
         return operation;
     }
 
-    public void setOperation(LedgerOperation operation) {
+    public void setOperation(ReplicatedRequest.LedgerOperation operation) {
         this.operation = operation;
     }
 

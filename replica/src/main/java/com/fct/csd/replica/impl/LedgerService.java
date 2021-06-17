@@ -14,6 +14,7 @@ import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.Block;
 import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
+import com.fct.csd.common.request.wrapper.ProtectedRequest;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.common.traits.Seal;
 import com.fct.csd.replica.client.ContractorClient;
@@ -105,14 +106,14 @@ public class LedgerService {
         }
     }
 
-    private <T extends Serializable> boolean invalidRequest(AuthenticatedRequest<T> request) throws Exception{
+    private <T extends Serializable> boolean invalidRequest(ProtectedRequest<T> request) throws Exception{
         long clientTransactions = requestCounter.merge(bytesToString(request.getClientId()), 1L, Long::sum);
         return !request.verifyClientId(clientIdDigestSuite) ||
                 !request.verifySignature(clientSignatureSuite) ||
-                request.getRequestBody().getNonce() != clientTransactions + 1;
+                request.getRequestBody().getNonce() != clientTransactions;
     }
 
-    public Result<Void> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, OffsetDateTime timestamp) {
+    public Result<Void> obtainValueTokens(ProtectedRequest<ObtainRequestBody> request, OffsetDateTime timestamp) {
         try {
             if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
@@ -128,7 +129,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Void> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, OffsetDateTime timestamp) {
+    public Result<Void> transferValueTokens(ProtectedRequest<TransferRequestBody> request, OffsetDateTime timestamp) {
         try {
             if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
@@ -148,7 +149,7 @@ public class LedgerService {
         }
     }
 
-    public synchronized Result<Boolean> submitBlock(AuthenticatedRequest<MineRequestBody> request, OffsetDateTime timestamp) {
+    public synchronized Result<Boolean> submitBlock(ProtectedRequest<MineRequestBody> request, OffsetDateTime timestamp) {
         try {
             if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
@@ -195,7 +196,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Void> installSmartContract(AuthenticatedRequest<InstallContractRequestBody> request, String contractId, OffsetDateTime timestamp) {
+    public Result<Void> installSmartContract(ProtectedRequest<InstallContractRequestBody> request, String contractId, OffsetDateTime timestamp) {
         try {
             if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
@@ -216,7 +217,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Void> runSmartContract(AuthenticatedRequest<SmartTransferRequestBody> request, OffsetDateTime timestamp) {
+    public Result<Void> runSmartContract(ProtectedRequest<SmartTransferRequestBody> request, OffsetDateTime timestamp) {
         try {
             if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
