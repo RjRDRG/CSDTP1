@@ -11,14 +11,14 @@ public class Transaction implements Serializable {
     private byte[] owner;
     private double amount;
     private OffsetDateTime timestamp;
-    private byte[] previousTransactionHash;
+    private byte[] hashPreviousBlockTransaction;
 
-    public Transaction(long id, byte[] owner, double amount, OffsetDateTime timestamp, byte[] previousTransactionHash) {
+    public Transaction(long id, byte[] owner, double amount, OffsetDateTime timestamp, byte[] hashPreviousBlockTransaction) {
         this.id = id;
         this.owner = owner;
         this.amount = amount;
         this.timestamp = timestamp;
-        this.previousTransactionHash = previousTransactionHash;
+        this.hashPreviousBlockTransaction = hashPreviousBlockTransaction;
     }
 
     public Transaction() {}
@@ -55,12 +55,12 @@ public class Transaction implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public byte[] getPreviousTransactionHash() {
-        return previousTransactionHash;
+    public byte[] getHashPreviousBlockTransaction() {
+        return hashPreviousBlockTransaction;
     }
 
-    public void setPreviousTransactionHash(byte[] previousTransactionHash) {
-        this.previousTransactionHash = previousTransactionHash;
+    public void setHashPreviousBlockTransaction(byte[] hashPreviousBlockTransaction) {
+        this.hashPreviousBlockTransaction = hashPreviousBlockTransaction;
     }
 
     @Override

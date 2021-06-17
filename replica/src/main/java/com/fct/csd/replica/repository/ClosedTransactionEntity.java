@@ -32,7 +32,7 @@ public class ClosedTransactionEntity extends TransactionEntity{
         this.owner = bytesToString(transaction.getOwner());
         this.amount = transaction.getAmount();
         this.timestamp = transaction.getTimestamp();
-        this.previousTransactionHash = transaction.getPreviousTransactionHash();
+        this.previousTransactionHash = transaction.getHashPreviousBlockTransaction();
     }
 
     public Transaction toItem() {

@@ -14,17 +14,17 @@ import static com.fct.csd.common.util.Serialization.stringToBytes;
 public class ClosedTransactionEntity extends TransactionEntity{
 
     private @Id long id;
-    private byte[] previousTransactionHash;
+    private byte[] hashPreviousBlockTransaction;
 
     public ClosedTransactionEntity() {
     }
 
-    public ClosedTransactionEntity(long id, String owner, double amount, OffsetDateTime timestamp, byte[] previousTransactionHash) {
+    public ClosedTransactionEntity(long id, String owner, double amount, OffsetDateTime timestamp, byte[] hashPreviousBlockTransaction) {
         this.id = id;
         this.owner = owner;
         this.amount = amount;
         this.timestamp = timestamp;
-        this.previousTransactionHash = previousTransactionHash;
+        this.hashPreviousBlockTransaction = hashPreviousBlockTransaction;
     }
 
     public ClosedTransactionEntity(Transaction transaction) {
@@ -32,7 +32,7 @@ public class ClosedTransactionEntity extends TransactionEntity{
         this.owner = bytesToString(transaction.getOwner());
         this.amount = transaction.getAmount();
         this.timestamp = transaction.getTimestamp();
-        this.previousTransactionHash = transaction.getPreviousTransactionHash();
+        this.hashPreviousBlockTransaction = transaction.getHashPreviousBlockTransaction();
     }
 
     public Transaction toItem() {
@@ -41,7 +41,7 @@ public class ClosedTransactionEntity extends TransactionEntity{
                 stringToBytes(owner),
                 amount,
                 timestamp,
-                previousTransactionHash
+                hashPreviousBlockTransaction
         );
     }
 
@@ -53,19 +53,19 @@ public class ClosedTransactionEntity extends TransactionEntity{
         this.id = id;
     }
 
-    public byte[] getPreviousTransactionHash() {
-        return previousTransactionHash;
+    public byte[] getHashPreviousBlockTransaction() {
+        return hashPreviousBlockTransaction;
     }
 
-    public void setPreviousTransactionHash(byte[] previousTransactionHash) {
-        this.previousTransactionHash = previousTransactionHash;
+    public void setHashPreviousBlockTransaction(byte[] previousTransactionHash) {
+        this.hashPreviousBlockTransaction = previousTransactionHash;
     }
 
     @Override
     public String toString() {
         return "ClosedTransactionEntity{" +
                 "id=" + id +
-                ", previousTransactionHash=" + Arrays.toString(previousTransactionHash) +
+                ", hashPreviousBlockTransaction=" + Arrays.toString(hashPreviousBlockTransaction) +
                 ", owner='" + owner + '\'' +
                 ", amount=" + amount +
                 ", timestamp=" + timestamp +

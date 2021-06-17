@@ -27,7 +27,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.fct.csd.common.util.Serialization.*;
@@ -239,6 +241,34 @@ class LedgerController {
         ReplicatedRequest replicatedRequest = new ReplicatedRequest(
                 requestId,
                 ReplicatedRequest.LedgerOperation.INSTALL,
+                dataToBytes(request),
+                ledgerProxy.getLastBlockId(),
+                getPoolSizeOpenTransactions()
+        );
+
+
+        try{
+            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+        } catch (Exception e) {
+            throw new ServerErrorException(e.getMessage());
+        }
+
+        Map<String,String> others = new HashMap<>(1);
+        others.put("ContractId", requestId);
+
+        return new RequestInfo(requestId, others, replicatedRequest.getTimestamp());
+    }
+
+    @PostMapping("/contract/run")
+    public RequestInfo runSmartContract(@RequestBody ProtectedRequest<SmartTransferRequestBody> request) {
+
+        validRequest(request);
+
+        String requestId = UUID.randomUUID().toString();
+
+        ReplicatedRequest replicatedRequest = new ReplicatedRequest(
+                requestId,
+                ReplicatedRequest.LedgerOperation.CONTRACT,
                 dataToBytes(request),
                 ledgerProxy.getLastBlockId(),
                 getPoolSizeOpenTransactions()

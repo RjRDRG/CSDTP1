@@ -18,7 +18,7 @@ public class TransactionEntity implements Serializable {
     private String owner;
     private double amount;
     private OffsetDateTime timestamp;
-    private String previousTransactionHash;
+    private String hashPreviousBlockTransaction;
 
     public TransactionEntity() {}
 
@@ -27,7 +27,7 @@ public class TransactionEntity implements Serializable {
         this.owner = bytesToString(transaction.getOwner());
         this.amount = transaction.getAmount();
         this.timestamp = transaction.getTimestamp();
-        this.previousTransactionHash = bytesToString(transaction.getPreviousTransactionHash());
+        this.hashPreviousBlockTransaction = bytesToString(transaction.getHashPreviousBlockTransaction());
     }
 
     public Transaction toItem() {
@@ -36,7 +36,7 @@ public class TransactionEntity implements Serializable {
                 stringToBytes(owner),
                 amount,
                 timestamp,
-                stringToBytes(previousTransactionHash)
+                stringToBytes(hashPreviousBlockTransaction)
         );
     }
 
@@ -72,12 +72,12 @@ public class TransactionEntity implements Serializable {
         this.timestamp = date;
     }
 
-    public String getPreviousTransactionHash() {
-        return previousTransactionHash;
+    public String getHashPreviousBlockTransaction() {
+        return hashPreviousBlockTransaction;
     }
 
-    public void setPreviousTransactionHash(String previousTransactionHash) {
-        this.previousTransactionHash = previousTransactionHash;
+    public void setHashPreviousBlockTransaction(String previousTransactionHash) {
+        this.hashPreviousBlockTransaction = previousTransactionHash;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class TransactionEntity implements Serializable {
                 ", owner='" + owner + '\'' +
                 ", amount=" + amount +
                 ", timestamp=" + timestamp +
-                ", previousTransactionHash='" + previousTransactionHash + '\'' +
+                ", previousTransactionHash='" + hashPreviousBlockTransaction + '\'' +
                 '}';
     }
 }

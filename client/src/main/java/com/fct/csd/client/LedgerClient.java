@@ -1,5 +1,6 @@
 package com.fct.csd.client;
 
+import com.fct.csd.client.contracts.LotteryContract;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -19,6 +20,7 @@ import com.fct.csd.common.request.wrapper.AuthenticatedRequest;
 import com.fct.csd.common.traits.Seal;
 import com.fct.csd.common.traits.UniqueSeal;
 import com.fct.csd.common.util.Serialization;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
@@ -39,10 +41,7 @@ import java.io.*;
 import java.security.KeyStore;
 import java.security.Security;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
 
@@ -95,6 +94,7 @@ public class LedgerClient {
         return "Available operations : \n" +
                 "h - Help;                                             Eg: h \n"+
                 "w - List wallets ids;                                 Eg: w \n"+
+                "\n" +
                 "O - Set the proxy url and port;                       Eg: 0 {https://localhost} {8080} \n" +
                 "1 - Create wallet;                                    Eg: 1 {wallet_id} \n" +
                 "a - Obtain tokens;                                    Eg: a {wallet_id} {amount}\n" +
@@ -104,7 +104,9 @@ public class LedgerClient {
                 "e - Consult all transactions of a certain client;     Eg: e {wallet_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "E - Consult all transactions of a certain client;     Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "f - Consult all events of request;                    Eg: f {request_id}\n" +
-                "g - Start mining;                                     Eg: g {client_id}\n" +
+                "g - Start mining;                                     Eg: g {wallet_id}\n" +
+                "i - Install lottery contract;                         Eg: h {wallet_id} \n" +
+                "j - Run lottery contract;                             Eg: i {contract_id} {bet} {wallet_id} ... {wallet_id} \n" +
                 "z - Exit                                              Eg: z";
     }
 
@@ -160,6 +162,12 @@ public class LedgerClient {
                         break;
                     case 'g':
                         mine(command[1]);
+                        break;
+                    case 'i':
+                        installLotteryContract(command[1]);
+                        break;
+                    case 'j':
+                        runLotteryContract(command[1], command[2], ArrayUtils.subarray(command,3, command.length));
                         break;
                     case 'z':
                         return;
@@ -297,6 +305,52 @@ public class LedgerClient {
                     new MineRequestBody(block), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
             );
             ProtectedRequest<MineRequestBody> request = new ProtectedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
+
+            ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
+
+            System.out.println(requestInfo.getBody());
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    static void installLotteryContract(String walletId) {
+        String uri = proxyUrl + ":" + proxyPort + "/contract";
+
+        try {
+            ClientDetails clientDetails = clients.get(walletId);
+
+            LotteryContract contract = new LotteryContract();
+
+            UniqueSeal<InstallContractRequestBody> requestBody = new UniqueSeal<>(
+                    new InstallContractRequestBody(contract), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
+            );
+            ProtectedRequest<InstallContractRequestBody> request = new ProtectedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
+
+            ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
+
+            System.out.println(requestInfo.getBody());
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    static void runLotteryContract(String id, String bet, String... wallets) {
+        String uri = proxyUrl + ":" + proxyPort + "/contract";
+
+        try {
+            ClientDetails clientDetails = clients.get(wallets[0]);
+
+            Map<String,List<String>> parameters = new HashMap<>();
+            parameters.put(LotteryContract.TICKET_PRICE, List.of(bet));
+            parameters.put(LotteryContract.PARTICIPANTS, Arrays.asList(wallets));
+
+            UniqueSeal<SmartTransferRequestBody> requestBody = new UniqueSeal<>(
+                    new SmartTransferRequestBody(parameters,id),
+                    clientDetails.getBlockChainRequestCounter(),
+                    clientDetails.signatureSuite
+            );
+            ProtectedRequest<SmartTransferRequestBody> request = new ProtectedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 

@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface SmartContract extends Serializable {
-    List<Transaction> run(Map<String,String> parameters, BlockChainView view);
+    List<Transaction> run(Map<String,List<String>> parameters, BlockChainView view);
 }
