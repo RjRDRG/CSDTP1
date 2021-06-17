@@ -1,5 +1,7 @@
 package com.fct.csd.replica.repository;
 
+import com.fct.csd.common.item.Transaction;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;

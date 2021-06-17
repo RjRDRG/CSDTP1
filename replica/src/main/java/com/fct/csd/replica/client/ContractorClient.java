@@ -20,8 +20,10 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ContractorClient {
 
@@ -33,13 +35,13 @@ public class ContractorClient {
         this.contractorPort = contractorPort;
     }
 
-    Result<Transaction[]> runSmartContract(SmartTransferRequestBody request) {
+    public Result<List<Transaction>> runSmartContract(SmartTransferRequestBody request) {
         String uri = contractorUrl + ":" + contractorPort + "/contract";
 
         try {
             ResponseEntity<Transaction[]> reply = restTemplate().postForEntity(uri, request, Transaction[].class);
             if (reply.getBody()!=null)
-                return Result.ok(reply.getBody());
+                return Result.ok(Arrays.stream(reply.getBody()).collect(Collectors.toList()));
             else
                 return Result.error(Result.Status.NOT_AVAILABLE);
         }catch(Exception ex){

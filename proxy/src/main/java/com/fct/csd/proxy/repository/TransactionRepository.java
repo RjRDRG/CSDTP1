@@ -8,7 +8,7 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
     List<TransactionEntity> findTopByOrderByIdDesc();
     List<TransactionEntity> findByIdGreaterThan(long id);
-    List<TransactionEntity> findByOwner(String sender);
+    List<TransactionEntity> findByOwner(String owner);
     List<TransactionEntity> findByTimestampIsBetween(OffsetDateTime start, OffsetDateTime end);
     List<TransactionEntity> findByOwnerEqualsAndTimestampIsBetween(String owner, OffsetDateTime start, OffsetDateTime end);
 }

@@ -16,9 +16,11 @@ import com.fct.csd.common.item.Transaction;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
 import com.fct.csd.common.traits.Seal;
+import com.fct.csd.replica.client.ContractorClient;
 import com.fct.csd.replica.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +61,10 @@ public class LedgerService {
     private final IDigestSuite blockChainDigestSuite;
     private final IDigestSuite transactionDigestSuite;
 
-    public LedgerService(OpenTransactionRepository openTransactionsRepository,
+    private final ContractorClient contractorClient;
+
+    public LedgerService(Environment environment,
+                         OpenTransactionRepository openTransactionsRepository,
                          ClosedTransactionRepository closedTransactionsRepository,
                          BlockRepository blockRepository,
                          SmartContractRepository contractRepository) throws Exception {
@@ -79,6 +84,11 @@ public class LedgerService {
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
         this.blockChainDigestSuite = new HashSuite(new IniSpecification("block_chain_digest_suite", CONFIG_PATH));
         this.transactionDigestSuite = new HashSuite(new IniSpecification("transaction_digest_suite", CONFIG_PATH));
+
+        String contractorUrl = environment.getProperty("contractor.url");
+        String contractorPort = environment.getProperty("contractor.port");
+
+        this.contractorClient = new ContractorClient(contractorUrl, contractorPort);
     }
 
     @PostConstruct
@@ -198,6 +208,42 @@ public class LedgerService {
             contractRepository.save(
                     new SmartContractEntity(contractId, request.getRequestBody().getData().getContract())
             );
+
+            return Result.ok();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage());
+        }
+    }
+
+    public Result<Void> runSmartContract(AuthenticatedRequest<SmartTransferRequestBody> request, OffsetDateTime timestamp) {
+        try {
+            if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
+
+            if(contractRepository.findById(request.getRequestBody().getData().getContractId()).isEmpty())
+                return Result.error(Result.Status.NOT_FOUND);
+
+            Result<List<Transaction>> transactions = contractorClient.runSmartContract(request.getRequestBody().getData());
+
+            if (!transactions.isOK())
+                return Result.error(transactions.error());
+
+            double value = 0;
+            for (Transaction transaction: transactions.value()) {
+                value += transaction.getAmount();
+            }
+
+            if(value!=0)
+                return Result.error(Result.Status.FORBIDDEN);
+
+            for (Transaction transaction: transactions.value()) {
+                OpenTransactionEntity entity = new OpenTransactionEntity(
+                        bytesToString(transaction.getOwner()),
+                        transaction.getAmount(),
+                        timestamp
+                );
+                openTransactionsRepository.save(entity);
+            }
 
             return Result.ok();
         } catch (Exception exception) {

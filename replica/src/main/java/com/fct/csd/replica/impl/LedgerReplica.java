@@ -110,6 +110,19 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
                     );
                 }
+                case CONTRACT: {
+                    AuthenticatedRequest<SmartTransferRequestBody> request = bytesToData(replicatedRequest.getRequest());
+                    Result<Void> result = ledgerService.runSmartContract(request, replicatedRequest.getTimestamp());
+
+                    Seal<TestimonyData> testimony = new Seal<>(new TestimonyData(replicatedRequest.getRequestId(), LedgerOperation.CONTRACT, result.toString()),replyDigestSuite);
+
+                    return new ReplicaReply(
+                            replicatedRequest.getRequestId(),
+                            testimony,
+                            ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()),
+                            ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
+                    );
+                }
                 case OBTAIN: {
                     AuthenticatedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
                     Result<Void> result = ledgerService.obtainValueTokens(request,  replicatedRequest.getTimestamp());
