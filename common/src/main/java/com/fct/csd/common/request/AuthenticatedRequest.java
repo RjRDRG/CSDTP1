@@ -4,6 +4,7 @@ import com.fct.csd.common.cryptography.key.EncodedPublicKey;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.traits.Seal;
+import com.fct.csd.common.traits.UniqueSeal;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -14,9 +15,9 @@ import static com.fct.csd.common.util.Serialization.bytesToString;
 public class AuthenticatedRequest<T extends Serializable> implements Serializable {
     private byte[] clientId;
     private EncodedPublicKey clientPublicKey;
-    private Seal<T> requestBody;
+    private UniqueSeal<T> requestBody;
 
-    public AuthenticatedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, Seal<T> requestBody) {
+    public AuthenticatedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, UniqueSeal<T> requestBody) {
         this.clientId = clientId;
         this.clientPublicKey = clientPublicKey;
         this.requestBody = requestBody;
@@ -50,11 +51,11 @@ public class AuthenticatedRequest<T extends Serializable> implements Serializabl
         this.clientPublicKey = clientPublicKey;
     }
 
-    public Seal<T> getRequestBody() {
+    public UniqueSeal<T> getRequestBody() {
         return requestBody;
     }
 
-    public void setRequestBody(Seal<T> requestBody) {
+    public void setRequestBody(UniqueSeal<T> requestBody) {
         this.requestBody = requestBody;
     }
 

@@ -23,12 +23,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.fct.csd.common.cryptography.pof.TypePoF.POW;
@@ -40,13 +42,17 @@ public class LedgerService {
     private static final Logger log = LoggerFactory.getLogger(LedgerService.class);
     private static final String CONFIG_PATH = "security.conf";
 
+    public static final String ESCROW_ID = "ESCROW";
     public static final double MINING_BET = 0.1;
     public static final double MINING_REWARD = 10;
-    public static final String ESCROW_ID = "ESCROW";
+    public static final double CONTRACT_INSTALL_PRICE = 50;
 
     private final OpenTransactionRepository openTransactionsRepository;
     private final ClosedTransactionRepository closedTransactionsRepository;
     private final BlockRepository blockRepository;
+    private final SmartContractRepository contractRepository;
+
+    private Map<String,Long> requestCounter;
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
@@ -55,10 +61,14 @@ public class LedgerService {
 
     public LedgerService(OpenTransactionRepository openTransactionsRepository,
                          ClosedTransactionRepository closedTransactionsRepository,
-                         BlockRepository blockRepository) throws Exception {
+                         BlockRepository blockRepository,
+                         SmartContractRepository contractRepository) throws Exception {
         this.openTransactionsRepository = openTransactionsRepository;
         this.closedTransactionsRepository = closedTransactionsRepository;
         this.blockRepository = blockRepository;
+        this.contractRepository = contractRepository;
+
+        this.requestCounter = new ConcurrentHashMap<>();
 
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
@@ -85,19 +95,16 @@ public class LedgerService {
         }
     }
 
-    private String hashPreviousBlock() throws Exception {
-        BlockEntity previous = blockRepository.findTopByOrderByIdDesc();
-
-        byte[] hashPreviousTransaction = blockChainDigestSuite.digest(dataToJson(previous).getBytes(StandardCharsets.UTF_8));
-
-        return bytesToString(hashPreviousTransaction);
+    private <T extends Serializable> boolean invalidRequest(AuthenticatedRequest<T> request) throws Exception{
+        long clientTransactions = requestCounter.merge(bytesToString(request.getClientId()), 1L, Long::sum);
+        return !request.verifyClientId(clientIdDigestSuite) ||
+                !request.verifySignature(clientSignatureSuite) ||
+                request.getRequestBody().getNonce() != clientTransactions + 1;
     }
 
     public Result<Void> obtainValueTokens(AuthenticatedRequest<ObtainRequestBody> request, OffsetDateTime timestamp) {
         try {
-            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-
-            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+            if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
             String recipientId = bytesToString(request.getClientId());
             ObtainRequestBody requestBody = request.getRequestBody().getData();
@@ -113,9 +120,7 @@ public class LedgerService {
 
     public Result<Void> transferValueTokens(AuthenticatedRequest<TransferRequestBody> request, OffsetDateTime timestamp) {
         try {
-            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-
-            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+            if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
             TransferRequestBody requestBody = request.getRequestBody().getData();
             String senderId = bytesToString(request.getClientId());
@@ -135,9 +140,7 @@ public class LedgerService {
 
     public synchronized Result<Boolean> submitBlock(AuthenticatedRequest<MineRequestBody> request, OffsetDateTime timestamp) {
         try {
-            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-
-            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+            if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
             Block block = request.getRequestBody().getData().getBlock();
 
@@ -181,6 +184,29 @@ public class LedgerService {
             return Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage());
         }
     }
+
+    public Result<Void> installSmartContract(AuthenticatedRequest<InstallContractRequestBody> request, OffsetDateTime timestamp) {
+        try {
+            if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
+
+            OpenTransactionEntity miner = new OpenTransactionEntity(bytesToString(request.getClientId()), -CONTRACT_INSTALL_PRICE, timestamp);
+            OpenTransactionEntity escrow = new OpenTransactionEntity(ESCROW_ID, CONTRACT_INSTALL_PRICE, timestamp);
+
+            openTransactionsRepository.save(miner);
+            openTransactionsRepository.save(escrow);
+
+            contractRepository.save(request.getRequestBody().getData().getContract());
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage());
+        }
+    }
+
+
+
+
+
 
     public List<Long> validateBlock(Block block) throws Exception {
         BlockEntity last = blockRepository.findTopByOrderByIdDesc();
@@ -276,12 +302,17 @@ public class LedgerService {
         blockRepository.deleteAll();
         closedTransactionsRepository.deleteAll();
         blockRepository.saveAll(snapshot.getBlocks());
+        contractRepository.deleteAll();
+        contractRepository.saveAll(snapshot.getContracts());
+        requestCounter = new ConcurrentHashMap<>(snapshot.getRequestCounter());
     }
 
     public Snapshot getSnapshot() {
         return new Snapshot(
                 openTransactionsRepository.findAll(),
-                blockRepository.findAll()
+                blockRepository.findAll(),
+                contractRepository.findAll(),
+                requestCounter
         );
     }
 }

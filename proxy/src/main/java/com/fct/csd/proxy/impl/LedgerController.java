@@ -230,6 +230,12 @@ class LedgerController {
         );
     }
 
+    @PostMapping("/contract")
+    public Transaction[] installSmartContract(@RequestBody ClientTransactionsRequestBody request) {
+        return transactionRepository.findByOwnerEqualsAndTimestampIsBetween(request.getOwner(), request.getInitDate(),request.getEndDate()).stream()
+                .map(TransactionEntity::toItem).toArray(Transaction[]::new);
+    }
+
     public boolean validateBlock(Block block) {
         Block last = ledgerProxy.getLastBlock().getData();
         if(block.getId()<last.getId())

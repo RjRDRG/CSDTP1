@@ -14,7 +14,7 @@ import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.fct.csd.common.item.*;
 import com.fct.csd.common.request.*;
-import com.fct.csd.common.traits.Seal;
+import com.fct.csd.common.traits.UniqueSeal;
 import com.fct.csd.common.util.Serialization;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -57,12 +57,13 @@ public class LedgerClient {
 
     static IDigestSuite blockChainDigestSuite;
 
-    static class ClientCredentials {
+    static class ClientDetails {
         public final byte[] clientId;
         public final EncodedPublicKey clientPublicKey;
         public final SignatureSuite signatureSuite;
+        public long blockChainRequestCounter;
 
-        public ClientCredentials() throws Exception {
+        public ClientDetails() throws Exception {
             ISuiteConfiguration clientIdSuiteConfiguration =
                     new SuiteConfiguration(
                             new IniSpecification("client_id_digest_suite", SECURITY_CONF),
@@ -75,10 +76,15 @@ public class LedgerClient {
                 );
             this.clientPublicKey = signatureSuite.getPublicKey();
             this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEncoded());
+            this.blockChainRequestCounter = 0;
         }
 
         String getUrlSafeClientId() {
             return bytesToString(clientId);
+        }
+
+        long getBlockChainRequestCounter() {
+            return blockChainRequestCounter++;
         }
     }
 
@@ -99,7 +105,7 @@ public class LedgerClient {
                 "z - Exit                                              Eg: z";
     }
 
-    static Map<String,ClientCredentials> credentialsMap = new HashMap<>();
+    static Map<String, ClientDetails> clients = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
 
@@ -119,14 +125,14 @@ public class LedgerClient {
                         System.out.println(manualtoString());
                         break;
                     case 'w':
-                        System.out.println(credentialsMap.keySet());
+                        System.out.println(clients.keySet());
                         break;
                     case '0':
                         proxyUrl = command[1];
                         proxyPort = command[2];
                         break;
                     case '1':
-                        credentialsMap.put(command[1], new ClientCredentials());
+                        clients.put(command[1], new ClientDetails());
                         break;
                     case 'a':
                         obtainTokens(command[1], Integer.parseInt(command[2]));
@@ -141,7 +147,7 @@ public class LedgerClient {
                         allTransactions(Integer.parseInt(command[1]), Integer.parseInt(command[2]));
                         break;
                     case 'e':
-                        clientTransactions(credentialsMap.get(command[1]).getUrlSafeClientId(),Integer.parseInt(command[2]), Integer.parseInt(command[3]));
+                        clientTransactions(clients.get(command[1]).getUrlSafeClientId(),Integer.parseInt(command[2]), Integer.parseInt(command[3]));
                         break;
                     case 'E':
                         clientTransactions(command[1],Integer.parseInt(command[2]), Integer.parseInt(command[3]));
@@ -168,10 +174,12 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/obtain";
 
         try {
-            ClientCredentials clientCredentials = credentialsMap.get(walletId);
+            ClientDetails clientDetails = clients.get(walletId);
 
-            Seal<ObtainRequestBody> requestBody = new Seal<>(new ObtainRequestBody(amount), clientCredentials.signatureSuite);
-            AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+            UniqueSeal<ObtainRequestBody> requestBody = new UniqueSeal<>(
+                    new ObtainRequestBody(amount), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
+            );
+            AuthenticatedRequest<ObtainRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
@@ -185,11 +193,13 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/transfer";
 
         try {
-            ClientCredentials clientCredentials = credentialsMap.get(walletId);
-            ClientCredentials recipientCredentials = credentialsMap.get(recipient);
+            ClientDetails clientDetails = clients.get(walletId);
+            ClientDetails recipientCredentials = clients.get(recipient);
 
-            Seal<TransferRequestBody> requestBody = new Seal<>(new TransferRequestBody(recipientCredentials.clientId, amount), clientCredentials.signatureSuite);
-            AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+            UniqueSeal<TransferRequestBody> requestBody = new UniqueSeal<>(
+                    new TransferRequestBody(recipientCredentials.clientId, amount), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
+            );
+            AuthenticatedRequest<TransferRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
@@ -203,10 +213,12 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/balance";
 
         try {
-            ClientCredentials clientCredentials = credentialsMap.get(walletId);
+            ClientDetails clientDetails = clients.get(walletId);
 
-            Seal<ConsultBalanceRequestBody> requestBody = new Seal<>(new ConsultBalanceRequestBody(Timestamp.now().toString()), clientCredentials.signatureSuite);
-            AuthenticatedRequest<ConsultBalanceRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+            UniqueSeal<ConsultBalanceRequestBody> requestBody = new UniqueSeal<>(
+                    new ConsultBalanceRequestBody(Timestamp.now().toString()), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
+            );
+            AuthenticatedRequest<ConsultBalanceRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<Double> balance = restTemplate().postForEntity(uri, request, Double.class);
 
@@ -262,7 +274,7 @@ public class LedgerClient {
         String uri = proxyUrl + ":" + proxyPort + "/block";
 
         try {
-            ClientCredentials clientCredentials = credentialsMap.get(walletId);
+            ClientDetails clientDetails = clients.get(walletId);
 
             int blockSize = 10;
 
@@ -278,8 +290,10 @@ public class LedgerClient {
 
             System.out.println(block);
 
-            Seal<MineRequestBody> requestBody = new Seal<>(new MineRequestBody(block), clientCredentials.signatureSuite);
-            AuthenticatedRequest<MineRequestBody> request = new AuthenticatedRequest<>(clientCredentials.clientId, clientCredentials.clientPublicKey, requestBody);
+            UniqueSeal<MineRequestBody> requestBody = new UniqueSeal<>(
+                    new MineRequestBody(block), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
+            );
+            AuthenticatedRequest<MineRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
 
             ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 

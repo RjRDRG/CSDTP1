@@ -11,7 +11,6 @@ import com.fct.csd.common.cryptography.key.KeyStoresInfo;
 import com.fct.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.fct.csd.common.cryptography.suites.digest.SignatureSuite;
-import com.fct.csd.common.item.Testimony;
 import com.fct.csd.common.item.TestimonyData;
 import com.fct.csd.common.reply.ReplicaReply;
 import com.fct.csd.common.request.*;
@@ -21,8 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-
-import java.time.OffsetDateTime;
 
 import static com.fct.csd.common.util.Serialization.*;
 
@@ -99,6 +96,9 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                             ledgerService.getBlocksAfter(replicatedRequest.getLastBlockId()),
                             ledgerService.getOpenTransactions(replicatedRequest.getPoolSizeOpenTransaction())
                     );
+                }
+                case INSTALL: {
+                    AuthenticatedRequest<InstallContractRequestBody> request = bytesToData(replicatedRequest.getRequest());
                 }
                 case OBTAIN: {
                     AuthenticatedRequest<ObtainRequestBody> request = bytesToData(replicatedRequest.getRequest());
