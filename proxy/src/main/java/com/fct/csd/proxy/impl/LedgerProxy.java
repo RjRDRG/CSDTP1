@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,13 +41,13 @@ public class LedgerProxy extends AsynchServiceProxy {
 
     private static final String SECURITY_CONFIG_PATH = "security.conf";
 
-    private final HashSuite branchHashSuite;
-
     private final TransactionRepository transactionRepository;
     private final TestimonyRepository testimonyRepository;
 
     private Seal<Block> lastBlock;
     private List<Transaction> openTransactions;
+
+    private final HashSuite branchHashSuite;
 
     public LedgerProxy(Environment environment,
                        TransactionRepository transactionRepository,
@@ -54,6 +55,8 @@ public class LedgerProxy extends AsynchServiceProxy {
         super(environment.getProperty("proxy.id", Integer.class));
         this.transactionRepository = transactionRepository;
         this.testimonyRepository = testimonyRepository;
+        this.lastBlock = null;
+        this.openTransactions = new ArrayList<>(0);
         this.branchHashSuite = new HashSuite(new IniSpecification("chain_branch_digest_suite", SECURITY_CONFIG_PATH));
     }
 
