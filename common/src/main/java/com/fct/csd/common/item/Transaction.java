@@ -2,7 +2,8 @@ package com.fct.csd.common.item;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
+
+import static com.fct.csd.common.util.Serialization.dataToJson;
 
 public class Transaction implements Serializable {
 
@@ -64,12 +65,6 @@ public class Transaction implements Serializable {
 
     @Override
     public String toString() {
-        return "Transaction{" +
-                "id='" + id + '\'' +
-                ", owner=" + Arrays.toString(owner) +
-                ", amount=" + amount +
-                ", timestamp=" + timestamp +
-                ", previousTransactionHash=" + Arrays.toString(previousTransactionHash) +
-                '}';
+        return "\nTransaction " + dataToJson(this);
     }
 }

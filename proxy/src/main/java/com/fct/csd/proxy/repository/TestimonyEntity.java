@@ -31,7 +31,7 @@ public class TestimonyEntity implements Serializable {
     public TestimonyEntity(ReplicaReply reply) {
         this.requestId = reply.getRequestId();
         this.timestamp = OffsetDateTime.now();
-        this.data = dataToJson(reply.getTestimony().getData());
+        this.data = reply.getTestimony().getData().toString();
         this.signature = bytesToString(reply.getTestimony().getSignature());
     }
 

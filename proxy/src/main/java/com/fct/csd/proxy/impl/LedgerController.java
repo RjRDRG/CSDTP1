@@ -181,7 +181,7 @@ class LedgerController {
     }
 
     @GetMapping("/testimonies/{requestId}")
-    public Testimony[] consultTestimonies(@PathVariable long requestId) {
+    public Testimony[] consultTestimonies(@PathVariable String requestId) {
         Testimony[] t = testimonyRepository.findByRequestId(requestId).stream().map(TestimonyEntity::toItem).toArray(Testimony[]::new);
         if (t.length == 0)
             throw new NotFoundException("Transaction Not Found");

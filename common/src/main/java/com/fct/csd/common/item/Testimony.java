@@ -5,6 +5,8 @@ import com.fct.csd.common.traits.Seal;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
+import static com.fct.csd.common.util.Serialization.dataToJson;
+
 public class Testimony implements Serializable {
 
     private String requestId;
@@ -46,10 +48,6 @@ public class Testimony implements Serializable {
 
     @Override
     public String toString() {
-        return "Testimony{" +
-                "requestId='" + requestId + '\'' +
-                ", timestamp=" + timestamp +
-                ", data=" + data +
-                '}';
+        return "\nTestimony " + dataToJson(this);
     }
 }

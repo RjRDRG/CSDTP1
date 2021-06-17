@@ -3,6 +3,8 @@ package com.fct.csd.common.item;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
+import static com.fct.csd.common.util.Serialization.dataToJson;
+
 public class RequestInfo implements Serializable {
     private String id;
     private OffsetDateTime timestamp;
@@ -33,9 +35,6 @@ public class RequestInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "RequestInfo{" +
-                "id='" + id + '\'' +
-                ", timestamp=" + timestamp +
-                '}';
+        return "\nRequestInfo " + dataToJson(this);
     }
 }

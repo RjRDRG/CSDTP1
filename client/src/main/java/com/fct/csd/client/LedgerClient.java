@@ -147,7 +147,7 @@ public class LedgerClient {
                         clientTransactions(command[1],Integer.parseInt(command[2]), Integer.parseInt(command[3]));
                         break;
                     case 'f':
-                        transactionsEvents(command[1]);
+                        requestEvents(command[1]);
                         break;
                     case 'g':
                         mine(command[1]);
@@ -247,7 +247,7 @@ public class LedgerClient {
         }
     }
 
-    static void transactionsEvents(String requestId){
+    static void requestEvents(String requestId){
         String uri = proxyUrl + ":" + proxyPort + "/testimonies/";
 
         try {
@@ -264,7 +264,7 @@ public class LedgerClient {
         try {
             ClientCredentials clientCredentials = credentialsMap.get(walletId);
 
-            int blockSize = 3;
+            int blockSize = 10;
 
             ResponseEntity<MiningAttemptData> result = restTemplate().exchange(uri + "/" + blockSize, HttpMethod.GET, null, MiningAttemptData.class);
             MiningAttemptData data = result.getBody();
