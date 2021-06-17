@@ -185,7 +185,7 @@ public class LedgerService {
         }
     }
 
-    public Result<Void> installSmartContract(AuthenticatedRequest<InstallContractRequestBody> request, OffsetDateTime timestamp) {
+    public Result<Void> installSmartContract(AuthenticatedRequest<InstallContractRequestBody> request, String contractId, OffsetDateTime timestamp) {
         try {
             if (invalidRequest(request)) return Result.error(Result.Status.FORBIDDEN);
 
@@ -195,8 +195,11 @@ public class LedgerService {
             openTransactionsRepository.save(miner);
             openTransactionsRepository.save(escrow);
 
-            contractRepository.save(request.getRequestBody().getData().getContract());
+            contractRepository.save(
+                    new SmartContractEntity(contractId, request.getRequestBody().getData().getContract())
+            );
 
+            return Result.ok();
         } catch (Exception exception) {
             exception.printStackTrace();
             return Result.error(Result.Status.INTERNAL_ERROR, exception.getMessage());

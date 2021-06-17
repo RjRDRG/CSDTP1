@@ -8,21 +8,22 @@ import java.io.Serializable;
 @Entity
 public class SmartContractEntity implements Serializable {
 
-    private @Id @GeneratedValue long id;
+    private @Id String id;
     private @Lob @Column SmartContract contract;
 
-    public SmartContractEntity(SmartContract contract) {
+    public SmartContractEntity(String id, SmartContract contract) {
+        this.id = id;
         this.contract = contract;
     }
 
     public SmartContractEntity() {
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

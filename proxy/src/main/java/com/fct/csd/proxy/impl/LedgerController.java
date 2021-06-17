@@ -23,6 +23,7 @@ import com.fct.csd.proxy.repository.TransactionRepository;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,6 +61,17 @@ class LedgerController {
         return MIN_POOL_SIZE_OPEN_TRANSACTIONS;
     }
 
+    private <T extends Serializable> void validRequest(AuthenticatedRequest<T> request) {
+        boolean valid;
+        try {
+            valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
+        } catch (Exception e) {
+            throw new ForbiddenException(e.getMessage());
+        }
+
+        if(!valid) throw new ForbiddenException("Invalid Signature");
+    }
+
     @PostConstruct
     private void pullBlockChain() {
         String requestId = UUID.randomUUID().toString();
@@ -82,14 +94,7 @@ class LedgerController {
     @PostMapping("/obtain")
     public RequestInfo obtainValueTokens(@RequestBody AuthenticatedRequest<ObtainRequestBody> request) {
 
-        boolean valid;
-        try {
-            valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-        } catch (Exception e) {
-            throw new ForbiddenException(e.getMessage());
-        }
-
-        if(!valid) throw new ForbiddenException("Invalid Signature");
+        validRequest(request);
 
         String requestId = UUID.randomUUID().toString();
 
@@ -113,14 +118,7 @@ class LedgerController {
     @PostMapping("/transfer")
     public RequestInfo transferValueTokens(@RequestBody AuthenticatedRequest<TransferRequestBody> request) {
 
-        boolean valid;
-        try {
-            valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-        } catch (Exception e) {
-            throw new ForbiddenException(e.getMessage());
-        }
-
-        if(!valid) throw new ForbiddenException("Invalid Signature");
+        validRequest(request);
 
         if(request.getRequestBody().getData().getAmount()<=0) throw new BadRequestException("Amount must be positive");
 
@@ -145,14 +143,8 @@ class LedgerController {
 
     @PostMapping("/balance")
     public Double consultBalance(@RequestBody AuthenticatedRequest<ConsultBalanceRequestBody> request) {
-            boolean valid;
-            try {
-                valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-            } catch (Exception e) {
-                throw new ForbiddenException(e.getMessage());
-            }
 
-            if(!valid) throw new ForbiddenException("Invalid Signature");
+            validRequest(request);
 
             String clientId = bytesToString(request.getClientId());
             List<TransactionEntity> transactions = transactionRepository.findByOwner(clientId);
@@ -191,17 +183,10 @@ class LedgerController {
 
     @PostMapping("/block")
     public RequestInfo submitMiningAttempt(@RequestBody AuthenticatedRequest<MineRequestBody> request) {
-        boolean valid;
-        try {
-            valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-        } catch (Exception e) {
-            throw new ForbiddenException(e.getMessage());
-        }
 
-        if(!valid) throw new ForbiddenException("Invalid Signature");
+        validRequest(request);
 
-        if(!validateBlock(request.getRequestBody().getData().getBlock()))
-            throw new BadRequestException("Invalid Block");
+        validBlock(request.getRequestBody().getData().getBlock());
 
         String requestId = UUID.randomUUID().toString();
 
@@ -231,29 +216,44 @@ class LedgerController {
     }
 
     @PostMapping("/contract")
-    public Transaction[] installSmartContract(@RequestBody ClientTransactionsRequestBody request) {
-        return transactionRepository.findByOwnerEqualsAndTimestampIsBetween(request.getOwner(), request.getInitDate(),request.getEndDate()).stream()
-                .map(TransactionEntity::toItem).toArray(Transaction[]::new);
-    }
+    public RequestInfo installSmartContract(@RequestBody AuthenticatedRequest<InstallContractRequestBody> request) {
 
-    public boolean validateBlock(Block block) {
-        Block last = ledgerProxy.getLastBlock().getData();
-        if(block.getId()<last.getId())
-            return false;
+        validRequest(request);
 
-        if (block.getVersion()!=last.getVersion())
-            return false;
+        String requestId = UUID.randomUUID().toString();
 
-        if(!block.getTypePoF().equals(last.getTypePoF()))
-            return false;
+        ReplicatedRequest replicatedRequest = new ReplicatedRequest(
+                requestId,
+                LedgerOperation.INSTALL,
+                dataToBytes(request),
+                ledgerProxy.getLastBlockId(),
+                getPoolSizeOpenTransactions()
+        );
 
-        if(block.getDifficulty()!=last.getDifficulty())
-            return false;
 
-        switch (block.getTypePoF()) {
-            case POW: return ProofOfWork.validate(block, blockChainDigestSuite);
+        try{
+            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+        } catch (Exception e) {
+            throw new ServerErrorException(e.getMessage());
         }
 
-        return false;
+        return new RequestInfo(requestId, replicatedRequest.getTimestamp());
+    }
+
+    public void validBlock(Block block) {
+        Block last = ledgerProxy.getLastBlock().getData();
+        if(
+            block.getId()<last.getId() ||
+            block.getVersion()!=last.getVersion() ||
+            !block.getTypePoF().equals(last.getTypePoF()) ||
+            block.getDifficulty()!=last.getDifficulty()
+        )
+            throw new BadRequestException("Invalid Block");
+
+        switch (block.getTypePoF()) {
+            case POW:
+                if(!ProofOfWork.validate(block, blockChainDigestSuite))
+                    throw new BadRequestException("Invalid Block");
+        }
     }
 }
