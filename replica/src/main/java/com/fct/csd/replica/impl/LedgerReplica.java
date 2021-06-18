@@ -2,7 +2,7 @@ package com.fct.csd.replica.impl;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
-import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import bftsmart.tom.server.defaultservices.DefaultRecoverable;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -23,10 +23,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.fct.csd.common.util.Serialization.*;
 
 @Component
-public class LedgerReplica extends DefaultSingleRecoverable {
+public class LedgerReplica extends DefaultRecoverable {
 
     private static final Logger log = LoggerFactory.getLogger(LedgerReplica.class);
     private static final String CONFIG_PATH = "security.conf";
@@ -60,8 +65,37 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     }
 
     @Override
-    public byte[] appExecuteOrdered(byte[] command, MessageContext messageContext) {
-        return dataToBytes(execute(bytesToData(command)));
+    public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] messageContexts, boolean b) {
+        List<ReplicatedRequest> requests = new ArrayList<>(commands.length);
+        for (byte[] command : commands) {
+            requests.add(bytesToData(command));
+        }
+
+        List<ReplicatedRequest> mineRequests = requests.stream()
+                .filter(t -> t.getOperation() == ReplicatedRequest.LedgerOperation.MINE)
+                .sorted((t0, t1) -> {
+                    ProtectedRequest<MineRequestBody> r0 = bytesToData(t0.getRequest());
+                    ProtectedRequest<MineRequestBody> r1 = bytesToData(t1.getRequest());
+                    return r0.getRequestBody().getData().getBlock().getTransactions().size() -
+                            r1.getRequestBody().getData().getBlock().getTransactions().size();
+                })
+                .collect(Collectors.toList());
+
+        List<ReplicatedRequest> others = requests.stream()
+                .filter(t -> t.getOperation() != ReplicatedRequest.LedgerOperation.MINE)
+                .collect(Collectors.toList());
+
+        byte[][] replies = new byte[commands.length][];
+
+        for (int i = 0; i < mineRequests.size(); i++) {
+            replies[i] = dataToBytes(execute(mineRequests.get(i)));
+        }
+
+        for (int i = mineRequests.size(); i < mineRequests.size() + others.size(); i++) {
+            replies[i] = dataToBytes(execute(others.get(i)));
+        }
+
+        return replies;
     }
 
     @Override
