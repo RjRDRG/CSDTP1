@@ -35,7 +35,7 @@ public class ReplicaApplication implements CommandLineRunner {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public Server h2Server(Environment environment) throws SQLException {
-        String stateDatabasePort = environment.getProperty("state.database.port");
+        String stateDatabasePort = environment.getProperty("port.database.share.contractor");
         return Server.createTcpServer("-tcp", "-tcpAllowOthers", "-tcpPort", stateDatabasePort);
     }
 }

@@ -8,9 +8,11 @@
         <version>2.4.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.fct.csd</groupId>
     <artifactId>replica</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>replica</name>
     <description>Demo project for Spring Boot</description>
     <properties>

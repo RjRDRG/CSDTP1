@@ -3,7 +3,6 @@ package com.fct.csd.replica.client;
 import com.fct.csd.common.item.*;
 import com.fct.csd.common.request.*;
 import com.fct.csd.common.traits.Result;
-import com.fct.csd.common.traits.Seal;
 import com.fct.csd.common.util.Serialization;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -27,16 +26,16 @@ import java.util.stream.Collectors;
 
 public class ContractorClient {
 
-    private final String contractorUrl;
+    private final String contractorIp;
     private final String contractorPort;
 
-    public ContractorClient(String contractorUrl, String contractorPort) {
-        this.contractorUrl = contractorUrl;
+    public ContractorClient(String contractorIp, String contractorPort) {
+        this.contractorIp = contractorIp;
         this.contractorPort = contractorPort;
     }
 
     public Result<List<Transaction>> runSmartContract(SmartTransferRequestBody request) {
-        String uri = contractorUrl + ":" + contractorPort + "/contract";
+        String uri = "https://" + contractorIp + ":" + contractorPort + "/contract";
 
         try {
             ResponseEntity<Transaction[]> reply = restTemplate().postForEntity(uri, request, Transaction[].class);

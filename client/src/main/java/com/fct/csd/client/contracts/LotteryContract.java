@@ -4,13 +4,19 @@ import com.fct.csd.common.contract.BlockChainView;
 import com.fct.csd.common.contract.SmartContract;
 import com.fct.csd.common.item.Transaction;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class LotteryContract implements SmartContract {
+import static com.fct.csd.common.util.Serialization.bytesToString;
+import static com.fct.csd.common.util.Serialization.classToBytes;
+
+public class LotteryContract extends SmartContract implements Serializable {
+
+    static final long serialVersionUID=129348938L;
 
     public static final String PARTICIPANTS = "PARTICIPANTS";
     public static final String TICKET_PRICE = "TICKET_PRICE";
@@ -26,6 +32,8 @@ public class LotteryContract implements SmartContract {
 
         List<Transaction> transactions = new ArrayList<>(numberOfParticipants);
 
+        view.findByOwner(participants.get(0));
+
         for (int i=0; i<numberOfParticipants; i++) {
             if(i!=winner) {
                 transactions.add(
@@ -39,12 +47,17 @@ public class LotteryContract implements SmartContract {
                 transactions.add(new Transaction(
                     -1,
                     participants.get(i).getBytes(StandardCharsets.UTF_8),
-                    ticketPrice*numberOfParticipants,
+                    ticketPrice*(numberOfParticipants-1),
                     null, null
                 ));
             }
         }
 
         return transactions;
+    }
+
+    @Override
+    public String serialize() {
+        return bytesToString(classToBytes(this));
     }
 }

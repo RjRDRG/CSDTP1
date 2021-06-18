@@ -30,7 +30,7 @@ class ContractorController {
         if (entity.isEmpty()) return new ArrayList<>(0);
 
         try {
-            return entity.get().getContract().run(request.getParameters(), blockChainView);
+            return entity.get().makeInstance().run(request.getParameters(), blockChainView);
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>(0);

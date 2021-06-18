@@ -6,6 +6,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public interface SmartContract extends Serializable {
-    List<Transaction> run(Map<String,List<String>> parameters, BlockChainView view);
+public abstract class SmartContract implements Serializable {
+    static final long serialVersionUID=124548938L;
+
+    public abstract List<Transaction> run(Map<String,List<String>> parameters, BlockChainView view);
+
+    public abstract String serialize();
 }

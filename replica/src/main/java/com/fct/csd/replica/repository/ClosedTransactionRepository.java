@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ClosedTransactionRepository extends JpaRepository<ClosedTransactionEntity, String> {
     ClosedTransactionEntity findTopByOrderByIdDesc();
+    List<ClosedTransactionEntity> findByOwner(String owner);
 }

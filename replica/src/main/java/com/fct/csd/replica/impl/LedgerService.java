@@ -86,10 +86,10 @@ public class LedgerService {
         this.blockChainDigestSuite = new HashSuite(new IniSpecification("block_chain_digest_suite", CONFIG_PATH));
         this.transactionDigestSuite = new HashSuite(new IniSpecification("transaction_digest_suite", CONFIG_PATH));
 
-        String contractorUrl = environment.getProperty("contractor.url");
+        String contractorIp = environment.getProperty("contractor.ip");
         String contractorPort = environment.getProperty("contractor.port");
 
-        this.contractorClient = new ContractorClient(contractorUrl, contractorPort);
+        this.contractorClient = new ContractorClient(contractorIp, contractorPort);
     }
 
     @PostConstruct
@@ -234,8 +234,9 @@ public class LedgerService {
                 value += transaction.getAmount();
             }
 
-            if(value!=0)
+            if(value!=0) {
                 return Result.error(Result.Status.FORBIDDEN);
+            }
 
             for (Transaction transaction: transactions.value()) {
                 OpenTransactionEntity entity = new OpenTransactionEntity(

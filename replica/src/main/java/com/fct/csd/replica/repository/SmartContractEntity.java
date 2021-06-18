@@ -5,13 +5,15 @@ import com.fct.csd.common.contract.SmartContract;
 import javax.persistence.*;
 import java.io.Serializable;
 
+import static com.fct.csd.common.util.Serialization.*;
+
 @Entity
 public class SmartContractEntity implements Serializable {
 
     private @Id String id;
-    private @Lob @Column SmartContract contract;
+    private @Lob @Column String contract;
 
-    public SmartContractEntity(String id, SmartContract contract) {
+    public SmartContractEntity(String id, String contract) {
         this.id = id;
         this.contract = contract;
     }
@@ -27,11 +29,15 @@ public class SmartContractEntity implements Serializable {
         this.id = id;
     }
 
-    public SmartContract getContract() {
+    public String getContract() {
         return contract;
     }
 
-    public void setContract(SmartContract contract) {
+    public void setContract(String contract) {
         this.contract = contract;
+    }
+
+    public SmartContract makeInstance() {
+        return bytesToClass(stringToBytes(contract));
     }
 }

@@ -5,20 +5,20 @@ import com.fct.csd.common.contract.SmartContract;
 import java.io.Serializable;
 
 public class InstallContractRequestBody implements Serializable {
-    SmartContract contract;
+    String contract;
 
     public InstallContractRequestBody(SmartContract contract) {
-        this.contract = contract;
+        this.contract = contract.serialize();
     }
 
     public InstallContractRequestBody() {
     }
 
-    public SmartContract getContract() {
+    public String getContract() {
         return contract;
     }
 
-    public void setContract(SmartContract contract) {
+    public void setContract(String contract) {
         this.contract = contract;
     }
 }

@@ -1,6 +1,7 @@
 package com.fct.csd.client;
 
 import com.fct.csd.client.contracts.LotteryContract;
+import com.fct.csd.common.contract.SmartContract;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
 import com.fct.csd.common.cryptography.config.StoredSecrets;
@@ -42,6 +43,7 @@ import java.security.KeyStore;
 import java.security.Security;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
 
@@ -94,7 +96,6 @@ public class LedgerClient {
         return "Available operations : \n" +
                 "h - Help;                                             Eg: h \n"+
                 "w - List wallets ids;                                 Eg: w \n"+
-                "\n" +
                 "O - Set the proxy url and port;                       Eg: 0 {https://localhost} {8080} \n" +
                 "1 - Create wallet;                                    Eg: 1 {wallet_id} \n" +
                 "a - Obtain tokens;                                    Eg: a {wallet_id} {amount}\n" +
@@ -320,7 +321,7 @@ public class LedgerClient {
         try {
             ClientDetails clientDetails = clients.get(walletId);
 
-            LotteryContract contract = new LotteryContract();
+            SmartContract contract = new LotteryContract();
 
             UniqueSeal<InstallContractRequestBody> requestBody = new UniqueSeal<>(
                     new InstallContractRequestBody(contract), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
@@ -336,14 +337,18 @@ public class LedgerClient {
     }
 
     static void runLotteryContract(String id, String bet, String... wallets) {
-        String uri = proxyUrl + ":" + proxyPort + "/contract";
+        String uri = proxyUrl + ":" + proxyPort + "/contract/run";
 
         try {
             ClientDetails clientDetails = clients.get(wallets[0]);
 
             Map<String,List<String>> parameters = new HashMap<>();
             parameters.put(LotteryContract.TICKET_PRICE, List.of(bet));
-            parameters.put(LotteryContract.PARTICIPANTS, Arrays.asList(wallets));
+            parameters.put(LotteryContract.PARTICIPANTS,
+                    Arrays.stream(wallets)
+                    .map(t -> clients.get(t).getUrlSafeClientId())
+                    .collect(Collectors.toList())
+            );
 
             UniqueSeal<SmartTransferRequestBody> requestBody = new UniqueSeal<>(
                     new SmartTransferRequestBody(parameters,id),
