@@ -1,11 +1,7 @@
 package com.fct.csd.replica.repository;
 
-import com.fct.csd.common.contract.SmartContract;
-
 import javax.persistence.*;
 import java.io.Serializable;
-
-import static com.fct.csd.common.util.Serialization.*;
 
 @Entity
 public class SmartContractEntity implements Serializable {
@@ -35,9 +31,5 @@ public class SmartContractEntity implements Serializable {
 
     public void setContract(String contract) {
         this.contract = contract;
-    }
-
-    public SmartContract makeInstance() {
-        return bytesToClass(stringToBytes(contract));
     }
 }

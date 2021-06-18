@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static com.fct.csd.common.util.Serialization.bytesToString;
-import static com.fct.csd.common.util.Serialization.classToBytes;
+import static com.fct.csd.common.util.Serialization.*;
 
 public class LotteryContract extends SmartContract implements Serializable {
 
@@ -20,6 +19,8 @@ public class LotteryContract extends SmartContract implements Serializable {
 
     public static final String PARTICIPANTS = "PARTICIPANTS";
     public static final String TICKET_PRICE = "TICKET_PRICE";
+
+    //Bad idea contracts need to be deterministic
 
     @Override
     public List<Transaction> run(Map<String, List<String>> parameters, BlockChainView view) {
@@ -39,14 +40,14 @@ public class LotteryContract extends SmartContract implements Serializable {
                 transactions.add(
                   new Transaction(
                       -1,
-                      participants.get(i).getBytes(StandardCharsets.UTF_8),
+                      stringToBytes(participants.get(i)),
                       -ticketPrice,
                       null, null
                   ));
             } else {
                 transactions.add(new Transaction(
                     -1,
-                    participants.get(i).getBytes(StandardCharsets.UTF_8),
+                    stringToBytes(participants.get(i)),
                     ticketPrice*(numberOfParticipants-1),
                     null, null
                 ));
@@ -58,6 +59,6 @@ public class LotteryContract extends SmartContract implements Serializable {
 
     @Override
     public String serialize() {
-        return bytesToString(classToBytes(this));
+        return bytesToString(dataToBytes(this));
     }
 }

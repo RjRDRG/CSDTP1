@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class BlockChainViewImpl implements BlockChainView {
 
-    private ClosedTransactionRepository closedTransactionRepository;
+    private final ClosedTransactionRepository closedTransactionRepository;
 
     public BlockChainViewImpl(ClosedTransactionRepository closedTransactionRepository) {
         this.closedTransactionRepository = closedTransactionRepository;
@@ -19,6 +19,12 @@ public class BlockChainViewImpl implements BlockChainView {
     @Override
     public List<Transaction> findByOwner(String owner) {
         return closedTransactionRepository.findByOwner(owner).stream()
+                .map(ClosedTransactionEntity::toItem).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Transaction> findAll() {
+        return closedTransactionRepository.findAll().stream()
                 .map(ClosedTransactionEntity::toItem).collect(Collectors.toList());
     }
 }

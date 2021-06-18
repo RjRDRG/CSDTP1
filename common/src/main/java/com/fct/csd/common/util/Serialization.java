@@ -16,52 +16,6 @@ import java.util.Base64;
 
 public class Serialization {
 
-	public static <T extends Serializable> byte[] classToBytes(T classInstance) {
-		byte[] result;
-		try {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream out;
-			try {
-				out = new ObjectOutputStream(bos);
-				out.writeObject(classInstance);
-				out.flush();
-				result = bos.toByteArray();
-			} finally {
-				try {
-					bos.close();
-				} catch (IOException ex) {
-					// ignore close exception
-				}
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return result;
-	}
-
-	public static <T extends Serializable> T bytesToClass(byte[] bytes) {
-		T classInstance = null;
-		try {
-			ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-			ObjectInput in = null;
-			try {
-				in = new ObjectInputStream(bis);
-				T o = (T) in.readObject();
-			} finally {
-				try {
-					if (in != null) {
-						in.close();
-					}
-				} catch (IOException ex) {
-					// ignore close exception
-				}
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return classInstance;
-	}
-
 	public static <T extends Serializable> byte[] dataToBytes(T data) {
 		return SerializationUtils.serialize(data);
 	}

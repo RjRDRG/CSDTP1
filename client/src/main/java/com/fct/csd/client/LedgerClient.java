@@ -1,5 +1,6 @@
 package com.fct.csd.client;
 
+import com.fct.csd.client.contracts.DebitContract;
 import com.fct.csd.client.contracts.LotteryContract;
 import com.fct.csd.common.contract.SmartContract;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
@@ -106,8 +107,8 @@ public class LedgerClient {
                 "E - Consult all transactions of a certain client;     Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
                 "f - Consult all events of request;                    Eg: f {request_id}\n" +
                 "g - Start mining;                                     Eg: g {wallet_id}\n" +
-                "i - Install lottery contract;                         Eg: h {wallet_id} \n" +
-                "j - Run lottery contract;                             Eg: i {contract_id} {bet} {wallet_id} ... {wallet_id} \n" +
+                "i - Install debit contract;                           Eg: i {wallet_id} \n" +
+                "j - Run debit contract;                               Eg: j {contract_id} {wallet_id} {recipient_wallet_id} {amount} \n" +
                 "z - Exit                                              Eg: z";
     }
 
@@ -165,10 +166,10 @@ public class LedgerClient {
                         mine(command[1]);
                         break;
                     case 'i':
-                        installLotteryContract(command[1]);
+                        installDebitContract(command[1]);
                         break;
                     case 'j':
-                        runLotteryContract(command[1], command[2], ArrayUtils.subarray(command,3, command.length));
+                        runDebitContract(command[1], command[2], command[3], Double.parseDouble(command[4]));
                         break;
                     case 'z':
                         return;
@@ -315,13 +316,13 @@ public class LedgerClient {
         }
     }
 
-    static void installLotteryContract(String walletId) {
+    static void installDebitContract(String walletId) {
         String uri = proxyUrl + ":" + proxyPort + "/contract";
 
         try {
             ClientDetails clientDetails = clients.get(walletId);
 
-            SmartContract contract = new LotteryContract();
+            SmartContract contract = new DebitContract();
 
             UniqueSeal<InstallContractRequestBody> requestBody = new UniqueSeal<>(
                     new InstallContractRequestBody(contract), clientDetails.getBlockChainRequestCounter(), clientDetails.signatureSuite
@@ -336,19 +337,16 @@ public class LedgerClient {
         }
     }
 
-    static void runLotteryContract(String id, String bet, String... wallets) {
+    static void runDebitContract(String id, String from, String recipient, Double amount) {
         String uri = proxyUrl + ":" + proxyPort + "/contract/run";
 
         try {
-            ClientDetails clientDetails = clients.get(wallets[0]);
+            ClientDetails clientDetails = clients.get(from);
 
             Map<String,List<String>> parameters = new HashMap<>();
-            parameters.put(LotteryContract.TICKET_PRICE, List.of(bet));
-            parameters.put(LotteryContract.PARTICIPANTS,
-                    Arrays.stream(wallets)
-                    .map(t -> clients.get(t).getUrlSafeClientId())
-                    .collect(Collectors.toList())
-            );
+            parameters.put(DebitContract.AMOUNT, List.of(amount.toString()));
+            parameters.put(DebitContract.FROM, List.of(clients.get(from).getUrlSafeClientId()));
+            parameters.put(DebitContract.TO, List.of(clients.get(recipient).getUrlSafeClientId()));
 
             UniqueSeal<SmartTransferRequestBody> requestBody = new UniqueSeal<>(
                     new SmartTransferRequestBody(parameters,id),

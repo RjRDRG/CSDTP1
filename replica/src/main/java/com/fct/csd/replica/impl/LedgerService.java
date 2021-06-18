@@ -263,7 +263,7 @@ public class LedgerService {
         BlockEntity last = blockRepository.findTopByOrderByIdDesc();
 
         if(block.getId()!=last.getId()+1)
-            throw new Exception("Invalid ID");
+            throw new Exception("Invalid ID: " + block.getId() + " " + last.getId()+1);
 
         if (block.getVersion()!=last.getVersion())
             throw new Exception("Invalid Version");

@@ -41,6 +41,6 @@ public class SmartContractEntity implements Serializable {
     }
 
     public SmartContract makeInstance() {
-        return bytesToClass(stringToBytes(contract));
+        return bytesToData(stringToBytes(contract));
     }
 }
