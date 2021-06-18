@@ -1,6 +1,6 @@
 package com.fct.csd.client;
 
-import com.fct.csd.client.contracts.DebitContract;
+import com.fct.csd.common.contract.DebitContract;
 import com.fct.csd.common.contract.SmartContract;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;

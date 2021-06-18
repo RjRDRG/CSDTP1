@@ -47,6 +47,7 @@ com/fct/csd/common/cryptography/key/KeyStoresInfo.class
 com/fct/csd/common/cryptography/config/ISuiteConfiguration.class
 com/fct/csd/common/traits/OkResult.class
 com/fct/csd/common/cryptography/pof/ProofOfWork.class
+com/fct/csd/common/contract/LotteryContract.class
 com/fct/csd/common/cryptography/suites/digest/SignatureSuite$Mode.class
 com/fct/csd/common/cryptography/suites/digest/IDigestSuite.class
 com/fct/csd/common/cryptography/config/ISuiteSpecification.class
@@ -55,6 +56,7 @@ com/fct/csd/common/traits/Result$Status.class
 com/fct/csd/common/reply/ReplicaReply.class
 com/fct/csd/common/cryptography/generators/key/SymmetricKeyGenerator.class
 com/fct/csd/common/cryptography/suites/digest/FlexibleDigestSuite.class
+com/fct/csd/common/contract/DebitContract.class
 com/fct/csd/common/request/MineRequestBody.class
 com/fct/csd/common/cryptography/generators/nonce/Counter.class
 com/fct/csd/common/util/ByteSerializer.class

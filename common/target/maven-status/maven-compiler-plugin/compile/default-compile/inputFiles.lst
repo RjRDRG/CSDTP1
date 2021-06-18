@@ -42,7 +42,9 @@
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/generators/key/SymmetricKeyGenerator.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/wrapper/ProtectedRequest.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/config/StoredSecrets.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/contract/LotteryContract.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/generators/IvGenerator.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/contract/DebitContract.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/traits/Seal.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/cryptography/key/KeyInfo.java
 /home/rodrigo/IdeaProjects/CSD/CSDTP1/common/src/main/java/com/fct/csd/common/request/ObtainRequestBody.java
