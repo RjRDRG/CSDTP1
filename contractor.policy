@@ -41,4 +41,18 @@ grant {
     permission java.util.PropertyPermission "java.vm.version", "read";
     permission java.util.PropertyPermission "java.vm.vendor", "read";
     permission java.util.PropertyPermission "java.vm.name", "read";
+    permission java.util.PropertyPermission "java.awt.headless", "read";
+    permission java.util.PropertyPermission "java.awt.headless", "write";
+    permission java.util.PropertyPermission "spring.jndi.ignore", "read";
+    permission java.util.PropertyPermission "spring.getenv.ignore", "read";
+    permission java.util.PropertyPermission "spring.xml.ignore", "read";
+    permission java.util.PropertyPermission "spring.beaninfo.ignore", "read";
+    permission java.util.PropertyPermission "spring.beaninfo.ignore", "write";
+    permission java.util.PropertyPermission "org.graalvm.nativeimage.imagecode", "read";
+    permission java.util.PropertyPermission "user.dir", "read";
+    permission java.util.PropertyPermission "user.dir", "read";
+    permission java.util.PropertyPermission "spring.spel.ignore", "read";
+    permission java.util.PropertyPermission "spring.index.ignore", "read";
+    permission java.io.FilePermission "/home/rodrigo/IdeaProjects/CSD/CSDTP1", "read";
+    permission java.lang.RuntimePermission "shutdownHooks", "read";
 };

@@ -51,7 +51,15 @@ public class LedgerProxy extends AsynchServiceProxy {
         this.branchHashSuite = new HashSuite(new IniSpecification("chain_branch_digest_suite", SECURITY_CONFIG_PATH));
     }
 
-    public void invokeAsyncRequest(ReplicatedRequest request) {
+    public void invokeUnorderedAsyncRequest(ReplicatedRequest request) {
+        invokeAsyncRequest(request, TOMMessageType.UNORDERED_REQUEST);
+    }
+
+    public void invokeOrderedAsyncRequest(ReplicatedRequest request) {
+        invokeAsyncRequest(request, TOMMessageType.ORDERED_REQUEST);
+    }
+
+    private void invokeAsyncRequest(ReplicatedRequest request, TOMMessageType type) {
 
         super.invokeAsynchRequest(dataToBytes(request), new ReplyListener() {
 

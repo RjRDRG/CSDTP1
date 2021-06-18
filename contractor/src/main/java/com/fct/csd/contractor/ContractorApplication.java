@@ -8,10 +8,6 @@ import java.security.Security;
 @SpringBootApplication
 public class ContractorApplication {
 
-    static {
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-    }
-
     public static void main(String[] args) {
         SpringApplication.run(ContractorApplication.class, args);
     }

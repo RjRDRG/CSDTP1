@@ -103,7 +103,7 @@ class LedgerController {
         );
 
         try{
-            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+            ledgerProxy.invokeUnorderedAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
@@ -125,7 +125,7 @@ class LedgerController {
         );
 
         try{
-            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+            ledgerProxy.invokeUnorderedAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
@@ -151,7 +151,7 @@ class LedgerController {
         );
 
         try{
-            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+            ledgerProxy.invokeUnorderedAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
@@ -217,7 +217,7 @@ class LedgerController {
         );
 
         try{
-            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+            ledgerProxy.invokeOrderedAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
@@ -250,7 +250,7 @@ class LedgerController {
 
 
         try{
-            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+            ledgerProxy.invokeUnorderedAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
@@ -278,7 +278,7 @@ class LedgerController {
 
 
         try{
-            ledgerProxy.invokeAsyncRequest(replicatedRequest);
+            ledgerProxy.invokeUnorderedAsyncRequest(replicatedRequest);
         } catch (Exception e) {
             throw new ServerErrorException(e.getMessage());
         }
