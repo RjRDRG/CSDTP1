@@ -94,14 +94,14 @@ public class LedgerClient {
         return "Available operations : \n" +
                 "h - Help;                                             Eg: h \n"+
                 "w - List wallets ids;                                 Eg: w \n"+
-                "O - Set the proxy url and port;                       Eg: 0 {https://localhost} {8080} \n" +
+                "O - Set the proxy port;                               Eg: 0 {8080, 8081, 8082, 8083} \n" +
                 "1 - Create wallet;                                    Eg: 1 {wallet_id} \n" +
                 "a - Obtain tokens;                                    Eg: a {wallet_id} {amount}\n" +
                 "b - Transfer tokens;                                  Eg: b {wallet_id} {recipient_wallet_id} {amount}\n" +
                 "c - Consult balance of a certain client;              Eg: c {wallet_id}\n" +
-                "d - Consult all transactions;                         Eg: d {seconds_from_current_date} {seconds_from_current_date}\n" +
-                "e - Consult all transactions of a certain client;     Eg: e {wallet_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
-                "E - Consult all transactions of a certain client;     Eg: E {client_id} {seconds_from_current_date} {seconds_from_current_date}\n" +
+                "d - Consult all transactions;                         Eg: d {from_minutes_ago} {to_minutes_ago}\n" +
+                "e - Consult all transactions of a certain client;     Eg: e {wallet_id} {from_minutes_ago} {to_minutes_ago}\n" +
+                "E - Consult all transactions of a certain client;     Eg: E {client_id} {from_minutes_ago} {to_minutes_ago}\n" +
                 "f - Consult all events of request;                    Eg: f {request_id}\n" +
                 "g - Start mining;                                     Eg: g {wallet_id}\n" +
                 "i - Install debit contract;                           Eg: i {wallet_id} \n" +
@@ -132,8 +132,7 @@ public class LedgerClient {
                         System.out.println(clients.keySet());
                         break;
                     case '0':
-                        proxyIp = command[1];
-                        proxyPort = command[2];
+                        proxyPort = command[1];
                         break;
                     case '1':
                         clients.put(command[1], new ClientDetails());
@@ -238,12 +237,12 @@ public class LedgerClient {
         }
     }
 
-    static void allTransactions(int initSeconds, int endSeconds){
+    static void allTransactions(int initMinutes, int endMinutes){
        String uri = "https://" + proxyIp + ":" + proxyPort + "/transactions";
 
         try {
             OffsetDateTime now = OffsetDateTime.now();
-            AllTransactionsRequestBody request = new AllTransactionsRequestBody(now.minusSeconds(initSeconds),now.minusSeconds(endSeconds));
+            AllTransactionsRequestBody request = new AllTransactionsRequestBody(now.minusMinutes(initMinutes),now.minusMinutes(endMinutes));
 
             ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
 
@@ -254,12 +253,12 @@ public class LedgerClient {
 
     }
 
-    static void clientTransactions(String clientId, int initSeconds, int endSeconds){
+    static void clientTransactions(String clientId, int initMinutes, int endMinutes){
        String uri = "https://" + proxyIp + ":" + proxyPort + "/transactions/client";
 
         try {
             OffsetDateTime now = OffsetDateTime.now();
-            ClientTransactionsRequestBody request = new ClientTransactionsRequestBody(clientId,now.minusSeconds(initSeconds),now.minusSeconds(endSeconds));
+            ClientTransactionsRequestBody request = new ClientTransactionsRequestBody(clientId,now.minusMinutes(initMinutes),now.minusMinutes(endMinutes));
 
             ResponseEntity<Transaction[]> transactions = restTemplate().postForEntity(uri, request, Transaction[].class);
 
