@@ -20,8 +20,6 @@ public class LotteryContract extends SmartContract implements Serializable {
     public static final String PARTICIPANTS = "PARTICIPANTS";
     public static final String TICKET_PRICE = "TICKET_PRICE";
 
-    //Bad idea contracts need to be deterministic
-
     @Override
     public List<Transaction> run(Map<String, List<String>> parameters, BlockChainView view) {
         List<String> participants = parameters.get(PARTICIPANTS);
@@ -29,7 +27,7 @@ public class LotteryContract extends SmartContract implements Serializable {
 
         int numberOfParticipants = participants.size();
 
-        int winner = new Random().nextInt(numberOfParticipants);
+        int winner = new Random().nextInt(numberOfParticipants);      //Needs to be deterministic
 
         List<Transaction> transactions = new ArrayList<>(numberOfParticipants);
 

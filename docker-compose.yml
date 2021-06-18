@@ -117,7 +117,8 @@ services:
 
 
   contractor0:
-    command: sh -c "sleep 100; java -Djava.security.manager -Djava.security.policy=contractor.policy -jar /app.jar;"
+    #command: sh -c "sleep 100; java -Djava.security.manager -Djava.security.policy=contractor.policy -jar /app.jar;"
+    command: sh -c "sleep 100; java -jar /app.jar;"
     environment:
       - spring_datasource_url=jdbc:h2:tcp://replica0:8023/mem:state
     build:
@@ -126,7 +127,8 @@ services:
 
 
   contractor1:
-    command: sh -c "sleep 100; java -Djava.security.manager -Djava.security.policy=contractor.policy -jar /app.jar;"
+    #command: sh -c "sleep 100; java -Djava.security.manager -Djava.security.policy=contractor.policy -jar /app.jar;"
+    command: sh -c "sleep 100; java -jar /app.jar;"
     environment:
       - spring_datasource_url=jdbc:h2:tcp://replica1:8023/mem:state
     build:
@@ -135,7 +137,8 @@ services:
 
 
   contractor4:
-    command: sh -c "sleep 100; java -Djava.security.manager -Djava.security.policy=contractor.policy -jar /app.jar;"
+    #command: sh -c "sleep 100; java -Djava.security.manager -Djava.security.policy=contractor.policy -jar /app.jar;"
+    command: sh -c "sleep 100; java -jar /app.jar;"
     environment:
       - spring_datasource_url=jdbc:h2:tcp://replica4:8023/mem:state
     build:
