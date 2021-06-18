@@ -2,148 +2,142 @@ services:
   replica0:
     environment:
       - replica_id=0
+      - contractor_ip=contractor0
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8090:8090"
-      - "11000:11000"
-      - "11001:11001"
+      - "127.0.0.1:8090:8090"
   replica1:
     environment:
       - replica_id=1
+      - contractor_ip=contractor1
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8091:8090"
-      - "11010:11010"
-      - "11011:11011"
+      - "127.0.0.1:8091:8090"
   replica2:
     environment:
       - replica_id=2
+      - contractor_ip=contractor1
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8092:8090"
-      - "11020:11020"
-      - "11021:11021"
+      - "127.0.0.1:8092:8090"
   replica3:
     environment:
       - replica_id=3
+      - contractor_ip=contractor1
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8093:8090"
-      - "11030:11030"
-      - "11031:11031"
+      - "127.0.0.1:8093:8090"
   replica4:
     environment:
       - replica_id=4
+      - contractor_ip=contractor4
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8094:8090"
-      - "11040:11040"
-      - "11041:11041"
+      - "127.0.0.1:8094:8090"
   replica5:
     environment:
       - replica_id=5
+      - contractor_ip=contractor4
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8095:8090"
-      - "11050:11050"
-      - "11051:11051"
+      - "127.0.0.1:8095:8090"
   replica6:
     environment:
       - replica_id=6
+      - contractor_ip=contractor4
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8096:8090"
-      - "11060:11060"
-      - "11061:11061"
+      - "127.0.0.1:8096:8090"
   replica7:
     environment:
       - replica_id=7
+      - contractor_ip=contractor4
     build:
       context: .
       dockerfile: replica.dockerfile
     ports:
-      - "8097:8090"
-      - "11070:11070"
-      - "11071:11071"
+      - "127.0.0.1:8097:8090"
+
+
   proxy0:
+    command: sh -c "sleep 100; java -jar /app.jar;"
     environment:
       - proxy_id=0
     build:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "8080:8080"
-    depends_on:
-      - replica0
-      - replica1
-      - replica2
-      - replica3
-      - replica4
-      - replica5
-      - replica6
-      - replica7
+      - "127.0.0.1:8080:8080"
+
+
   proxy1:
+    command: sh -c "sleep 100; java -jar /app.jar;"
     environment:
       - proxy_id=1
     build:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "8081:8080"
-    depends_on:
-      - replica0
-      - replica1
-      - replica2
-      - replica3
-      - replica4
-      - replica5
-      - replica6
-      - replica7
+      - "127.0.0.1:8081:8080"
+
+
   proxy2:
+    command: sh -c "sleep 100; java -jar /app.jar;"
     environment:
       - proxy_id=2
     build:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "8082:8080"
-    depends_on:
-      - replica0
-      - replica1
-      - replica2
-      - replica3
-      - replica4
-      - replica5
-      - replica6
-      - replica7
+      - "127.0.0.1:8082:8080"
+
   proxy3:
+    command: sh -c "sleep 100; java -jar /app.jar;"
     environment:
       - proxy_id=3
     build:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "8083:8080"
-    depends_on:
-      - replica0
-      - replica1
-      - replica2
-      - replica3
-      - replica4
-      - replica5
-      - replica6
-      - replica7
+      - "127.0.0.1:8083:8080"
+
+
+  contractor0:
+    command: sh -c "sleep 100; java -jar /app.jar;"
+    environment:
+      - spring_datasource_url=jdbc:h2:tcp://replica0:8023/mem:state
+    build:
+      context: .
+      dockerfile: contractor.dockerfile
+
+
+  contractor1:
+    command: sh -c "sleep 100; java -jar /app.jar;"
+    environment:
+      - spring_datasource_url=jdbc:h2:tcp://replica1:8023/mem:state
+    build:
+      context: .
+      dockerfile: contractor.dockerfile
+
+
+  contractor4:
+    command: sh -c "sleep 100; java -jar /app.jar;"
+    environment:
+      - spring_datasource_url=jdbc:h2:tcp://replica4:8023/mem:state
+    build:
+      context: .
+      dockerfile: contractor.dockerfile

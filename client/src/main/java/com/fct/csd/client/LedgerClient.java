@@ -1,7 +1,6 @@
 package com.fct.csd.client;
 
 import com.fct.csd.client.contracts.DebitContract;
-import com.fct.csd.client.contracts.LotteryContract;
 import com.fct.csd.common.contract.SmartContract;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
 import com.fct.csd.common.cryptography.config.IniSpecification;
@@ -22,7 +21,6 @@ import com.fct.csd.common.request.wrapper.AuthenticatedRequest;
 import com.fct.csd.common.traits.Seal;
 import com.fct.csd.common.traits.UniqueSeal;
 import com.fct.csd.common.util.Serialization;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
@@ -44,7 +42,6 @@ import java.security.KeyStore;
 import java.security.Security;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.fct.csd.common.util.Serialization.bytesToString;
 
@@ -57,7 +54,7 @@ public class LedgerClient {
 
     static final String SECURITY_CONF = "security.conf";
 
-    static String proxyUrl = "https://localhost";
+    static String proxyIp = "localhost";
     static String proxyPort = "8080";
 
     static IDigestSuite blockChainDigestSuite;
@@ -135,7 +132,7 @@ public class LedgerClient {
                         System.out.println(clients.keySet());
                         break;
                     case '0':
-                        proxyUrl = command[1];
+                        proxyIp = command[1];
                         proxyPort = command[2];
                         break;
                     case '1':
@@ -184,7 +181,7 @@ public class LedgerClient {
     }
 
     static void obtainTokens(String walletId, int amount) {
-        String uri = proxyUrl + ":" + proxyPort + "/obtain";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/obtain";
 
         try {
             ClientDetails clientDetails = clients.get(walletId);
@@ -203,7 +200,7 @@ public class LedgerClient {
     }
 
     static void transferTokens(String walletId, String recipient, int amount) {
-        String uri = proxyUrl + ":" + proxyPort + "/transfer";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/transfer";
 
         try {
             ClientDetails clientDetails = clients.get(walletId);
@@ -223,7 +220,7 @@ public class LedgerClient {
     }
 
     static void consultBalance(String walletId){
-        String uri = proxyUrl + ":" + proxyPort + "/balance";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/balance";
 
         try {
             ClientDetails clientDetails = clients.get(walletId);
@@ -242,7 +239,7 @@ public class LedgerClient {
     }
 
     static void allTransactions(int initSeconds, int endSeconds){
-        String uri = proxyUrl + ":" + proxyPort + "/transactions";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/transactions";
 
         try {
             OffsetDateTime now = OffsetDateTime.now();
@@ -258,7 +255,7 @@ public class LedgerClient {
     }
 
     static void clientTransactions(String clientId, int initSeconds, int endSeconds){
-        String uri = proxyUrl + ":" + proxyPort + "/transactions/client";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/transactions/client";
 
         try {
             OffsetDateTime now = OffsetDateTime.now();
@@ -273,7 +270,7 @@ public class LedgerClient {
     }
 
     static void requestEvents(String requestId){
-        String uri = proxyUrl + ":" + proxyPort + "/testimonies/";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/testimonies/";
 
         try {
             ResponseEntity<Testimony[]> result = restTemplate().exchange(uri + requestId, HttpMethod.GET, null, Testimony[].class);
@@ -284,7 +281,7 @@ public class LedgerClient {
     }
 
     static void mine(String walletId) {
-        String uri = proxyUrl + ":" + proxyPort + "/block";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/block";
 
         try {
             ClientDetails clientDetails = clients.get(walletId);
@@ -317,7 +314,7 @@ public class LedgerClient {
     }
 
     static void installDebitContract(String walletId) {
-        String uri = proxyUrl + ":" + proxyPort + "/contract";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/contract";
 
         try {
             ClientDetails clientDetails = clients.get(walletId);
@@ -338,7 +335,7 @@ public class LedgerClient {
     }
 
     static void runDebitContract(String id, String from, String recipient, Double amount) {
-        String uri = proxyUrl + ":" + proxyPort + "/contract/run";
+       String uri = "https://" + proxyIp + ":" + proxyPort + "/contract/run";
 
         try {
             ClientDetails clientDetails = clients.get(from);

@@ -1,0 +1,15 @@
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/JacksonConfig.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/ClosedTransactionEntity.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/BlockRepository.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/TransactionEntity.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/ClosedTransactionRepository.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/OpenTransactionEntity.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/OpenTransactionRepository.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/BlockEntity.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/SmartContractEntity.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/impl/LedgerReplica.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/impl/LedgerService.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/ReplicaApplication.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/repository/SmartContractRepository.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/impl/Snapshot.java
+/home/rodrigo/IdeaProjects/CSD/CSDTP1/replica/src/main/java/com/fct/csd/replica/client/ContractorClient.java
