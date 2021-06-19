@@ -1,5 +1,6 @@
 package com.fct.csd.client;
 
+import ch.qos.logback.classic.Level;
 import com.fct.csd.common.contract.DebitContract;
 import com.fct.csd.common.contract.SmartContract;
 import com.fct.csd.common.cryptography.config.ISuiteConfiguration;
@@ -29,6 +30,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -112,6 +114,9 @@ public class LedgerClient {
     static Map<String, ClientDetails> clients = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
+
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.toLevel("error"));
 
         blockChainDigestSuite = new HashSuite(new IniSpecification("block_chain_digest_suite", SECURITY_CONF));
 
